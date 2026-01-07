@@ -53,7 +53,7 @@ export default function RootLayout({
             </main>
 
             {/* Footer */}
-            <footer className="py-6 px-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+            <footer className="py-6 px-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto">
               <p>© {new Date().getFullYear()} Agroservicios El Trisquel - O'Higgins</p>
             </footer>
           </div>
