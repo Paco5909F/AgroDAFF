@@ -147,12 +147,20 @@ export async function updatePresupuestoStatus(id: string, status: string) {
                             empresa_id: empresaId,
                             fecha: new Date(), // Order starts now
                             cliente_id: presupuesto.cliente_id,
-                            servicio_id: item.servicio_id,
-                            cantidad: item.cantidad,
-                            precio_unit: item.precio_unit,
+                            // Servicio moved to items relation
+                            observaciones: `Generado automáticamente desde Presupuesto #${presupuesto.id.slice(0, 8)}. ${item.detalle ? `\nDetalle: ${item.detalle}.` : ''} ${presupuesto.observaciones || ''}`,
                             total: item.subtotal,
+                            moneda: 'ARS', // Default to ARS as Presupuesto schema might not have currency yet, TODO: Add currency to Presupuesto
                             estado: 'pendiente',
-                            observaciones: `Generado automáticamente desde Presupuesto #${presupuesto.id.slice(0, 8)}. ${item.detalle ? `\nDetalle: ${item.detalle}.` : ''} ${presupuesto.observaciones || ''}`
+                            items: {
+                                create: [{
+                                    servicio_id: item.servicio_id,
+                                    cantidad: item.cantidad,
+                                    precio_unit: item.precio_unit,
+                                    total: item.subtotal,
+                                    kilometros: 0
+                                }]
+                            }
                         }
                     })
                 }
