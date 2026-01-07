@@ -14,7 +14,7 @@ export async function emitirFacturaAction(ordenId: string) {
         checkPermission(rol, PERMISSIONS.FACTURACION, 'create')
         const orden = await prisma.ordenTrabajo.findUnique({
             where: { id: ordenId, empresa_id: empresaId },
-            include: { cliente: true, servicio: true }
+            include: { cliente: true, items: { include: { servicio: true } } }
         })
 
         if (!orden) return { success: false, error: "Orden no encontrada" }

@@ -30,12 +30,14 @@ export async function getReportData(filters: ReportFilters) {
                 cliente: {
                     select: { razon_social: true, cuit: true }
                 },
-                servicio: {
-                    select: { nombre: true, unidad_medida: true }
+                items: {
+                    include: {
+                        servicio: {
+                            select: { nombre: true, unidad_medida: true }
+                        }
+                    }
                 },
-                campana: {
-                    select: { nombre: true }
-                }
+
             },
             orderBy: {
                 fecha: 'asc'

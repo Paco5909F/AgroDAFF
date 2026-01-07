@@ -15,10 +15,11 @@ async function main() {
             console.log('Creating a dummy client for testing...');
             const newClient = await prisma.cliente.create({
                 data: {
-                    nombre: 'Test Client',
+                    razon_social: 'Test Client',
+                    condicion_iva: 'Responsable Inscripto',
                     email: 'test@example.com',
                     telefono: '123456789',
-                    direccion: 'Test Address',
+
                     cuit: '20-12345678-9',
                 }
             });

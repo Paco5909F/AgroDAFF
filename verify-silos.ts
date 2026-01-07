@@ -35,7 +35,7 @@ async function main() {
                     cliente_id: cliente.id,
                     nombre: 'Test Est Silo',
                     modalidad: 'PROPIO',
-                    localidad: 'Test Loc'
+
                 }
             });
         }
