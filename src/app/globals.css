@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  :root {
+    /* AGRO PALETTE - Inspired by uploaded logo */
+
+    /* Background: Soft off-white/beige for better readability over field image */
+    /* --background: 40 20% 97%; #FAF9F6 */
+    --background: 0 0% 100%;
+
+    /* Foreground: Deep Forest Green (Text) */
+    --foreground: 140 30% 15%;
+    /* #1B3320 */
+
+    /* Card: White semi-transparent for glass effect if needed */
+    --card: 0 0% 100%;
+    --card-foreground: 140 30% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 30% 15%;
+
+    /* Primary: Trisquel Green (Vibrant but natural) */
+    --primary: 95 38% 35%;
+    /* #416828 approx */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Earth Gold/Wheat (Trisquel accent) */
+    --secondary: 40 40% 90%;
+    /* Light wheat for buttons */
+    --secondary-foreground: 35 60% 30%;
+    /* Darker brown text */
+
+    /* Muted: Field dust / Gray-Green */
+    --muted: 100 10% 92%;
+    --muted-foreground: 100 10% 40%;
+
+    /* Accent: The Triangle Gold color from Logo */
+    --accent: 38 45% 85%;
+    --accent-foreground: 38 60% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 100 20% 85%;
+    --input: 100 20% 85%;
+    --ring: 95 38% 35%;
+
+    --radius: 0.75rem;
+    /* More rounded, organic feel */
+  }
+
+  .dark {
+    --background: 140 30% 10%;
+    --foreground: 40 20% 90%;
+    --card: 140 30% 12%;
+    --card-foreground: 40 20% 90%;
+    --popover: 140 30% 12%;
+    --popover-foreground: 40 20% 90%;
+    --primary: 95 38% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 140 30% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 140 30% 20%;
+    --muted-foreground: 100 20% 60%;
+    --accent: 140 30% 20%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 140 30% 20%;
+    --input: 140 30% 20%;
+    --ring: 95 38% 45%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    /* Fondo Agro: Degradado suave de blanco (arriba) a transparente (abajo) para integrar el campo */
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) 100%), url('/images/field_background.png');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center bottom;
+    /* Anchor image to bottom */
+    min-height: 100dvh;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    /* Safe area is handled by the footer component now */
+  }
 }
