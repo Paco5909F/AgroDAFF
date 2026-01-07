@@ -41,7 +41,7 @@ export default function RootLayout({
             }}
           />
 
-          <div className="min-h-[100dvh] flex flex-col">
+          <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Header / Navbar */}
             <NavbarWrapper>
               <TrisquelNavbar />
