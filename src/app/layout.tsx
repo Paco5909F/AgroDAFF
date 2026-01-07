@@ -32,6 +32,15 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <AutoLogout />
+
+          {/* Fixed Background Layer - Solves mobile scroll issues */}
+          <div
+            className="fixed inset-0 -z-10 h-full w-full bg-cover bg-bottom bg-no-repeat"
+            style={{
+              backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) 100%), url('/images/field_background.png')`
+            }}
+          />
+
           <div className="min-h-[100dvh] flex flex-col">
             {/* Header / Navbar */}
             <NavbarWrapper>
