@@ -51,10 +51,12 @@ const FONTS = {
 // --- SHARED HELPERS ---
 const loadLogoAndRun = (logoUrl: string | undefined, callback: (img: HTMLImageElement) => void) => {
     const img = new Image();
-    img.src = logoUrl || DEFAULT_BRANDING.logoUrl || '/images/logo.png';
+    // Enable CORS to allow jsPDF to read external images
+    img.crossOrigin = 'Anonymous';
+    img.src = logoUrl || '';
     img.onload = () => callback(img);
     img.onerror = () => {
-        console.warn("Logo not found");
+        console.warn("Logo not found or blocked by CORS");
         callback(img); // Continue without logo
     };
 };
@@ -207,7 +209,11 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const logoH = logoW / aspect;
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
@@ -371,7 +377,11 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const logoH = logoW / aspect;
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
@@ -548,7 +558,11 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         const logoH = logoW / aspect;
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
