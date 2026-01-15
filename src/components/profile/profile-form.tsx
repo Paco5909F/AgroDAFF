@@ -13,6 +13,7 @@ import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard } from 'lucid
 import { updateUserProfile, updateUserPassword } from '@/server/usuarios'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 
 interface ProfileFormProps {
     user: {
