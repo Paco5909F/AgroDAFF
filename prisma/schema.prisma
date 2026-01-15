@@ -27,6 +27,8 @@ model Empresa {
   cuit        String?
   direccion   String?
   logo_url    String? // URL to Supabase Storage
+  email       String?
+  telefono    String?
   
   
   usuarios    Usuario[]
