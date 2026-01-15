@@ -23,9 +23,10 @@ import { FileDown, Lock, Search, RefreshCw } from 'lucide-react'
 interface ReportesClientProps {
     clientes: any[]
     campanas: any[]
+    empresa: any
 }
 
-export function ReportesClient({ clientes, campanas }: ReportesClientProps) {
+export function ReportesClient({ clientes, campanas, empresa }: ReportesClientProps) {
     const [isPending, startTransition] = useTransition()
     const [orders, setOrders] = useState<any[]>([])
 
@@ -61,10 +62,20 @@ export function ReportesClient({ clientes, campanas }: ReportesClientProps) {
             toast.error("No hay datos para exportar")
             return
         }
+
+        const branding = empresa ? {
+            name: empresa.nombre || "El Trisquel Agroservicios",
+            address: empresa.direccion || "O'Higgins, Buenos Aires",
+            cuit: empresa.cuit || "",
+            logoUrl: empresa.logo_url || undefined,
+            phone: empresa.telefono || "2364-610322",
+            email: empresa.email || "agroserviciosciglieri@hotmail.com"
+        } : undefined
+
         generateReportPDF(orders, {
             from: new Date(filters.from),
             to: new Date(filters.to)
-        })
+        }, branding)
         toast.success("PDF generado correctamente")
     }
 
@@ -113,6 +124,7 @@ export function ReportesClient({ clientes, campanas }: ReportesClientProps) {
                                 type="date"
                                 value={filters.from}
                                 onChange={(e) => setFilters(prev => ({ ...prev, from: e.target.value }))}
+                                className="w-full block [&::-webkit-calendar-picker-indicator]:mr-0 [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-clear-button]:appearance-none pr-2"
                             />
                         </div>
                         <div className="space-y-2">
@@ -121,6 +133,7 @@ export function ReportesClient({ clientes, campanas }: ReportesClientProps) {
                                 type="date"
                                 value={filters.to}
                                 onChange={(e) => setFilters(prev => ({ ...prev, to: e.target.value }))}
+                                className="w-full block [&::-webkit-calendar-picker-indicator]:mr-0 [&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-clear-button]:appearance-none pr-2"
                             />
                         </div>
                         <div className="space-y-2">
@@ -232,43 +245,43 @@ export function ReportesClient({ clientes, campanas }: ReportesClientProps) {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            orders.map((order) => (
-                                <TableRow key={order.id}>
-                                    <TableCell className="font-medium">
-                                        {format(new Date(order.fecha), 'dd/MM/yyyy')}
-                                    </TableCell>
-                                    <TableCell>{order.cliente.razon_social}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span>{order.servicio.nombre}</span>
-                                            <span className="text-xs text-slate-400">{order.campana?.nombre}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        {Number(order.cantidad).toLocaleString('es-AR')} {order.servicio.unidad_medida}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {order.moneda === 'USD' ? 'US$ ' : '$ '}
-                                        {Number(order.precio_unit).toLocaleString('es-AR')}
-                                    </TableCell>
-                                    <TableCell className="text-right font-semibold">
-                                        {order.moneda === 'USD' ? 'US$ ' : '$ '}
-                                        {Number(order.total).toLocaleString('es-AR')}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider 
-                                            ${order.estado === 'facturada' ? 'bg-amber-100 text-amber-700' :
-                                                order.estado === 'completada' ? 'bg-emerald-100 text-emerald-700' :
-                                                    'bg-slate-100 text-slate-600'}`}>
-                                            {order.estado}
-                                        </span>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            orders.flatMap((order: any) =>
+                                order.items && order.items.length > 0 ? (
+                                    order.items.map((item: any) => (
+                                        <TableRow key={item.id}>
+                                            <TableCell className="font-medium">
+                                                {format(new Date(order.fecha), 'dd/MM/yyyy')}
+                                            </TableCell>
+                                            <TableCell>{order.cliente.razon_social}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span>{item.servicio.nombre}</span>
+                                                    <span className="text-xs text-slate-400">{item.campana?.nombre || order.campana?.nombre || '-'}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {order.moneda === 'USD' ? 'US$ ' : '$ '}
+                                                {Number(item.precio_unit).toLocaleString('es-AR')}
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                                {order.moneda === 'USD' ? 'US$ ' : '$ '}
+                                                {Number(item.total).toLocaleString('es-AR')}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {order.estado}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : null
+                            )
+
                         )}
                     </TableBody>
-                </Table>
-            </div>
-        </div>
+                </Table >
+            </div >
+        </div >
     )
 }

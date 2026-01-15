@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { getTeamMembers } from "@/server/team"
+import { getTeamMembers, getCompanyInviteCode } from "@/server/team"
 import { getPendingInvitations } from "@/server/invitations"
 import { TeamManagementClient } from "@/components/team/team-management-client"
 import { getUserContext } from "@/server/context"
@@ -8,13 +8,12 @@ import { redirect } from "next/navigation"
 export default async function EquipoPage() {
     const { rol } = await getUserContext()
 
-    if (rol !== 'ADMIN') {
-        redirect('/dashboard')
-    }
 
-    const [users, invitations] = await Promise.all([
+
+    const [users, invitations, inviteCode] = await Promise.all([
         getTeamMembers(),
-        getPendingInvitations()
+        getPendingInvitations(),
+        getCompanyInviteCode()
     ])
 
     return (
@@ -30,6 +29,8 @@ export default async function EquipoPage() {
                 <TeamManagementClient
                     initialUsers={users}
                     initialInvitations={invitations}
+                    initialInviteCode={inviteCode}
+                    currentUserRole={rol}
                 />
             </Suspense>
         </div>

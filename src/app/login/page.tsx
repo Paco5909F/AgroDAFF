@@ -86,7 +86,7 @@ export default function LoginPage() {
                 <div className="w-full md:w-[40%] bg-slate-900 p-8 flex flex-col justify-between text-white relative overflow-hidden">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
 
-                    <div>
+                    <div className="relative z-10">
                         <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white transition-colors mb-8 text-sm group">
                             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
                             Volver al Inicio

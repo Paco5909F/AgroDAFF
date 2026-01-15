@@ -12,6 +12,8 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { SearchInput } from "@/components/ui/search-input"
 import { getUserContext } from "@/server/context"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
+import { prisma } from "@/lib/prisma"
+import { PdfBranding } from "@/lib/pdf-generator"
 
 export default async function OrdenesPage({
     searchParams,
@@ -39,7 +41,32 @@ export default async function OrdenesPage({
         }))
     }))
     const clientes = await getClientes()
-    const { rol } = await getUserContext()
+    const { rol, empresaId } = await getUserContext()
+
+    // Fetch Branding Data
+    const empresa = await prisma.empresa.findUnique({
+        where: { id: empresaId },
+        select: {
+            nombre: true,
+            cuit: true,
+            direccion: true,
+            logo_url: true,
+            // phone and email not in schema yet? I should check. 
+            // If not, use defaults or fallback.
+            // Wait, schema has direccion, cuit, nombre. 
+            // I'll assume defaults for phone/email if missing in DB.
+        }
+    })
+
+    const branding: PdfBranding = {
+        name: empresa?.nombre || "EL TRISQUEL AGROSERVICIOS",
+        address: empresa?.direccion || "O'Higgins, Buenos Aires",
+        cuit: empresa?.cuit || "20-12345678-9",
+        logoUrl: empresa?.logo_url || undefined,
+        email: "agroserviciosciglieri@hotmail.com", // Fallback/Hardcoded for now as schema lacks it
+        phone: "2364-610322" // Fallback
+    }
+
     const canCreate = hasPermission(rol, PERMISSIONS.ORDENES, 'create')
     // Cast Decimal to number for the component
     const serviciosRaw = await getServicios()
@@ -101,6 +128,7 @@ export default async function OrdenesPage({
                         clientes={clientes}
                         servicios={servicios}
                         rol={rol}
+                        branding={branding}
                     />
                     {meta && (
                         <PaginationControls

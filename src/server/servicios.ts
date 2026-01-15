@@ -2,11 +2,15 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getUserContext } from "./context"
 
 export async function getServicios(query?: string) {
+    const { empresaId } = await getUserContext()
+
     const servicios = await prisma.servicio.findMany({
         where: {
             active: true,
+            empresa_id: empresaId, // Scope to current company
             ...(query ? { nombre: { contains: query, mode: 'insensitive' } } : {})
         },
         orderBy: { nombre: 'asc' },
@@ -21,13 +25,15 @@ export async function getServicios(query?: string) {
 // Quick helper to seed/create services if needed for testing
 export async function createServicio(nombre: string, unidad: string, precio: number, moneda: string = 'ARS') {
     try {
+        const { empresaId } = await getUserContext()
         await prisma.servicio.create({
             data: {
                 nombre,
                 unidad_medida: unidad,
                 precio_base: precio,
                 moneda: moneda,
-                active: true
+                active: true,
+                empresa_id: empresaId
             }
         })
         revalidatePath('/ordenes')
@@ -41,6 +47,11 @@ export async function createServicio(nombre: string, unidad: string, precio: num
 
 export async function deleteServicio(id: string) {
     try {
+        const { empresaId } = await getUserContext()
+        // Verify ownership
+        const s = await prisma.servicio.findFirst({ where: { id, empresa_id: empresaId } })
+        if (!s) return { success: false, error: 'Service not found or unauthorized' }
+
         await prisma.servicio.update({
             where: { id },
             data: { active: false }
@@ -56,6 +67,11 @@ export async function deleteServicio(id: string) {
 
 export async function updateServicio(id: string, data: any) {
     try {
+        const { empresaId } = await getUserContext()
+        // Verify ownership
+        const s = await prisma.servicio.findFirst({ where: { id, empresa_id: empresaId } })
+        if (!s) return { success: false, error: 'Service not found or unauthorized' }
+
         await prisma.servicio.update({
             where: { id },
             data: {

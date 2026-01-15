@@ -21,6 +21,7 @@ import { TrisquelNavbar } from "@/components/ui/trisquel-navbar"
 import { AutoLogout } from "@/components/auth/auto-logout"
 
 import { NavbarWrapper } from "@/components/ui/navbar-wrapper"
+import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
 
 export default function RootLayout({
   children,
@@ -47,15 +48,10 @@ export default function RootLayout({
               <TrisquelNavbar />
             </NavbarWrapper>
 
-            {/* Main Content */}
-            <main className="flex-1 container mx-auto p-4 md:p-8">
+            {/* Main Content & Footer Handled by Wrapper */}
+            <MainLayoutWrapper>
               {children}
-            </main>
-
-            {/* Footer */}
-            <footer className="py-6 px-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto">
-              <p>© {new Date().getFullYear()} Agroservicios El Trisquel - O'Higgins</p>
-            </footer>
+            </MainLayoutWrapper>
           </div>
         </AuthProvider>
         <Toaster />

@@ -12,12 +12,23 @@ interface CompanyInfo {
     cuit: string; // Added CUIT
 }
 
-const COMPANY_INFO: CompanyInfo = {
+export interface PdfBranding {
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+    cuit: string;
+    logoUrl?: string;
+}
+
+// Default fallback (Legacy)
+const DEFAULT_BRANDING: PdfBranding = {
     name: "EL TRISQUEL AGROSERVICIOS",
     address: "O'Higgins, Buenos Aires",
     phone: "2364-610322",
     email: "agroserviciosciglieri@hotmail.com",
-    cuit: "20-12345678-9" // Placeholder if needed, or remove
+    cuit: "20-12345678-9",
+    logoUrl: '/images/logo.png'
 };
 
 const LOGO_URL = '/images/logo.png';
@@ -38,37 +49,19 @@ const FONTS = {
 };
 
 // --- SHARED HELPERS ---
-const loadLogoAndRun = (callback: (img: HTMLImageElement) => void) => {
+const loadLogoAndRun = (logoUrl: string | undefined, callback: (img: HTMLImageElement) => void) => {
     const img = new Image();
-    img.src = LOGO_URL;
+    img.src = logoUrl || DEFAULT_BRANDING.logoUrl || '/images/logo.png';
     img.onload = () => callback(img);
     img.onerror = () => {
         console.warn("Logo not found");
-        callback(img);
+        callback(img); // Continue without logo
     };
 };
 
-const drawDivider = (doc: jsPDF, y: number, margin: number, pageWidth: number) => {
-    doc.setDrawColor(COLORS.border[0]);
-    doc.setLineWidth(0.1);
-    doc.line(margin, y, pageWidth - margin, y);
-};
+// ... (keep drawDivider, drawLabelValue)
 
-const drawLabelValue = (doc: jsPDF, label: string, value: string, x: number, y: number, w: number) => {
-    doc.setFontSize(7);
-    doc.setFont(FONTS.body, 'bold');
-    doc.setTextColor(COLORS.textLight[0]);
-    doc.text(label.toUpperCase(), x, y);
-
-    doc.setFontSize(9);
-    doc.setFont(FONTS.body, 'normal');
-    doc.setTextColor(COLORS.text[0]);
-    const splitText = doc.splitTextToSize(value || "-", w);
-    doc.text(splitText, x, y + 5);
-    return splitText.length * 4; // Return approximated height
-};
-
-const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth: number, title: string, subtitle: string, docData: { label: string, value: string }[]) => {
+const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth: number, title: string, subtitle: string, docData: { label: string, value: string }[], branding: PdfBranding) => {
     let currentY = margin + 10;
 
     // 1. Logo (Left)
@@ -91,7 +84,8 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
     doc.setFontSize(10);
     doc.setFont(FONTS.header, 'normal');
     doc.setTextColor(COLORS.secondary[0]);
-    doc.text(subtitle, pageWidth - margin, currentY + 14, { align: 'right' });
+    // Using branding Name
+    doc.text(branding.name, pageWidth - margin, currentY + 14, { align: 'right' });
 
     // Grid for Date/Number
     let infoY = currentY + 25;
@@ -108,22 +102,49 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
         infoY += 5;
     });
 
-    // 3. Company Info (Below Logo)
+    // 3. Company Info (Below Logo) - DYNAMIC
     const companyY = currentY + logoH + 5;
     doc.setFontSize(8);
     doc.setFont(FONTS.body, 'bold');
     doc.setTextColor(COLORS.primary[0]);
-    doc.text(COMPANY_INFO.name, margin, companyY);
+    doc.text(branding.name, margin, companyY);
 
-    doc.setFontSize(8);
     doc.setFont(FONTS.body, 'normal');
     doc.setTextColor(COLORS.secondary[0]);
-    doc.text(COMPANY_INFO.address, margin, companyY + 4);
-    doc.text(`Tel: ${COMPANY_INFO.phone}`, margin, companyY + 8);
-    doc.text(COMPANY_INFO.email, margin, companyY + 12);
+    doc.text(branding.address, margin, companyY + 4);
+    doc.text(`${branding.phone} | ${branding.email}`, margin, companyY + 8);
+    if (branding.cuit) {
+        doc.text(`CUIT: ${branding.cuit}`, margin, companyY + 12);
+    }
 
-    return Math.max(infoY, companyY + 15) + 5;
+    return Math.max(companyY + 20, infoY + 5); // Return bottom Y
 };
+
+
+
+const drawDivider = (doc: jsPDF, y: number, margin: number, pageWidth: number) => {
+    doc.setDrawColor(COLORS.border[0]);
+    doc.setLineWidth(0.1);
+    doc.line(margin, y, pageWidth - margin, y);
+};
+
+const drawLabelValue = (doc: jsPDF, label: string, value: string, x: number, y: number, w: number) => {
+    doc.setFontSize(7);
+    doc.setFont(FONTS.body, 'bold');
+    doc.setTextColor(COLORS.textLight[0]);
+    doc.text(label.toUpperCase(), x, y);
+
+    doc.setFontSize(9);
+    doc.setFont(FONTS.body, 'normal');
+    doc.setTextColor(COLORS.text[0]);
+    const splitText = doc.splitTextToSize(value || "-", w);
+    doc.text(splitText, x, y + 5);
+    return splitText.length * 4; // Return approximated height
+};
+
+
+
+
 
 // --- PRESUPUESTO PDF ---
 // --- DRAWING HELPERS (Moved to shared scope) ---
@@ -167,8 +188,9 @@ const drawField = (doc: jsPDF, label: string, value: string, x: number, y: numbe
 };
 
 // --- PRESUPUESTO PDF (AFIP/Official Style Implementation) ---
-export const generatePresupuestoPDF = (presupuesto: any) => {
-    loadLogoAndRun((img) => {
+// --- PRESUPUESTO PDF (AFIP/Official Style Implementation) ---
+export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
 
         const margin = 15;
@@ -332,8 +354,8 @@ export const generatePresupuestoPDF = (presupuesto: any) => {
 
 // --- ORDEN DE TRABAJO PDF ---
 // --- ORDEN DE TRABAJO PDF (AFIP/Standardized Style) ---
-export const generateOrdenPDF = (orden: any) => {
-    loadLogoAndRun((img) => {
+export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
         const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
@@ -506,8 +528,9 @@ export const generateOrdenPDF = (orden: any) => {
 };
 
 // --- CARTA DE PORTE PDF (AFIP/Official Style Implementation) ---
-export const generateCartaPortePDF = (carta: any) => {
-    loadLogoAndRun((img) => {
+// --- CARTA DE PORTE PDF (AFIP/Official Style Implementation) ---
+export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
 
         // Settings
@@ -649,8 +672,9 @@ export const generateCartaPortePDF = (carta: any) => {
 };
 
 // --- REPORTE DE GESTIÓN PDF ---
-export const generateReportPDF = (orders: any[], filters: any) => {
-    loadLogoAndRun((img) => {
+// --- REPORTE DE GESTIÓN PDF ---
+export const generateReportPDF = (orders: any[], filters: any, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
@@ -660,27 +684,29 @@ export const generateReportPDF = (orders: any[], filters: any) => {
         let currentY = drawHeader(doc, img, margin, pageWidth, "REPORTE DE GESTIÓN", "RESUMEN DE TRABAJOS", [
             { label: "DESDE:", value: format(filters.from, 'dd/MM/yyyy') },
             { label: "HASTA:", value: format(filters.to, 'dd/MM/yyyy') }
-        ]);
+        ], branding);
 
         drawDivider(doc, currentY, margin, pageWidth);
         currentY += 10;
 
         // Table
-        const tableBody = orders.map((order) => {
-            let serviceName = order.servicio.nombre.substring(0, 50);
-            if (Number(order.kilometros) > 0) {
-                serviceName += ` (${Number(order.kilometros).toLocaleString('es-AR')} km)`;
-            }
+        const tableBody = orders.flatMap((order) =>
+            (order.items || []).map((item: any) => {
+                let serviceName = item.servicio.nombre.substring(0, 50);
+                if (Number(item.kilometros) > 0) {
+                    serviceName += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
+                }
 
-            return [
-                format(new Date(order.fecha), 'dd/MM/yy'),
-                order.cliente.razon_social.substring(0, 30),
-                serviceName,
-                `${Number(order.cantidad).toLocaleString('es-AR')} ${order.servicio.unidad_medida}`,
-                `$ ${Number(order.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                { content: `$ ${Number(order.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
-            ]
-        });
+                return [
+                    format(new Date(order.fecha), 'dd/MM/yy'),
+                    order.cliente.razon_social.substring(0, 30),
+                    serviceName,
+                    `${Number(item.cantidad).toLocaleString('es-AR')} ${item.servicio.unidad_medida}`,
+                    `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                    { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
+                ];
+            })
+        );
 
         autoTable(doc, {
             startY: currentY,

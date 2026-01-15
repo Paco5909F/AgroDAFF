@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NavLink } from '@/components/ui/nav-link'
 import { createClient } from '@/lib/supabase/client'
@@ -12,9 +12,13 @@ import { cn } from '@/lib/utils'
 interface MobileNavProps {
     user: any
     userData: any
+    companies?: { id: string, nombre: string }[]
+    currentCompanyId?: string
 }
 
-export function MobileNav({ user, userData }: MobileNavProps) {
+import { CompanySwitcher } from "@/components/admin/company-switcher"
+
+export function MobileNav({ user, userData, companies = [], currentCompanyId }: MobileNavProps) {
     const [isOpen, setIsOpen] = useState(false)
     const router = useRouter()
     const supabase = createClient()
@@ -55,21 +59,35 @@ export function MobileNav({ user, userData }: MobileNavProps) {
                 "fixed top-16 left-0 w-[85%] max-w-[300px] bg-white z-[45] shadow-xl transform transition-transform duration-300 ease-in-out flex flex-col h-auto max-h-[calc(100dvh-5rem)] rounded-br-2xl border-r border-b border-slate-100",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                {/* Header - User Info Only (Logo is visible in Navbar) */}
-                <div className="p-6 border-b border-slate-100 flex flex-col gap-1 bg-slate-50/50 shrink-0 rounded-tr-lg">
-                    <span className="font-bold text-base text-slate-800">
-                        {userData?.nombre || "Usuario"}
-                    </span>
-                    <span className="text-xs text-slate-500 truncate max-w-[220px]">
-                        {user.email}
-                    </span>
+                {/* Header - User Info + Company Switcher */}
+                <div className="p-6 border-b border-slate-100 flex flex-col gap-3 bg-slate-50/50 shrink-0 rounded-tr-lg">
+                    <div className="flex flex-col gap-1">
+                        <span className="font-bold text-base text-slate-800">
+                            {userData?.nombre || "Usuario"}
+                        </span>
+                        <span className="text-xs text-slate-500 truncate max-w-[220px]">
+                            {user.email}
+                        </span>
+                    </div>
+
+                    {/* Mobile Company Switcher */}
+                    {companies.length > 0 && (
+                        <div className="pt-2">
+                            <CompanySwitcher
+                                companies={companies}
+                                currentCompanyId={currentCompanyId}
+                                className="w-full justify-between"
+                            />
+                        </div>
+                    )}
+
                     <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                         <X className="h-5 w-5" />
                     </Button>
                 </div>
 
                 {/* Links Section */}
-                <div className="overflow-y-auto py-4 px-4 flex flex-col gap-1 bg-white">
+                <div className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-1 bg-white">
                     <MobileLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                         Dashboard
                     </MobileLink>
@@ -97,10 +115,40 @@ export function MobileNav({ user, userData }: MobileNavProps) {
                     <MobileLink href="/reportes" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                         Reportes
                     </MobileLink>
+                    <MobileLink href="/dashboard/equipo" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                        Equipo
+                    </MobileLink>
+                    {userData?.rol === 'ADMIN' && (
+                        <MobileLink href="/dashboard/configuracion" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                            Configuración
+                        </MobileLink>
+                    )}
                 </div>
 
                 {/* Footer / Logout */}
-                <div className="p-4 bg-white border-t border-slate-100 shrink-0 rounded-br-2xl">
+                <div className="p-4 bg-white border-t border-slate-100 shrink-0 rounded-br-2xl space-y-1">
+                    <Button
+                        variant="ghost"
+                        className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50 gap-3 h-10 text-sm font-medium mb-1"
+                        onClick={() => {
+                            router.push('/profile')
+                            setIsOpen(false)
+                        }}
+                    >
+                        <User className="h-5 w-5 text-slate-400" />
+                        Mi Perfil
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        className="w-full justify-start text-slate-600 hover:text-slate-900 hover:bg-slate-50 gap-3 h-10 text-sm font-medium mb-1"
+                        onClick={() => {
+                            router.push('/pricing')
+                            setIsOpen(false)
+                        }}
+                    >
+                        <CreditCard className="h-5 w-5 text-slate-400" />
+                        Suscripción
+                    </Button>
                     <Button
                         variant="ghost"
                         className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 gap-3 h-10 text-sm font-medium"
@@ -134,7 +182,7 @@ function MobileLink({ href, icon, children, onClick }: { href: string; icon: Rea
             <div className={cn("shrink-0", isActive ? "text-emerald-600" : "text-slate-400")}>
                 {icon}
             </div>
-            <span className="text-sm">{children}</span>
+            <span className="text-base font-medium">{children}</span>
         </Link>
     )
 }

@@ -127,13 +127,19 @@ export async function getPendingInvitations() {
     const { empresaId, rol } = await getUserContext()
     if (rol !== 'ADMIN') return []
 
-    return await prisma.invitation.findMany({
+    const res = await prisma.invitation.findMany({
         where: {
             empresa_id: empresaId,
             status: 'PENDING'
         },
         orderBy: { created_at: 'desc' }
     })
+
+    return res.map(i => ({
+        ...i,
+        created_at: i.created_at.toISOString(),
+        expires_at: i.expires_at.toISOString()
+    }))
 }
 
 export async function deleteInvitation(id: string) {

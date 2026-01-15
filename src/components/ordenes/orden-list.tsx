@@ -20,14 +20,17 @@ import { PDFDownloadButton } from './pdf-download-button'
 
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 
+import { PdfBranding } from '@/lib/pdf-generator'
+
 interface OrdenListProps {
     ordenes: any[]
     clientes: any[]
     servicios: any[]
     rol: string
+    branding: PdfBranding
 }
 
-export function OrdenList({ ordenes, clientes, servicios, rol }: OrdenListProps) {
+export function OrdenList({ ordenes, clientes, servicios, rol, branding }: OrdenListProps) {
     const [isPending, startTransition] = useTransition()
     const canDelete = hasPermission(rol, PERMISSIONS.ORDENES, 'delete')
     const canEdit = hasPermission(rol, PERMISSIONS.ORDENES, 'update')
@@ -138,6 +141,7 @@ export function OrdenList({ ordenes, clientes, servicios, rol }: OrdenListProps)
                                         variant="ghost"
                                         size="icon"
                                         className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                        branding={branding}
                                     />
 
                                     {canEdit && (

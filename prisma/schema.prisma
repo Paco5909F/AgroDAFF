@@ -26,8 +26,11 @@ model Empresa {
   nombre      String
   cuit        String?
   direccion   String?
+  logo_url    String? // URL to Supabase Storage
+  
   
   usuarios    Usuario[]
+  miembros    Miembro[] // New many-to-many relation
   clientes    Cliente[]
   establecimientos Establecimiento[]
   silos       Silo[]
@@ -39,6 +42,14 @@ model Empresa {
   campanas    Campana[]
   presupuestos Presupuesto[]
   cartas_porte CartaPorte[]
+
+  // Billing Fields
+  plan_status     String   @default("FREE") // FREE, PRO, CANCELLED
+  subscription_id String?  // Mercado Pago Preapproval ID
+  trial_ends_at   DateTime? @db.Timestamptz
+
+  // Invite System
+  shared_invite_code String? @unique // Code for auto-joining
 
   created_at  DateTime @default(now()) @db.Timestamptz
   
@@ -55,16 +66,37 @@ enum OrderStatus {
 }
 
 model Usuario {
-  id         String   @id @db.Uuid
-  nombre     String
-  email      String?  @unique
-  rol        UserRole @default(LECTOR)
-  empresa_id String?  @db.Uuid
-  empresa    Empresa? @relation(fields: [empresa_id], references: [id])
+  id                String   @id @db.Uuid
+  nombre            String
+  email             String?  @unique
+  rol               UserRole @default(LECTOR) // Keeps global role for now, but Miembro.rol takes precedence in context
+  
+  // Legacy single-tenant relation (deprecated but kept for migration)
+  empresa_id        String?  @db.Uuid
+  empresa           Empresa? @relation(fields: [empresa_id], references: [id])
+  
+  // New multi-tenant relations
+  active_empresa_id String?  @db.Uuid // Stores the last accessed company
+  miembros          Miembro[]
+
   created_at DateTime @default(now()) @db.Timestamptz
   updated_at DateTime @default(now()) @db.Timestamptz
 
   @@map("usuarios")
+}
+
+model Miembro {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  usuario_id String   @db.Uuid
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id])
+  empresa_id String   @db.Uuid
+  empresa    Empresa  @relation(fields: [empresa_id], references: [id])
+  rol        UserRole @default(LECTOR)
+  
+  created_at DateTime @default(now()) @db.Timestamptz
+
+  @@unique([usuario_id, empresa_id])
+  @@map("miembros")
 }
 
 model Invitation {
@@ -105,6 +137,7 @@ model Cliente {
   cartas_porte     CartaPorte[]
 
   @@map("clientes")
+  @@index([empresa_id])
 }
 
 model Establecimiento {
@@ -122,6 +155,8 @@ model Establecimiento {
   silos   Silo[]
 
   @@map("establecimientos")
+  @@index([empresa_id])
+  @@index([cliente_id])
 }
 
 model Silo {
@@ -147,6 +182,8 @@ model Silo {
   movimientos        MovimientoStock[]
   
   @@map("silos")
+  @@index([empresa_id])
+  @@index([establecimiento_id])
 }
 
 model MovimientoStock {
@@ -170,6 +207,9 @@ model MovimientoStock {
   silo          Silo?     @relation(fields: [silo_id], references: [id])
 
   @@map("movimientos_stock")
+  @@index([empresa_id])
+  @@index([lote_id])
+  @@index([silo_id])
 }
 
 model Lote {
@@ -187,6 +227,8 @@ model Lote {
   movimientos     MovimientoStock[]
   
   @@map("lotes")
+  @@index([empresa_id])
+  @@index([establecimiento_id])
 }
 
 model Servicio {
@@ -229,6 +271,10 @@ model OrdenTrabajo {
   factura  Factura?
 
   @@map("ordenes_trabajo")
+  @@index([empresa_id])
+  @@index([cliente_id])
+  @@index([fecha])
+  @@index([estado])
 }
 
 model OrdenItem {
@@ -315,6 +361,8 @@ model Presupuesto {
   items    PresupuestoItem[]
 
   @@map("presupuestos")
+  @@index([empresa_id])
+  @@index([cliente_id])
 }
 
 model PresupuestoItem {
@@ -359,6 +407,8 @@ model CartaPorte {
   cliente Cliente @relation(fields: [cliente_id], references: [id], onDelete: Restrict)
 
   @@map("cartas_porte")
+  @@index([empresa_id])
+  @@index([cliente_id])
 }
 
 

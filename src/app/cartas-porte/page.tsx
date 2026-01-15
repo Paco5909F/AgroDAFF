@@ -17,7 +17,13 @@ export default async function CartasPortePage({
 }) {
     const { q } = await searchParams
     const query = q
-    const cartas = await getCartasPorte(query)
+    const rawCartas = await getCartasPorte(query)
+    const cartas = rawCartas.map((cp: any) => ({
+        ...cp,
+        kilos_estimados: Number(cp.kilos_estimados),
+        peso_bruto: cp.peso_bruto ? Number(cp.peso_bruto) : 0,
+        peso_tara: cp.peso_tara ? Number(cp.peso_tara) : 0
+    }))
     const clientes = await getClientes()
     const { rol } = await getUserContext()
     const canCreate = hasPermission(rol, PERMISSIONS.CARTAS_PORTE, 'create')

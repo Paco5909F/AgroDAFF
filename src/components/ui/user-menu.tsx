@@ -1,7 +1,7 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client"
-import { LogOut, User, ChevronDown } from "lucide-react"
+import { LogOut, User, ChevronDown, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
     DropdownMenu,
@@ -35,7 +35,7 @@ export function UserMenu({ name, email, avatarUrl }: UserMenuProps) {
         : email?.substring(0, 2).toUpperCase() || "U"
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-auto rounded-full pl-2 pr-4 hover:bg-slate-100 transition-colors duration-200" suppressHydrationWarning>
                     <div className="flex items-center gap-3">
@@ -70,6 +70,10 @@ export function UserMenu({ name, email, avatarUrl }: UserMenuProps) {
                 <DropdownMenuItem onClick={() => router.push("/profile")}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Mi Perfil</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/pricing")}>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Suscripción</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 focus:bg-red-50">
                     <LogOut className="mr-2 h-4 w-4" />

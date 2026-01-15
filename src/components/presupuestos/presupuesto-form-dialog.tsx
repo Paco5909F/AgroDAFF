@@ -306,7 +306,7 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => append({ servicio_id: "", cantidad: 1, precio_unit: 0, subtotal: 0 })}
+                                    onClick={() => append({ servicio_id: "", cantidad: 1, precio_unit: 0, subtotal: 0, detalle: "" })}
                                     className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                                 >
                                     <Plus className="w-3 h-3 mr-1" /> Agregar Ítem
