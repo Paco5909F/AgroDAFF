@@ -65,7 +65,7 @@ export async function getUserProfile() {
         return { success: false, error: "Error al cargar perfil" }
     }
 }
-}
+
 
 export async function updateUserProfile(nombre: string) {
     const supabase = await createClient()
