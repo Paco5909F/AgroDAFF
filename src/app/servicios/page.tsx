@@ -51,8 +51,8 @@ export default function PublicServiciosPage() {
                                 <img src="/images/logo.png" alt="Trisquel Logo" className="object-contain w-full h-full" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-lg font-bold text-slate-800 leading-tight tracking-tight group-hover:text-emerald-700 transition-colors">AgroApp</span>
-                                <span className="text-[10px] font-bold text-emerald-600 tracking-[0.2em] uppercase">Gestión</span>
+                                <span className="text-lg font-bold text-slate-800 leading-tight tracking-tight group-hover:text-emerald-700 transition-colors">EL TRISQUEL</span>
+                                <span className="text-[10px] font-bold text-emerald-600 tracking-[0.2em] uppercase">Agroservicios</span>
                             </div>
                         </div>
                     </div>
@@ -71,7 +71,7 @@ export default function PublicServiciosPage() {
             <section className="pt-32 pb-12 px-4 max-w-7xl mx-auto">
                 <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 text-center space-y-2">
                     <p className="text-sm font-bold tracking-[0.3em] text-slate-400 uppercase">
-                        Soluciones para el Agro
+                        Agroservicios El Trisquel
                     </p>
                     <h1 className="text-4xl md:text-6xl font-light text-slate-900 tracking-tight mb-4">
                         Nuestros <span className="font-serif italic text-emerald-600">Servicios</span>
