@@ -63,7 +63,7 @@ export async function TrisquelNavbar() {
 
                 {/* Navigation Links (Desktop > lg) */}
                 <div className="hidden lg:flex items-center gap-2">
-                    {user ? (
+                    {user && context ? (
                         <>
                             <div className="flex items-center gap-0.5 bg-emerald-50/50 p-1 rounded-full border border-emerald-100/50">
                                 <NavLink href="/dashboard">Dashboard</NavLink>
