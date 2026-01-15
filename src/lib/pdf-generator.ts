@@ -213,12 +213,12 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with Presupuesto Data
         const boxX = pageWidth - margin - 65;
@@ -377,12 +377,12 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with Order Data
         const boxX = pageWidth - margin - 70;
@@ -554,12 +554,12 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with CP Data
         const boxX = pageWidth - margin - 70;
