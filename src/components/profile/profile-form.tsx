@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { LogOut, Save, User, Mail, Shield, Lock, Check } from 'lucide-react'
+import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard } from 'lucide-react'
 import { updateUserProfile, updateUserPassword } from '@/server/usuarios'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from "@/components/ui/progress"
@@ -134,13 +134,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="plan" className="flex items-center gap-2 text-slate-500">
-                                <Badge variant="outline" className="text-xs font-normal">PLAN</Badge>
+                                <CreditCard className="h-4 w-4" />
+                                Plan
                             </Label>
-                            <div className="flex items-center h-10 px-3 rounded-md border bg-slate-50 text-slate-500">
-                                <span className={`font-semibold text-sm ${user.plan === 'PRO' ? 'text-emerald-600' : 'text-slate-600'}`}>
-                                    {user.plan || 'FREE'}
-                                </span>
-                            </div>
+                            <Input
+                                id="plan"
+                                value={user.plan || 'FREE'}
+                                disabled
+                                className={cn("bg-slate-50 font-semibold", user.plan === 'PRO' || user.plan === 'LIFETIME' || user.plan === 'ENTERPRISE' ? 'text-emerald-600' : 'text-slate-500')}
+                            />
                         </div>
                     </div>
 
