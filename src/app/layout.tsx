@@ -36,9 +36,9 @@ export default function RootLayout({
 
           {/* Fixed Background Layer - Solves mobile scroll issues */}
           <div
-            className="fixed inset-0 -z-10 h-full w-full bg-cover bg-bottom bg-no-repeat"
+            className="fixed inset-0 -z-10 h-[100dvh] w-full bg-cover bg-bottom bg-no-repeat"
             style={{
-              backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) 100%), url('/images/field_background.png')`
+              backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.0) 100%), url('/images/field_background.png')`
             }}
           />
 
