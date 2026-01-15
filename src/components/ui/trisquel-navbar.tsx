@@ -5,13 +5,13 @@ import { UserMenu } from "@/components/ui/user-menu"
 import { MobileNav } from "@/components/ui/mobile-nav"
 
 import { CompanySwitcher } from "@/components/admin/company-switcher"
-import { getUserContext } from "@/server/context"
+import { getUserContextSafe } from "@/server/context"
 
 export async function TrisquelNavbar() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const context = await getUserContext().catch(() => null)
+    const context = await getUserContextSafe()
     let userData = null
     let isSuperAdmin = false
     let companies: { id: string, nombre: string }[] = []
