@@ -14,11 +14,33 @@ export async function getUserProfile() {
 
     try {
         const dbUser = await prisma.usuario.findUnique({
-            where: { id: user.id }
+            where: { id: user.id },
+            include: {
+                miembros: true // Need memberships to find role if not active
+            }
         })
 
         if (!dbUser) {
             return { success: false, error: "Usuario no encontrado en base de datos" }
+        }
+
+        // --- ROLE RESOLUTION LOGIC ---
+        // We reuse the logic from getUserContext here to show the "Effective Role" for the current company
+        // If the user is Super Admin, they are ADMIN.
+        // If the user has an active company, we find the membership for it.
+
+        const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
+        const isSuperAdmin = user.email && SUPER_ADMIN_EMAILS.includes(user.email)
+
+        let effectiveRole = dbUser.rol // Default fallback
+
+        if (isSuperAdmin) {
+            effectiveRole = 'ADMIN'
+        } else if (dbUser.active_empresa_id) {
+            const activeMembership = dbUser.miembros.find(m => m.empresa_id === dbUser.active_empresa_id)
+            if (activeMembership) {
+                effectiveRole = activeMembership.rol
+            }
         }
 
         return {
@@ -27,7 +49,7 @@ export async function getUserProfile() {
                 id: user.id,
                 email: user.email,
                 nombre: dbUser.nombre,
-                rol: dbUser.rol
+                rol: effectiveRole
             }
         }
     } catch (error) {
