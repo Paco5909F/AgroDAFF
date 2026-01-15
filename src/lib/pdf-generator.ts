@@ -21,14 +21,14 @@ export interface PdfBranding {
     logoUrl?: string;
 }
 
-// Default fallback (Legacy)
+// Default fallback (Generic)
 const DEFAULT_BRANDING: PdfBranding = {
-    name: "EL TRISQUEL AGROSERVICIOS",
-    address: "O'Higgins, Buenos Aires",
-    phone: "2364-610322",
-    email: "agroserviciosciglieri@hotmail.com",
-    cuit: "20-12345678-9",
-    logoUrl: '/images/logo.png'
+    name: "Nombre de Empresa",
+    address: "Dirección no configurada",
+    phone: "",
+    email: "",
+    cuit: "",
+    logoUrl: undefined
 };
 
 const LOGO_URL = '/images/logo.png';

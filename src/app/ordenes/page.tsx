@@ -57,12 +57,12 @@ export default async function OrdenesPage({
     })
 
     const branding: PdfBranding = {
-        name: empresa?.nombre || "EL TRISQUEL AGROSERVICIOS",
-        address: empresa?.direccion || "O'Higgins, Buenos Aires",
-        cuit: empresa?.cuit || "20-12345678-9",
+        name: empresa?.nombre || "Empresa",
+        address: empresa?.direccion || "",
+        cuit: empresa?.cuit || "",
         logoUrl: empresa?.logo_url || undefined,
-        email: empresa?.email || "agroserviciosciglieri@hotmail.com",
-        phone: empresa?.telefono || "2364-610322"
+        email: empresa?.email || "",
+        phone: empresa?.telefono || ""
     }
 
     const canCreate = hasPermission(rol, PERMISSIONS.ORDENES, 'create')
