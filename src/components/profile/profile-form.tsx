@@ -20,6 +20,7 @@ interface ProfileFormProps {
         email: string | undefined
         nombre: string
         rol: string
+        plan?: string
     }
 }
 
@@ -105,8 +106,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 {/* CardHeader Removed for cleaner layout */}
                 <CardContent className="space-y-4 pt-4 sm:pt-6">
 
-                    {/* Email & Role (Disabled Inputs) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Email, Role & Plan */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="email" className="flex items-center gap-2 text-slate-500">
                                 <Mail className="h-4 w-4" />
@@ -130,6 +131,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                 disabled
                                 className="bg-slate-50 text-slate-500 capitalize"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="plan" className="flex items-center gap-2 text-slate-500">
+                                <Badge variant="outline" className="text-xs font-normal">PLAN</Badge>
+                            </Label>
+                            <div className="flex items-center h-10 px-3 rounded-md border bg-slate-50 text-slate-500">
+                                <span className={`font-semibold text-sm ${user.plan === 'PRO' ? 'text-emerald-600' : 'text-slate-600'}`}>
+                                    {user.plan || 'FREE'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 

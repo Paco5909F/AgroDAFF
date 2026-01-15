@@ -16,7 +16,13 @@ export async function getUserProfile() {
         const dbUser = await prisma.usuario.findUnique({
             where: { id: user.id },
             include: {
-                miembros: true // Need memberships to find role if not active
+                miembros: {
+                    include: {
+                        empresa: {
+                            select: { plan_status: true }
+                        }
+                    }
+                }
             }
         })
 
@@ -25,21 +31,22 @@ export async function getUserProfile() {
         }
 
         // --- ROLE RESOLUTION LOGIC ---
-        // We reuse the logic from getUserContext here to show the "Effective Role" for the current company
-        // If the user is Super Admin, they are ADMIN.
-        // If the user has an active company, we find the membership for it.
-
         const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
         const isSuperAdmin = user.email && SUPER_ADMIN_EMAILS.includes(user.email)
 
         let effectiveRole = dbUser.rol // Default fallback
+        let planStatus = 'FREE' // Default plan
 
         if (isSuperAdmin) {
             effectiveRole = 'ADMIN'
+            planStatus = 'ENTERPRISE'
         } else if (dbUser.active_empresa_id) {
             const activeMembership = dbUser.miembros.find(m => m.empresa_id === dbUser.active_empresa_id)
             if (activeMembership) {
                 effectiveRole = activeMembership.rol
+                if (activeMembership.empresa?.plan_status) {
+                    planStatus = activeMembership.empresa.plan_status
+                }
             }
         }
 
@@ -49,13 +56,15 @@ export async function getUserProfile() {
                 id: user.id,
                 email: user.email,
                 nombre: dbUser.nombre,
-                rol: effectiveRole
+                rol: effectiveRole,
+                plan: planStatus
             }
         }
     } catch (error) {
         console.error("Error fetching profile:", error)
         return { success: false, error: "Error al cargar perfil" }
     }
+}
 }
 
 export async function updateUserProfile(nombre: string) {
