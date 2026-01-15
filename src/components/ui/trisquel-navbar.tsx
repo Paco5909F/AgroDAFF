@@ -45,7 +45,7 @@ export async function TrisquelNavbar() {
                 <div className="lg:hidden">
                     <MobileNav
                         user={user}
-                        userData={userData}
+                        userData={{ ...userData, rol: context?.rol }}
                         companies={isSuperAdmin ? companies : []}
                         currentCompanyId={userData?.active_empresa_id || undefined}
                     />
