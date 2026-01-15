@@ -9,9 +9,18 @@ export function MainLayoutWrapper({ children }: { children: React.ReactNode }) {
     if (isLandingPage) {
         // Landing Page: Full width, no global footer, children handles everything
         return (
-            <main className="flex-1 w-full">
-                {children}
-            </main>
+            <>
+                {/* Fixed Background Layer for Landing Page Only */}
+                <div
+                    className="fixed inset-0 -z-10 h-full w-full bg-cover bg-bottom bg-no-repeat pointer-events-none"
+                    style={{
+                        backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 60%, rgba(255, 255, 255, 0.1) 100%), url('/images/field_background.png')`
+                    }}
+                />
+                <main className="flex-1 w-full">
+                    {children}
+                </main>
+            </>
         )
     }
 
