@@ -51,9 +51,16 @@ const FONTS = {
 // --- SHARED HELPERS ---
 const loadLogoAndRun = (logoUrl: string | undefined, callback: (img: HTMLImageElement) => void) => {
     const img = new Image();
-    // Enable CORS to allow jsPDF to read external images
     img.crossOrigin = 'Anonymous';
-    img.src = logoUrl || '';
+
+    if (logoUrl && (logoUrl.startsWith('http') || logoUrl.startsWith('https'))) {
+        // Use our own proxy to avoid CORS issues with external images
+        img.src = `/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
+    } else {
+        // Local path or base64
+        img.src = logoUrl || '';
+    }
+
     img.onload = () => callback(img);
     img.onerror = () => {
         console.warn("Logo not found or blocked by CORS");
