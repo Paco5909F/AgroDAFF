@@ -121,7 +121,7 @@ export function PresupuestosList({ data, clientes, servicios, rol, branding }: P
                         {data.map((presupuesto) => (
                             <TableRow key={presupuesto.id} className="group hover:bg-slate-50/50 transition-colors">
                                 <TableCell className="text-slate-500">
-                                    {format(new Date(presupuesto.fecha), 'dd/MM/yyyy')}
+                                    {presupuesto.fechaFormatted}
                                 </TableCell>
                                 <TableCell className="font-medium text-slate-700">
                                     {presupuesto.cliente.razon_social}
