@@ -559,10 +559,19 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         let cursorY = margin;
 
         // --- 1. HEADER ROW ---
-        // Left: Logo + Company Data
-        const logoW = 25;
+        // 1. Logo (Left)
+        // Scaled to fit within 30x15 box
+        const maxW = 30;
+        const maxH = 15;
         const aspect = img.width && img.height ? img.width / img.height : 1;
-        const logoH = logoW / aspect;
+
+        let logoW = maxW;
+        let logoH = logoW / aspect;
+
+        if (logoH > maxH) {
+            logoH = maxH;
+            logoW = logoH * aspect;
+        }
 
         if (img.complete && img.naturalHeight !== 0) {
             try {
