@@ -63,23 +63,25 @@ export async function TrisquelNavbar() {
 
                 {/* Navigation Links (Desktop > lg) */}
                 <div className="hidden lg:flex items-center gap-2">
-                    {user && context ? (
+                    {user ? (
                         <>
-                            <div className="flex items-center gap-0.5 bg-emerald-50/50 p-1 rounded-full border border-emerald-100/50">
-                                <NavLink href="/dashboard">Dashboard</NavLink>
-                                <NavLink href="/clientes">Clientes</NavLink>
-                                <NavLink href="/presupuestos">Presupuestos</NavLink>
-                                <NavLink href="/ordenes">Órdenes</NavLink>
-                                <NavLink href="/dashboard/servicios">Labor</NavLink>
-                                <NavLink href="/cartas-porte">Logística</NavLink>
-                                <NavLink href="/campanas">Campañas</NavLink>
-                                <NavLink href="/silos">Silos</NavLink>
-                                <NavLink href="/reportes">Reportes</NavLink>
-                                <NavLink href="/dashboard/equipo">Equipo</NavLink>
-                                {context?.rol === 'ADMIN' && (
-                                    <NavLink href="/dashboard/configuracion">Config</NavLink>
-                                )}
-                            </div>
+                            {context && (
+                                <div className="flex items-center gap-0.5 bg-emerald-50/50 p-1 rounded-full border border-emerald-100/50">
+                                    <NavLink href="/dashboard">Dashboard</NavLink>
+                                    <NavLink href="/clientes">Clientes</NavLink>
+                                    <NavLink href="/presupuestos">Presupuestos</NavLink>
+                                    <NavLink href="/ordenes">Órdenes</NavLink>
+                                    <NavLink href="/dashboard/servicios">Labor</NavLink>
+                                    <NavLink href="/cartas-porte">Logística</NavLink>
+                                    <NavLink href="/campanas">Campañas</NavLink>
+                                    <NavLink href="/silos">Silos</NavLink>
+                                    <NavLink href="/reportes">Reportes</NavLink>
+                                    <NavLink href="/dashboard/equipo">Equipo</NavLink>
+                                    {context?.rol === 'ADMIN' && (
+                                        <NavLink href="/dashboard/configuracion">Config</NavLink>
+                                    )}
+                                </div>
+                            )}
                             <div className="pl-3 border-l border-slate-200 ml-2 flex items-center gap-2">
                                 {isSuperAdmin && companies.length > 0 && (
                                     <CompanySwitcher
