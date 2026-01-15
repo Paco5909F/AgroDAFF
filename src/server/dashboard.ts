@@ -78,6 +78,10 @@ export async function getDashboardStats(userId?: string) {
 
     const recentActivity = recentActivityRaw.map(acc => ({
         ...acc,
+        // Serialize dates to prevent RSC issues
+        fecha: acc.fecha.toISOString(),
+        created_at: acc.created_at.toISOString(),
+        updated_at: acc.updated_at.toISOString(),
         servicio: {
             nombre: acc.items.length > 1
                 ? `Varios (${acc.items.length})`
@@ -120,9 +124,18 @@ export async function getDashboardStats(userId?: string) {
     // 6. Active Campaign
     let activeCampaign = null
     try {
-        activeCampaign = await prisma.campana.findFirst({
+        const campaign = await prisma.campana.findFirst({
             where: { activa: true, ...companyFilter }
         })
+        if (campaign) {
+            activeCampaign = {
+                ...campaign,
+                fecha_inicio: campaign.fecha_inicio.toISOString(),
+                fecha_fin: campaign.fecha_fin.toISOString(),
+                created_at: campaign.created_at.toISOString(),
+                updated_at: campaign.updated_at.toISOString()
+            }
+        }
     } catch (error) {
         console.warn("Could not fetch active campaign (DB sync pending?):", error)
     }
@@ -132,8 +145,8 @@ export async function getDashboardStats(userId?: string) {
         facturacionMes: facturacionReal._sum?.total ? Number(facturacionReal._sum.total) : 0,
         facturacionPendiente: facturacionEstimada._sum?.total ? Number(facturacionEstimada._sum.total) : 0,
         clientesActivos,
-        recentActivity, // This will now be filtered if userId is passed
+        recentActivity, // Serialized
         monthlyRevenue,
-        activeCampaign
+        activeCampaign // Serialized
     }
 }
