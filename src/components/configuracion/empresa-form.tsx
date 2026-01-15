@@ -215,17 +215,16 @@ export function EmpresaForm({ initialData }: Props) {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div className="flex justify-end">
-                <Button type="submit" disabled={isPending}>
-                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    <Save className="mr-2 h-4 w-4" />
-                    Guardar Cambios
-                </Button>
-            </div>
-        </form>
-                    </CardContent >
-                </Card >
-                )
+
+                    <div className="flex justify-end">
+                        <Button type="submit" disabled={isPending}>
+                            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Save className="mr-2 h-4 w-4" />
+                            Guardar Cambios
+                        </Button>
+                    </div>
+                </form>
+            </CardContent >
+        </Card >
+    )
 }
