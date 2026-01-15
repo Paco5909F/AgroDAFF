@@ -117,7 +117,7 @@ model Cliente {
   razon_social  String
   empresa_id    String?   @db.Uuid
   empresa       Empresa?  @relation(fields: [empresa_id], references: [id])
-  cuit          String    @unique
+  cuit          String
   condicion_iva String
   email         String?
   telefono      String?
@@ -138,6 +138,7 @@ model Cliente {
 
   @@map("clientes")
   @@index([empresa_id])
+  @@unique([cuit, empresa_id]) // CUIT unique per company
 }
 
 model Establecimiento {
