@@ -52,7 +52,7 @@ export async function TrisquelNavbar() {
                 </div>
 
                 <a href={user ? "/dashboard" : "/"} className="flex items-center gap-2 md:gap-3 group">
-                    <div className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-100/50 transition-transform group-hover:scale-105 bg-background p-0.5 border border-border">
+                    <div className="relative w-10 h-10 md:w-16 md:h-16 flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/images/logo.png" alt="Trisquel Logo" className="object-contain w-full h-full" />
                     </div>
