@@ -72,7 +72,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 z-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src="/images/field_background.png"
+                    src="/images/bg-v2.png"
                     alt="Campo Argentino"
                     className="w-full h-full object-cover object-center"
                 />
