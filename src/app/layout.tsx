@@ -42,7 +42,7 @@ export default function RootLayout({
               className="w-full h-full object-cover object-center"
             />
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/40 to-transparent" />
           </div>
 
           <div className="min-h-screen flex flex-col overflow-x-hidden">
