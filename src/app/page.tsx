@@ -122,9 +122,7 @@ export default async function LandingPage() {
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Múltiples Establecimientos</li>
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Soporte WhatsApp Directo</li>
                 </ul>
-                <div className="text-3xl font-bold text-emerald-400 md:hidden">
-                  $25.000 <span className="text-sm font-normal text-slate-400">/mes</span>
-                </div>
+
               </div>
               <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm text-center">
                 <div className="text-sm text-slate-500 uppercase tracking-wide font-semibold mb-2">Precio Estándar</div>
