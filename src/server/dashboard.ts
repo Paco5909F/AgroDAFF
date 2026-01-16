@@ -125,7 +125,13 @@ export async function getDashboardStats(userId?: string) {
     let activeCampaign = null
     try {
         const campaign = await prisma.campana.findFirst({
-            where: { activa: true, ...companyFilter }
+            where: {
+                activa: true,
+                OR: [
+                    companyFilter,
+                    { empresa_id: null } // Fallback for legacy campaigns
+                ]
+            }
         })
         if (campaign) {
             activeCampaign = {
