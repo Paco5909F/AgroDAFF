@@ -34,13 +34,16 @@ export default function RootLayout({
         <AuthProvider>
           <AutoLogout />
 
-          {/* Fixed Background Layer - Solves mobile scroll issues */}
-          <div
-            className="fixed inset-0 -z-50 h-[100dvh] w-full bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `linear-gradient(to bottom, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%), url('/images/field_background.png')`
-            }}
-          />
+          {/* Fixed Background Layer (Global) */}
+          <div className="fixed inset-0 -z-50 w-full h-full">
+            <img
+              src="/images/field_background.png"
+              alt="Background"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/50 to-transparent" />
+          </div>
 
           <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Header / Navbar */}
