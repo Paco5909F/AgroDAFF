@@ -37,12 +37,12 @@ export default function RootLayout({
           {/* Fixed Background Layer (Global) */}
           <div className="fixed inset-0 -z-50 w-full h-full">
             <img
-              src="/images/field_background.png"
+              src="/images/bg-v2.png"
               alt="Background"
               className="w-full h-full object-cover object-center"
             />
             {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/20 to-transparent" />
           </div>
 
           <div className="min-h-screen flex flex-col overflow-x-hidden">
