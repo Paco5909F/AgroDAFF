@@ -132,8 +132,7 @@ export async function getDashboardStats(userId?: string) {
                 ...campaign,
                 fecha_inicio: campaign.fecha_inicio.toISOString(),
                 fecha_fin: campaign.fecha_fin.toISOString(),
-                created_at: campaign.created_at.toISOString(),
-                updated_at: campaign.updated_at.toISOString()
+                created_at: campaign.created_at.toISOString()
             }
         }
     } catch (error) {
