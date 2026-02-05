@@ -121,26 +121,45 @@ export function EmpresaForm({ initialData }: Props) {
                                                     const file = e.target.files?.[0]
                                                     if (!file) return
 
+                                                    // VALIDATIONS
+                                                    if (!file.type.startsWith('image/')) {
+                                                        toast.error("El archivo debe ser una imagen")
+                                                        return
+                                                    }
+
+                                                    // 5MB Limit for mobile compatibility
+                                                    if (file.size > 5 * 1024 * 1024) {
+                                                        toast.error("La imagen es muy pesada (Máx 5MB). Intente con una más pequeña.")
+                                                        return
+                                                    }
+
                                                     setIsUploading(true)
                                                     try {
                                                         const fileExt = file.name.split('.').pop()
                                                         const fileName = `logo-${initialData.id}-${Date.now()}.${fileExt}`
-                                                        const { data, error } = await supabase.storage
-                                                            .from('logos')
-                                                            .upload(fileName, file, {
-                                                                upsert: true
-                                                            })
 
-                                                        if (error) throw new Error("Error al subir imagen")
+                                                        // Use Server-Side API to bypass RLS policies
+                                                        const formData = new FormData()
+                                                        formData.append('file', file)
+                                                        formData.append('fileName', fileName)
 
-                                                        const { data: { publicUrl } } = supabase.storage
-                                                            .from('logos')
-                                                            .getPublicUrl(fileName)
+                                                        const response = await fetch('/api/upload-logo', {
+                                                            method: 'POST',
+                                                            body: formData
+                                                        })
 
-                                                        form.setValue('logo_url', publicUrl)
+                                                        const result = await response.json()
+
+                                                        if (!response.ok) {
+                                                            throw new Error(result.error || "Error al subir imagen")
+                                                        }
+
+                                                        // Success
+                                                        form.setValue('logo_url', result.publicUrl)
                                                         toast.success("Logo actualizado")
                                                     } catch (error: any) {
-                                                        toast.error("Error al subir imagen")
+                                                        console.error("Upload Error:", error)
+                                                        toast.error(`Error: ${error.message || "No se pudo subir la imagen"}`)
                                                     } finally {
                                                         setIsUploading(false)
                                                     }
