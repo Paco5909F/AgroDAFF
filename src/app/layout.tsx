@@ -8,11 +8,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Trisquel App",
   description: "Sistema de Gestión Agropecuaria",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
   icons: {
     icon: "/images/logo.png",
     apple: "/images/logo.png",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 import { Toaster } from "@/components/ui/sonner"
@@ -30,11 +36,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} min-h-screen bg-transparent`}>
         <AuthProvider>
           <AutoLogout />
 
-
+          {/* Fixed Background Layer (Global) */}
+          <div className="fixed inset-0 -z-50 w-full h-full">
+            <img
+              src="/images/bg-v2.png"
+              alt="Background"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/50 to-transparent" />
+          </div>
 
           <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Header / Navbar */}

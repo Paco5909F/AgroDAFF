@@ -4,7 +4,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Truck, FileText, Pencil, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
-import { generateCartaPortePDF } from '@/lib/pdf-generator'
+import { generateCartaPortePDF, PdfBranding } from '@/lib/pdf-generator'
 import { Button } from '@/components/ui/button'
 import { deleteCartaPorte } from '@/server/cartas-porte'
 import { toast } from 'sonner'
@@ -15,9 +15,10 @@ interface CartaPorteListProps {
     data: any[]
     clientes: any[]
     rol: string
+    branding: PdfBranding
 }
 
-export function CartaPorteList({ data, clientes, rol }: CartaPorteListProps) {
+export function CartaPorteList({ data, clientes, rol, branding }: CartaPorteListProps) {
     const canDelete = hasPermission(rol, PERMISSIONS.CARTAS_PORTE, 'delete')
     const canEdit = hasPermission(rol, PERMISSIONS.CARTAS_PORTE, 'update')
     const handleDelete = async (id: string) => {
@@ -86,7 +87,7 @@ export function CartaPorteList({ data, clientes, rol }: CartaPorteListProps) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => generateCartaPortePDF(cp)}
+                            onClick={() => generateCartaPortePDF(cp, branding)}
                             className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
                             title="Descargar PDF"
                         >

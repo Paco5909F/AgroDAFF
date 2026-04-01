@@ -27,6 +27,8 @@ model Empresa {
   cuit        String?
   direccion   String?
   logo_url    String? // URL to Supabase Storage
+  email       String?
+  telefono    String?
   
   
   usuarios    Usuario[]
@@ -42,6 +44,7 @@ model Empresa {
   campanas    Campana[]
   presupuestos Presupuesto[]
   cartas_porte CartaPorte[]
+  insumos      Insumo[]
 
   // Billing Fields
   plan_status     String   @default("FREE") // FREE, PRO, CANCELLED
@@ -117,7 +120,7 @@ model Cliente {
   razon_social  String
   empresa_id    String?   @db.Uuid
   empresa       Empresa?  @relation(fields: [empresa_id], references: [id])
-  cuit          String    @unique
+  cuit          String
   condicion_iva String
   email         String?
   telefono      String?
@@ -138,6 +141,7 @@ model Cliente {
 
   @@map("clientes")
   @@index([empresa_id])
+  @@unique([cuit, empresa_id]) // CUIT unique per company
 }
 
 model Establecimiento {
@@ -298,6 +302,7 @@ model OrdenItem {
   total         Decimal  @db.Decimal(14, 2) // subtotal for this item
 
   observaciones String?
+  insumos       OrdenItemInsumo[]
 
   @@map("orden_items")
 }
@@ -411,4 +416,69 @@ model CartaPorte {
   @@index([cliente_id])
 }
 
+model Insumo {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  nombre        String
+  tipo          String    // semilla, fertilizante, herbicida, combustible, etc.
+  unidad_medida String    // kg, litro, unidad
+  empresa_id    String?   @db.Uuid
+  empresa       Empresa?  @relation(fields: [empresa_id], references: [id])
+  
+  es_global     Boolean   @default(false)
+  marca         String?
+  proveedor     String?
 
+  precios       PrecioInsumo[]
+  ordenItems    OrdenItemInsumo[]
+  
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  active        Boolean   @default(true)
+
+  @@map("insumos")
+  @@index([empresa_id])
+}
+
+model PrecioInsumo {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  insumo_id   String   @db.Uuid
+  insumo      Insumo   @relation(fields: [insumo_id], references: [id], onDelete: Cascade)
+  
+  precio      Decimal  @db.Decimal(12, 4) // precio por unidad_medida
+  moneda      String   @default("USD")
+  fecha_desde DateTime @default(now()) @db.Timestamptz
+  fecha_hasta DateTime? @db.Timestamptz
+  
+  @@map("precios_insumos")
+  @@index([insumo_id])
+}
+
+model OrdenItemInsumo {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  orden_item_id   String   @db.Uuid
+  orden_item      OrdenItem @relation(fields: [orden_item_id], references: [id], onDelete: Cascade)
+  
+  insumo_id       String   @db.Uuid
+  insumo          Insumo   @relation(fields: [insumo_id], references: [id], onDelete: Restrict)
+  
+  dosis_por_ha    Decimal  @db.Decimal(12, 4)
+  cantidad_pasadas Int     @default(1)
+  
+  // Snapshots for historical integrity
+  precio_unit_usado Decimal @db.Decimal(12, 4) 
+  moneda_usada      String  @default("USD")
+  
+  // Calculated fields (stored for reporting efficiency)
+  costo_por_ha    Decimal  @db.Decimal(14, 2)
+  costo_total     Decimal  @db.Decimal(14, 2)
+  
+  // Feature Avanzada: Interés
+  interes_mensual Decimal? @db.Decimal(5, 2) // e.g. 2.5 for 2.5%
+  meses_financiacion Int?
+  costo_total_financiado Decimal? @db.Decimal(14, 2)
+  
+  created_at      DateTime @default(now()) @db.Timestamptz
+
+  @@map("orden_item_insumos")
+  @@index([orden_item_id])
+  @@index([insumo_id])
+}

@@ -21,14 +21,14 @@ export interface PdfBranding {
     logoUrl?: string;
 }
 
-// Default fallback (Legacy)
+// Default fallback (Generic)
 const DEFAULT_BRANDING: PdfBranding = {
-    name: "EL TRISQUEL AGROSERVICIOS",
-    address: "O'Higgins, Buenos Aires",
-    phone: "2364-610322",
-    email: "agroserviciosciglieri@hotmail.com",
-    cuit: "20-12345678-9",
-    logoUrl: '/images/logo.png'
+    name: "Nombre de Empresa",
+    address: "Dirección no configurada",
+    phone: "",
+    email: "",
+    cuit: "",
+    logoUrl: undefined
 };
 
 const LOGO_URL = '/images/logo.png';
@@ -51,10 +51,19 @@ const FONTS = {
 // --- SHARED HELPERS ---
 const loadLogoAndRun = (logoUrl: string | undefined, callback: (img: HTMLImageElement) => void) => {
     const img = new Image();
-    img.src = logoUrl || DEFAULT_BRANDING.logoUrl || '/images/logo.png';
+    img.crossOrigin = 'Anonymous';
+
+    if (logoUrl && (logoUrl.startsWith('http') || logoUrl.startsWith('https'))) {
+        // Use our own proxy to avoid CORS issues with external images
+        img.src = `/api/proxy-image?url=${encodeURIComponent(logoUrl)}`;
+    } else {
+        // Local path or base64
+        img.src = logoUrl || '';
+    }
+
     img.onload = () => callback(img);
     img.onerror = () => {
-        console.warn("Logo not found");
+        console.warn("Logo not found or blocked by CORS");
         callback(img); // Continue without logo
     };
 };
@@ -207,18 +216,22 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const logoH = logoW / aspect;
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with Presupuesto Data
         const boxX = pageWidth - margin - 65;
@@ -345,7 +358,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(COLORS.textLight[0]);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text("Este documento no es válido como factura. Los precios pueden variar sin previo aviso.", margin, footerY + 3);
 
         doc.save(`Presupuesto_${presupuesto.id.slice(0, 6)}.pdf`);
@@ -371,18 +384,22 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const logoH = logoW / aspect;
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with Order Data
         const boxX = pageWidth - margin - 70;
@@ -421,19 +438,36 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
         cursorY += 6;
 
-        const tableBody = (orden.items || []).map((item: any) => {
+        const tableBody: any[] = [];
+        
+        (orden.items || []).forEach((item: any) => {
             let desc = item.servicio?.nombre || "Item";
             if (Number(item.kilometros) > 0) {
                 desc += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
             }
 
-            return [
+            // Main Service Row
+            tableBody.push([
                 { content: desc, styles: { fontStyle: 'bold' } },
                 Number(item.cantidad).toLocaleString('es-AR'),
                 item.servicio?.unidad_medida || "-",
                 `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
                 { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
-            ]
+            ]);
+
+            // Insumos Rows (Nested below service)
+            if (item.insumos && item.insumos.length > 0) {
+                item.insumos.forEach((ins: any) => {
+                    const insName = `  ↳ Insumo: ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
+                    tableBody.push([
+                        { content: insName, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+                        "-", // Cantidad handled by dosis/ha
+                        "-", // Unidad handled by dosis/ha
+                        "-", // Precio unit included in subtotal logic usually for display
+                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [100, 100, 100] } }
+                    ]);
+                });
+            }
         });
 
         autoTable(doc, {
@@ -520,7 +554,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(COLORS.textLight[0]);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Orden_${orden.id ? orden.id.slice(0, 6) : "Borrador"}.pdf`);
@@ -542,24 +576,37 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         let cursorY = margin;
 
         // --- 1. HEADER ROW ---
-        // Left: Logo + Company Data
-        const logoW = 25;
+        // 1. Logo (Left)
+        // Scaled to fit within 30x15 box
+        const maxW = 30;
+        const maxH = 15;
         const aspect = img.width && img.height ? img.width / img.height : 1;
-        const logoH = logoW / aspect;
+
+        let logoW = maxW;
+        let logoH = logoW / aspect;
+
+        if (logoH > maxH) {
+            logoH = maxH;
+            logoW = logoH * aspect;
+        }
 
         if (img.complete && img.naturalHeight !== 0) {
-            doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
         const companyX = margin + logoW + 5;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.text("EL TRISQUEL AGROSERVICIOS", companyX, cursorY + 6);
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.text("O'Higgins, Buenos Aires", companyX, cursorY + 11);
-        doc.text("Tel: 2364-610322 | Email: agroserviciosciglieri@hotmail.com", companyX, cursorY + 16);
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
 
         // Right: Box with CP Data
         const boxX = pageWidth - margin - 70;
@@ -664,7 +711,7 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(100);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text("Este documento no reemplaza a la Carta de Porte Oficial emitida por AFIP si el CTG no es válido.", margin, footerY + 3);
 
         doc.save(`CP_${carta.ctg || 'Borrador'}.pdf`);

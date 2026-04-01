@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { getUserContext } from "./context"
 
 export type ReportFilters = {
     from: Date
@@ -13,7 +14,9 @@ export type ReportFilters = {
 
 export async function getReportData(filters: ReportFilters) {
     try {
+        const { empresaId } = await getUserContext()
         const where: any = {
+            empresa_id: empresaId,
             fecha: {
                 gte: filters.from,
                 lte: filters.to
@@ -53,9 +56,11 @@ export async function getReportData(filters: ReportFilters) {
 
 export async function closePeriod(ids: string[]) {
     try {
+        const { empresaId } = await getUserContext()
         await prisma.ordenTrabajo.updateMany({
             where: {
-                id: { in: ids }
+                id: { in: ids },
+                empresa_id: empresaId
             },
             data: {
                 estado: 'facturada' // Using standard status

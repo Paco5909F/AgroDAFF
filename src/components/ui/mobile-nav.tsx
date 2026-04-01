@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NavLink } from '@/components/ui/nav-link'
 import { createClient } from '@/lib/supabase/client'
@@ -88,40 +88,57 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
 
                 {/* Links Section */}
                 <div className="flex-1 overflow-y-auto py-4 px-4 flex flex-col gap-1 bg-white">
-                    <MobileLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Dashboard
-                    </MobileLink>
-                    <MobileLink href="/clientes" icon={<Users className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Clientes
-                    </MobileLink>
-                    <MobileLink href="/presupuestos" icon={<FileText className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Presupuestos
-                    </MobileLink>
-                    <MobileLink href="/ordenes" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Órdenes
-                    </MobileLink>
-                    <MobileLink href="/dashboard/servicios" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Labor
-                    </MobileLink>
-                    <MobileLink href="/cartas-porte" icon={<Truck className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Logística
-                    </MobileLink>
-                    <MobileLink href="/campanas" icon={<Calendar className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Campañas
-                    </MobileLink>
-                    <MobileLink href="/silos" icon={<Warehouse className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Silos (Stock)
-                    </MobileLink>
-                    <MobileLink href="/reportes" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Reportes
-                    </MobileLink>
-                    <MobileLink href="/dashboard/equipo" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                        Equipo
-                    </MobileLink>
-                    {userData?.rol === 'ADMIN' && (
-                        <MobileLink href="/dashboard/configuracion" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                            Configuración
-                        </MobileLink>
+                    {currentCompanyId ? (
+                        <>
+                            <MobileLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Dashboard
+                            </MobileLink>
+                            <MobileLink href="/clientes" icon={<Users className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Clientes
+                            </MobileLink>
+                            <MobileLink href="/presupuestos" icon={<FileText className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Presupuestos
+                            </MobileLink>
+                            <MobileLink href="/ordenes" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Órdenes
+                            </MobileLink>
+                            <MobileLink href="/dashboard/servicios" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Labor
+                            </MobileLink>
+                            <MobileLink href="/cartas-porte" icon={<Truck className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Logística
+                            </MobileLink>
+                            <MobileLink href="/campanas" icon={<Calendar className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Campañas
+                            </MobileLink>
+                            <MobileLink href="/silos" icon={<Warehouse className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Silos (Stock)
+                            </MobileLink>
+                            <MobileLink href="/reportes" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Reportes
+                            </MobileLink>
+                            <MobileLink href="/dashboard/equipo" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Equipo
+                            </MobileLink>
+                            <MobileLink href="/dashboard/insumos" icon={<Package className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Insumos
+                            </MobileLink>
+                            {userData?.rol === 'ADMIN' && (
+                                <>
+                                    <div className="h-px bg-slate-100 my-2 mx-2" />
+                                    <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                                        Administración
+                                    </div>
+                                    <MobileLink href="/dashboard/configuracion" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                        Configuración
+                                    </MobileLink>
+                                </>
+                            )}
+                        </>
+                    ) : (
+                        <div className="p-4 text-center text-slate-500 text-sm">
+                            Complete la configuración de su empresa para acceder al menú.
+                        </div>
                     )}
                 </div>
 

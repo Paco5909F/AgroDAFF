@@ -12,6 +12,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { SearchInput } from "@/components/ui/search-input"
 import { getUserContext } from "@/server/context"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
+import { prisma } from "@/lib/prisma"
 
 export default async function PresupuestosPage({
     searchParams,
@@ -31,8 +32,30 @@ export default async function PresupuestosPage({
         precio_base: Number(s.precio_base)
     }))
 
-    const { rol } = await getUserContext()
+    const { rol, empresaId } = await getUserContext()
     const canCreate = hasPermission(rol, PERMISSIONS.PRESUPUESTOS, 'create')
+
+    // Fetch Branding Data
+    const empresa = await prisma.empresa.findUnique({
+        where: { id: empresaId },
+        select: {
+            nombre: true,
+            cuit: true,
+            direccion: true,
+            logo_url: true,
+            email: true,
+            telefono: true
+        }
+    })
+
+    const branding = {
+        name: empresa?.nombre || "EL TRISQUEL AGROSERVICIOS",
+        address: empresa?.direccion || "O'Higgins, Buenos Aires",
+        cuit: empresa?.cuit || "20-12345678-9",
+        logoUrl: empresa?.logo_url || undefined,
+        email: empresa?.email || "agroserviciosciglieri@hotmail.com",
+        phone: empresa?.telefono || "2364-610322"
+    }
 
     return (
         <div className="flex flex-col gap-6 animate-in fade-in duration-500">
@@ -56,7 +79,13 @@ export default async function PresupuestosPage({
 
             <Suspense fallback={<div>Cargando presupuestos...</div>}>
                 <div className="space-y-4">
-                    <PresupuestosList data={presupuestos} clientes={clientes} servicios={servicios} rol={rol} />
+                    <PresupuestosList
+                        data={presupuestos}
+                        clientes={clientes}
+                        servicios={servicios}
+                        rol={rol}
+                        branding={branding}
+                    />
                     {meta && (
                         <PaginationControls
                             currentPage={meta.page}

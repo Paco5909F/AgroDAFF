@@ -99,81 +99,135 @@ export function EmpresaForm({ initialData }: Props) {
                         <div className="space-y-2">
                             <Label htmlFor="logo">Logo de la Empresa</Label>
                             <div className="flex flex-col gap-3">
-                                {/* Preview */}
-                                {form.watch('logo_url') ? (
-                                    <div className="relative group w-32 h-32 border rounded-lg overflow-hidden flex items-center justify-center bg-slate-50">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={form.watch('logo_url') || ''}
-                                            alt="Logo"
-                                            className="max-w-full max-h-full object-contain"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => form.setValue('logo_url', '')}
-                                            className="absolute top-1 right-1 bg-red-100 text-red-600 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                <div className="flex flex-col gap-4">
+                                    {/* Enhanced Upload Area */}
+                                    <div className="group relative">
+                                        <div
+                                            onClick={() => document.getElementById('logo-upload-trigger')?.click()}
+                                            className={`
+                                            relative flex flex-col items-center justify-center w-full h-40 
+                                            border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200
+                                            ${form.watch('logo_url') ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-emerald-400'}
+                                        `}
                                         >
-                                            <X className="h-4 w-4" />
-                                        </button>
+                                            {/* Hidden Input */}
+                                            <Input
+                                                id="logo-upload-trigger"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                disabled={isUploading}
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0]
+                                                    if (!file) return
+
+                                                    // VALIDATIONS
+                                                    if (!file.type.startsWith('image/')) {
+                                                        toast.error("El archivo debe ser una imagen")
+                                                        return
+                                                    }
+
+                                                    // 5MB Limit for mobile compatibility
+                                                    if (file.size > 5 * 1024 * 1024) {
+                                                        toast.error("La imagen es muy pesada (Máx 5MB). Intente con una más pequeña.")
+                                                        return
+                                                    }
+
+                                                    setIsUploading(true)
+                                                    try {
+                                                        const fileExt = file.name.split('.').pop()
+                                                        const fileName = `logo-${initialData.id}-${Date.now()}.${fileExt}`
+
+                                                        // Use Server-Side API to bypass RLS policies
+                                                        const formData = new FormData()
+                                                        formData.append('file', file)
+                                                        formData.append('fileName', fileName)
+
+                                                        const response = await fetch('/api/upload-logo', {
+                                                            method: 'POST',
+                                                            body: formData
+                                                        })
+
+                                                        const result = await response.json()
+
+                                                        if (!response.ok) {
+                                                            throw new Error(result.error || "Error al subir imagen")
+                                                        }
+
+                                                        // Success
+                                                        form.setValue('logo_url', result.publicUrl)
+                                                        toast.success("Logo actualizado")
+                                                    } catch (error: any) {
+                                                        console.error("Upload Error:", error)
+                                                        toast.error(`Error: ${error.message || "No se pudo subir la imagen"}`)
+                                                    } finally {
+                                                        setIsUploading(false)
+                                                    }
+                                                }}
+                                            />
+
+                                            {isUploading ? (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+                                                    <span className="text-xs font-medium text-emerald-700">Subiendo...</span>
+                                                </div>
+                                            ) : form.watch('logo_url') ? (
+                                                <>
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={form.watch('logo_url') || ''}
+                                                        alt="Logo Empresa"
+                                                        className="max-w-[80%] max-h-[80%] object-contain mb-2"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                        <span className="bg-white/90 text-slate-700 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+                                                            Cambiar Logo
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-emerald-600 transition-colors">
+                                                    <div className="p-3 bg-white rounded-full shadow-sm border border-slate-100 group-hover:border-emerald-200 group-hover:shadow-md transition-all">
+                                                        <Upload className="h-6 w-6" />
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <span className="text-sm font-medium text-slate-600">Click para subir logo</span>
+                                                        <p className="text-[10px] text-slate-400 mt-1">PNG, JPG (Máx 2MB)</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Remove Button (Only if logo exists) */}
+                                        {form.watch('logo_url') && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    form.setValue('logo_url', '')
+                                                }}
+                                                className="absolute -top-2 -right-2 bg-white text-red-500 hover:text-red-600 p-1.5 rounded-full shadow-md border border-slate-100 transition-transform hover:scale-110"
+                                                title="Eliminar logo"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
-                                ) : (
-                                    <div className="w-32 h-32 border border-dashed rounded-lg flex flex-col items-center justify-center text-slate-400 gap-2 bg-slate-50">
-                                        <Upload className="h-8 w-8" />
-                                        <span className="text-xs">Sin Logo</span>
-                                    </div>
-                                )}
 
-                                {/* Inputs */}
-                                <div className="flex flex-col gap-2">
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        disabled={isUploading}
-                                        onChange={async (e) => {
-                                            const file = e.target.files?.[0]
-                                            if (!file) return
-
-                                            setIsUploading(true)
-                                            try {
-                                                const fileExt = file.name.split('.').pop()
-                                                const fileName = `logo-${initialData.id}-${Date.now()}.${fileExt}`
-                                                const { data, error } = await supabase.storage
-                                                    .from('logos')
-                                                    .upload(fileName, file, {
-                                                        upsert: true
-                                                    })
-
-                                                if (error) {
-                                                    console.error(error)
-                                                    throw new Error("Error al subir imagen. Verifique que el bucket 'logos' exista y sea público.")
-                                                }
-
-                                                const { data: { publicUrl } } = supabase.storage
-                                                    .from('logos')
-                                                    .getPublicUrl(fileName)
-
-                                                form.setValue('logo_url', publicUrl)
-                                                toast.success("Logo subido correctamente")
-                                            } catch (error: any) {
-                                                toast.error(error.message || "Error al subir imagen")
-                                            } finally {
-                                                setIsUploading(false)
-                                            }
-                                        }}
-                                    />
-                                    <p className="text-xs text-slate-500">
-                                        Formatos: PNG, JPG. Máx 2MB.
-                                        <br />
-                                        <span className="text-amber-600/80 text-[10px]">Nota: Si falla, asegúrese de crear un bucket público llamado `logos` en Supabase.</span>
-                                    </p>
-
-                                    {/* Fallback URL Input */}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-slate-400">O use URL directa:</span>
+                                    {/* URL Input (Collapsible/Subtle) */}
+                                    <div className="text-center">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <span className="w-full border-t border-slate-100" />
+                                            </div>
+                                            <div className="relative flex justify-center text-[10px] uppercase">
+                                                <span className="bg-white px-2 text-slate-400">O mediante enlace</span>
+                                            </div>
+                                        </div>
                                         <Input
                                             {...form.register('logo_url')}
-                                            placeholder="https://..."
-                                            className="h-8 text-xs"
+                                            placeholder="https://ejemplo.com/logo.png"
+                                            className="mt-2 h-8 text-xs text-center border-dashed focus:border-solid bg-slate-50 focus:bg-white transition-all"
                                         />
                                     </div>
                                 </div>
@@ -189,7 +243,7 @@ export function EmpresaForm({ initialData }: Props) {
                         </Button>
                     </div>
                 </form>
-            </CardContent>
-        </Card>
+            </CardContent >
+        </Card >
     )
 }

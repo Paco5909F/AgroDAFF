@@ -27,7 +27,7 @@ export function PricingClient({ planStatus }: PricingClientProps) {
         })
     }
 
-    const isPro = planStatus === 'PRO'
+    const isPro = ['PRO', 'LIFETIME', 'ENTERPRISE'].includes(planStatus)
 
     return (
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4 py-12">
@@ -56,8 +56,12 @@ export function PricingClient({ planStatus }: PricingClientProps) {
             <Card className={cn("border-2 h-full flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden", isPro ? "border-emerald-500 shadow-xl" : "border-emerald-100")}>
                 {isPro && <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-lg font-bold">ACTIVO</div>}
                 <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-emerald-900">Profesional</CardTitle>
-                    <CardDescription>Para escalar tu negocio.</CardDescription>
+                    <CardTitle className="text-2xl font-bold text-emerald-900">
+                        {planStatus === 'LIFETIME' ? 'Plan Vitalicio' : 'Profesional'}
+                    </CardTitle>
+                    <CardDescription>
+                        {planStatus === 'LIFETIME' ? 'Acceso total bonificado.' : 'Para escalar tu negocio.'}
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 flex-1">
                     <div className="text-4xl font-bold">$25.000 <span className="text-sm font-normal text-slate-500">/ mes</span></div>

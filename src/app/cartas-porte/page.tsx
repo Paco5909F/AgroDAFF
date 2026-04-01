@@ -9,6 +9,8 @@ import { SearchInput } from '@/components/ui/search-input'
 import { CartaPorteFormDialog } from '@/components/cartas-porte/carta-porte-form-dialog'
 import { getUserContext } from '@/server/context'
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
+import { prisma } from "@/lib/prisma"
+import { PdfBranding } from "@/lib/pdf-generator"
 
 export default async function CartasPortePage({
     searchParams,
@@ -25,7 +27,29 @@ export default async function CartasPortePage({
         peso_tara: cp.peso_tara ? Number(cp.peso_tara) : 0
     }))
     const clientes = await getClientes()
-    const { rol } = await getUserContext()
+    const { rol, empresaId } = await getUserContext()
+
+    // Fetch Branding Data
+    const empresa = await prisma.empresa.findUnique({
+        where: { id: empresaId },
+        select: {
+            nombre: true,
+            cuit: true,
+            direccion: true,
+            logo_url: true,
+            email: true,
+            telefono: true
+        }
+    })
+
+    const branding: PdfBranding = {
+        name: empresa?.nombre || "Empresa",
+        address: empresa?.direccion || "",
+        cuit: empresa?.cuit || "",
+        logoUrl: empresa?.logo_url || undefined,
+        email: empresa?.email || "",
+        phone: empresa?.telefono || ""
+    }
     const canCreate = hasPermission(rol, PERMISSIONS.CARTAS_PORTE, 'create')
 
     return (
@@ -47,7 +71,7 @@ export default async function CartasPortePage({
             </div>
 
             <Suspense fallback={<div>Cargando...</div>}>
-                <CartaPorteList data={cartas} clientes={clientes} rol={rol} />
+                <CartaPorteList data={cartas} clientes={clientes} rol={rol} branding={branding} />
             </Suspense>
         </div>
     )

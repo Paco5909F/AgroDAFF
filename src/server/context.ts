@@ -16,17 +16,14 @@ export async function getCompanyId(): Promise<string> {
     return ctx.empresaId
 }
 
-// @ts-ignore
-export async function getUserContext(): Promise<UserContext> {
+// Internal helper to avoid code duplication
+async function resolveUserContext() {
     const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
-        redirect('/login')
+        return { user: null, dbUser: null }
     }
-
-    const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
-    const isSuperAdmin = user.email && SUPER_ADMIN_EMAILS.includes(user.email)
 
     const dbUser = await prisma.usuario.findUnique({
         where: { id: user.id },
@@ -34,85 +31,65 @@ export async function getUserContext(): Promise<UserContext> {
             id: true,
             active_empresa_id: true,
             rol: true,
-            empresa_id: true, // Legacy
+            empresa_id: true,
             miembros: {
                 include: { empresa: true }
             }
         }
     })
 
-    if (!dbUser) {
-        redirect('/onboarding')
-    }
+    return { user, dbUser }
+}
 
-    // A. DETERMINE TARGET COMPANY AND VALIDATE
+export async function getUserContextSafe(): Promise<UserContext | null> {
+    const { user, dbUser } = await resolveUserContext()
+
+    if (!user || !dbUser) return null
+
+    // A. DETERMINE TARGET COMPANY
     let targetEmpresaId = dbUser.active_empresa_id
-
-    // Check if the current target is actually valid (exists in memberships)
-    // We ignore this check for Super Admin initially, but we need to handle "Zombie" IDs
+    const isSuperAdmin = user.email === 'admin@eltrisquel.com'
     const isValidMember = dbUser.miembros.some(m => m.empresa_id === targetEmpresaId)
 
-    // Logic for Normal Users (or Super Admin who happen to be members)
     if (targetEmpresaId && !isValidMember && !isSuperAdmin) {
-        // The active ID is set but user is NOT a member anymore (e.g. kicked or company deleted)
-        targetEmpresaId = null // Reset to force fallback
+        targetEmpresaId = null
     }
 
-    // Fallback 1: If no valid target, pick the first membership
     if (!targetEmpresaId && dbUser.miembros.length > 0) {
         targetEmpresaId = dbUser.miembros[0].empresa_id
-
-        // Auto-heal: Update the user's preference
-        await prisma.usuario.update({
-            where: { id: user.id },
-            data: { active_empresa_id: targetEmpresaId }
-        })
+        // We probably shouldn't mutate state (update) in a 'get' call if it's supposed to be side-effect free, 
+        // but the original logic did it. Let's keep it for consistency or move it.
+        // For "Safe" context, maybe we verify but don't force update? 
+        // Let's stick to the original behavior: auto-healing is useful.
+        try {
+            await prisma.usuario.update({
+                where: { id: user.id },
+                data: { active_empresa_id: targetEmpresaId }
+            })
+        } catch (e) { console.error("Auto-heal failed", e) }
     }
 
-    // Fallback 2: Legacy support
     if (!targetEmpresaId && dbUser.empresa_id) {
         targetEmpresaId = dbUser.empresa_id
     }
 
-    // A.1 SUPER ADMIN OVERRIDE - Handle Zombie IDs or Clean Slate
+    // Super Admin fallbacks
     if (isSuperAdmin) {
-        // If we have a targetId but no membership, it MIGHT be a zombie ID (deleted company)
-        // Since we can't easily check existence without a query, we'll let the downstream fail 
-        // OR we can try to be smarter. 
-        // Let's assume if it's not in memberships, we should verify it exists or pick another.
-        // BUT Super Admin might access companies they are NOT members of.
-        // So we can't strictly rely on 'miembros'. 
-
-        // However, if the downstream Page redirects to onboarding, it means the ID is definitely bad.
-        // We can't fix it here easily without querying 'Empresa'.
-        // Let's query it if we are unsure.
         if (targetEmpresaId) {
             const exists = await prisma.empresa.findUnique({ where: { id: targetEmpresaId }, select: { id: true } })
-            if (!exists) {
-                targetEmpresaId = null // It was a zombie ID
-            }
+            if (!exists) targetEmpresaId = null
         }
-
-        // If still null (was null or was zombie), find any company
         if (!targetEmpresaId) {
             const firstCompany = await prisma.empresa.findFirst()
             if (firstCompany) {
                 targetEmpresaId = firstCompany.id
-                await prisma.usuario.update({
-                    where: { id: user.id },
-                    data: { active_empresa_id: targetEmpresaId }
-                })
+                // SECURITY FIX: Do not permanently mutate active_empresa_id for superadmins falling back to a company.
             }
         }
     }
 
-    // B. VALIDATION
-    if (!targetEmpresaId) {
-        redirect('/onboarding')
-    }
+    if (!targetEmpresaId) return null
 
-    // C. RETURN CONTEXT
-    // Re-fetch membership for the FINAL targetId
     const finalMembership = dbUser.miembros.find(m => m.empresa_id === targetEmpresaId)
 
     return {
@@ -122,4 +99,29 @@ export async function getUserContext(): Promise<UserContext> {
         rol: isSuperAdmin ? 'ADMIN' : (finalMembership ? finalMembership.rol : (dbUser.rol || 'LECTOR')),
         email: user.email
     }
+}
+
+// @ts-ignore
+export async function getUserContext(): Promise<UserContext> {
+    const ctx = await getUserContextSafe()
+
+    if (!ctx) {
+        // We know why it failed? 
+        // If no user -> login. If no company -> onboarding.
+        // Since we can't easily distinguish from 'Safe' result without more return info:
+        // We will do a quick check or just standard redirect flow.
+        // Actually, let's replicate the redirects:
+        // If not logged in -> redirect('/login') 
+        // If logged in but no company -> redirect('/onboarding')
+
+        // RE-CHECK to decide where to send
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) redirect('/login')
+
+        // If we are here, user exists but no context -> Onboarding
+        redirect('/onboarding')
+    }
+
+    return ctx
 }

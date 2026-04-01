@@ -37,6 +37,13 @@ export async function getOrdenes(page: number = 1, limit: number = 10, query?: s
                         include: {
                             servicio: {
                                 select: { nombre: true, unidad_medida: true }
+                            },
+                            insumos: {
+                                include: {
+                                    insumo: {
+                                        select: { nombre: true, unidad_medida: true, tipo: true }
+                                    }
+                                }
                             }
                         }
                     }

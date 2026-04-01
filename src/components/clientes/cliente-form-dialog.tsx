@@ -165,9 +165,19 @@ export function ClienteFormDialog({ cliente, trigger }: ClienteFormDialogProps) 
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Cond. IVA</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Resp. Inscripto" {...field} />
-                                        </FormControl>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Seleccionar" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="Responsable Inscripto">Responsable Inscripto</SelectItem>
+                                                <SelectItem value="Monotributista">Monotributista</SelectItem>
+                                                <SelectItem value="Exento">Exento</SelectItem>
+                                                <SelectItem value="Consumidor Final">Consumidor Final</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                         <FormMessage />
                                     </FormItem>
                                 )}

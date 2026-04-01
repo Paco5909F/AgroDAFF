@@ -1,10 +1,17 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { LayoutDashboard, UserCircle2, Wrench, Mail, ArrowRight, Wheat, Tractor, BarChart3, FileSpreadsheet, ShieldCheck, Truck } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+
+export const dynamic = 'force-dynamic'
 
 export default async function LandingPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    redirect('/dashboard')
+  }
 
   return (
     <div className="min-h-screen font-sans bg-background text-foreground">
@@ -15,8 +22,8 @@ export default async function LandingPage() {
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/field_background.png" alt="Campo Background" className="w-full h-full object-cover opacity-10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/50 to-white"></div>
+          <img src="/images/bg-v2.png" alt="Campo Background" className="w-full h-full object-cover opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/40 to-white"></div>
         </div>
 
         <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl mx-auto">
@@ -115,9 +122,7 @@ export default async function LandingPage() {
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Múltiples Establecimientos</li>
                   <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div> Soporte WhatsApp Directo</li>
                 </ul>
-                <div className="text-3xl font-bold text-emerald-400 md:hidden">
-                  $25.000 <span className="text-sm font-normal text-slate-400">/mes</span>
-                </div>
+
               </div>
               <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm text-center">
                 <div className="text-sm text-slate-500 uppercase tracking-wide font-semibold mb-2">Precio Estándar</div>

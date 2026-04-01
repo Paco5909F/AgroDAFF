@@ -5,13 +5,13 @@ import { UserMenu } from "@/components/ui/user-menu"
 import { MobileNav } from "@/components/ui/mobile-nav"
 
 import { CompanySwitcher } from "@/components/admin/company-switcher"
-import { getUserContext } from "@/server/context"
+import { getUserContextSafe } from "@/server/context"
 
 export async function TrisquelNavbar() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    const context = await getUserContext().catch(() => null)
+    const context = await getUserContextSafe()
     let userData = null
     let isSuperAdmin = false
     let companies: { id: string, nombre: string }[] = []
@@ -52,7 +52,7 @@ export async function TrisquelNavbar() {
                 </div>
 
                 <a href={user ? "/dashboard" : "/"} className="flex items-center gap-2 md:gap-3 group">
-                    <div className="relative w-8 h-8 md:w-10 md:h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-100/50 transition-transform group-hover:scale-105 bg-background p-0.5 border border-border">
+                    <div className="relative w-10 h-10 md:w-16 md:h-16 flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/images/logo.png" alt="Trisquel Logo" className="object-contain w-full h-full" />
                     </div>
@@ -65,21 +65,24 @@ export async function TrisquelNavbar() {
                 <div className="hidden lg:flex items-center gap-2">
                     {user ? (
                         <>
-                            <div className="flex items-center gap-0.5 bg-emerald-50/50 p-1 rounded-full border border-emerald-100/50">
-                                <NavLink href="/dashboard">Dashboard</NavLink>
-                                <NavLink href="/clientes">Clientes</NavLink>
-                                <NavLink href="/presupuestos">Presupuestos</NavLink>
-                                <NavLink href="/ordenes">Órdenes</NavLink>
-                                <NavLink href="/dashboard/servicios">Labor</NavLink>
-                                <NavLink href="/cartas-porte">Logística</NavLink>
-                                <NavLink href="/campanas">Campañas</NavLink>
-                                <NavLink href="/silos">Silos</NavLink>
-                                <NavLink href="/reportes">Reportes</NavLink>
-                                <NavLink href="/dashboard/equipo">Equipo</NavLink>
-                                {context?.rol === 'ADMIN' && (
-                                    <NavLink href="/dashboard/configuracion">Config</NavLink>
-                                )}
-                            </div>
+                            {context && (
+                                <div className="flex items-center gap-0.5 bg-emerald-50/50 p-1 rounded-full border border-emerald-100/50">
+                                    <NavLink href="/dashboard">Dashboard</NavLink>
+                                    <NavLink href="/clientes">Clientes</NavLink>
+                                    <NavLink href="/presupuestos">Presupuestos</NavLink>
+                                    <NavLink href="/ordenes">Órdenes</NavLink>
+                                    <NavLink href="/dashboard/servicios">Labor</NavLink>
+                                    <NavLink href="/cartas-porte">Logística</NavLink>
+                                    <NavLink href="/campanas">Campañas</NavLink>
+                                    <NavLink href="/silos">Silos</NavLink>
+                                    <NavLink href="/reportes">Reportes</NavLink>
+                                    <NavLink href="/dashboard/equipo">Equipo</NavLink>
+                                    <NavLink href="/dashboard/insumos">Insumos</NavLink>
+                                    {context?.rol === 'ADMIN' && (
+                                        <NavLink href="/dashboard/configuracion">Config</NavLink>
+                                    )}
+                                </div>
+                            )}
                             <div className="pl-3 border-l border-slate-200 ml-2 flex items-center gap-2">
                                 {isSuperAdmin && companies.length > 0 && (
                                     <CompanySwitcher

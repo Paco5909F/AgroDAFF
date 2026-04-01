@@ -134,7 +134,7 @@
   }
 
   body {
-    background-color: var(--background);
+    background-color: transparent;
     color: var(--foreground);
     /* Fondo Agro: Degradado suave de blanco (arriba) a transparente (abajo) para integrar el campo */
     /* Background handled by fixed div in layout.tsx for better mobile support */

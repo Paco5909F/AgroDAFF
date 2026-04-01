@@ -29,14 +29,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
 
+import { PdfBranding } from '@/lib/pdf-generator'
+
 interface PresupuestosListProps {
     data: any[]
     clientes: any[]
     servicios: any[]
     rol: string
+    branding: PdfBranding
 }
 
-export function PresupuestosList({ data, clientes, servicios, rol }: PresupuestosListProps) {
+export function PresupuestosList({ data, clientes, servicios, rol, branding }: PresupuestosListProps) {
     const [loadingMap, setLoadingMap] = useState<Record<string, string | null>>({})
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, startDeleteTransition] = useTransition()
@@ -46,7 +49,7 @@ export function PresupuestosList({ data, clientes, servicios, rol }: Presupuesto
     const canEdit = hasPermission(rol, PERMISSIONS.PRESUPUESTOS, 'update')
 
     const handleDownloadPDF = (presupuesto: any) => {
-        generatePresupuestoPDF(presupuesto)
+        generatePresupuestoPDF(presupuesto, branding)
     }
 
     const handleStatusUpdate = async (id: string, status: 'APROBADO' | 'RECHAZADO') => {
@@ -118,7 +121,7 @@ export function PresupuestosList({ data, clientes, servicios, rol }: Presupuesto
                         {data.map((presupuesto) => (
                             <TableRow key={presupuesto.id} className="group hover:bg-slate-50/50 transition-colors">
                                 <TableCell className="text-slate-500">
-                                    {format(new Date(presupuesto.fecha), 'dd/MM/yyyy')}
+                                    {presupuesto.fechaFormatted}
                                 </TableCell>
                                 <TableCell className="font-medium text-slate-700">
                                     {presupuesto.cliente.razon_social}

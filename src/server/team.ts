@@ -33,11 +33,20 @@ export async function getTeamMembers() {
         // Self-healing: If this is the current user and DB email is missing, use context email and repair DB
         if (m.usuario.id === currentUserId && !email && currentUserEmail) {
             email = currentUserEmail
-            // Fire and forget repair
-            await prisma.usuario.update({
-                where: { id: currentUserId },
-                data: { email: currentUserEmail }
-            }).catch((err) => console.error("Error repairing user email:", err))
+            try {
+                // Only update if email is not taken by another user
+                const existing = await prisma.usuario.findUnique({
+                    where: { email: currentUserEmail }
+                })
+                if (!existing) {
+                    await prisma.usuario.update({
+                        where: { id: currentUserId },
+                        data: { email: currentUserEmail }
+                    })
+                }
+            } catch (err) {
+                // Ignore silent repair errors
+            }
         }
 
         return {
