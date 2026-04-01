@@ -31,6 +31,8 @@ export async function updateEmpresaProfile(data: z.infer<typeof updateEmpresaSch
                 nombre: validData.nombre,
                 cuit: validData.cuit,
                 direccion: validData.direccion,
+                telefono: validData.telefono || null,
+                email: validData.email || null,
                 logo_url: validData.logo_url || null
             }
         })
