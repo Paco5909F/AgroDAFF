@@ -21,6 +21,10 @@ import { PDFDownloadButton } from './pdf-download-button'
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 
 import { PdfBranding } from '@/lib/pdf-generator'
+import { ActivityInsumosForm } from '@/components/insumos/activity-insumos-form'
+import { addInsumoToOrdenItem, deleteOrdenItemInsumo } from '@/server/orden-insumos'
+import { getInsumos } from '@/server/insumos'
+import { useState, useEffect } from 'react'
 
 interface OrdenListProps {
     ordenes: any[]
@@ -32,6 +36,28 @@ interface OrdenListProps {
 
 export function OrdenList({ ordenes, clientes, servicios, rol, branding }: OrdenListProps) {
     const [isPending, startTransition] = useTransition()
+    const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+    const [insumoCatalog, setInsumoCatalog] = useState<any[]>([])
+
+    // Load catalog for the forms
+    useEffect(() => {
+        getInsumos().then(res => {
+            if (res.success && res.insumos) {
+                setInsumoCatalog(res.insumos)
+            }
+        })
+    }, [])
+
+    const toggleRow = (id: string) => {
+        const newSet = new Set(expandedRows)
+        if (newSet.has(id)) {
+            newSet.delete(id)
+        } else {
+            newSet.add(id)
+        }
+        setExpandedRows(newSet)
+    }
+
     const canDelete = hasPermission(rol, PERMISSIONS.ORDENES, 'delete')
     const canEdit = hasPermission(rol, PERMISSIONS.ORDENES, 'update')
     const canBill = hasPermission(rol, PERMISSIONS.FACTURACION, 'bill') // Assuming bill permission exists
@@ -78,7 +104,12 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                 </TableHeader>
                 <TableBody>
                     {ordenes.map((orden) => (
-                        <TableRow key={orden.id} className="group">
+                        <>
+                        <TableRow 
+                            key={orden.id} 
+                            className={`group cursor-pointer ${expandedRows.has(orden.id) ? 'bg-slate-50/80 border-l-4 border-l-emerald-500' : ''}`}
+                            onClick={() => toggleRow(orden.id)}
+                        >
                             <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold">
@@ -171,6 +202,86 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                                 </div>
                             </TableCell>
                         </TableRow>
+                        
+                        {/* Expandable Content for Items and Insumos */}
+                        {expandedRows.has(orden.id) && (
+                            <TableRow className="bg-slate-50 border-b border-slate-200">
+                                <TableCell colSpan={7} className="p-0">
+                                    <div className="p-4 pl-12 border-l-4 border-emerald-500 my-2 mx-4 rounded-md bg-white shadow-sm">
+                                        <h4 className="font-semibold text-slate-800 mb-3 text-sm flex items-center gap-2">
+                                            <i className="lucide-list-checks w-4 h-4 text-emerald-600"></i>
+                                            Detalle de Labores ({orden.items.length})
+                                        </h4>
+                                        <div className="space-y-6">
+                                            {orden.items.map((item: any) => (
+                                                <div key={item.id} className="border border-slate-100 rounded-lg p-3">
+                                                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-slate-50">
+                                                        <div className="font-medium text-slate-700">
+                                                            {item.servicio?.nombre}
+                                                            <span className="text-slate-400 text-sm font-normal ml-2">
+                                                                ({item.cantidad} {item.servicio?.unidad_medida})
+                                                            </span>
+                                                        </div>
+                                                        <div className="font-semibold text-emerald-700">
+                                                            ${Number(item.total).toLocaleString('es-AR', {minimumFractionDigits: 2})}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Insumos List for this Item */}
+                                                    {item.insumos && item.insumos.length > 0 && (
+                                                        <div className="mt-3 pl-4 border-l-2 border-amber-200">
+                                                            <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Insumos Aplicados</h5>
+                                                            <div className="space-y-2">
+                                                                {item.insumos.map((ins: any) => (
+                                                                    <div key={ins.id} className="flex items-center justify-between text-sm bg-amber-50/50 p-2 rounded">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="font-medium text-slate-700">{ins.insumo?.nombre}</span>
+                                                                            <span className="text-slate-500 text-xs">
+                                                                                ({Number(ins.dosis_por_ha)} {ins.insumo?.unidad_medida}/ha x {ins.cantidad_pasadas} pasadas)
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-4">
+                                                                            <span className="text-amber-700 font-medium">
+                                                                                ${Number(ins.costo_total).toLocaleString('es-AR')}
+                                                                            </span>
+                                                                            {canDelete && (
+                                                                                <Button 
+                                                                                    variant="ghost" 
+                                                                                    size="icon" 
+                                                                                    className="h-6 w-6 text-slate-400 hover:text-red-600"
+                                                                                    onClick={async () => {
+                                                                                        if(confirm('¿Remover insumo?')) {
+                                                                                            await deleteOrdenItemInsumo(ins.id)
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <Trash2 className="h-3 w-3" />
+                                                                                </Button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Add Insumo Form */}
+                                                    {canEdit && (
+                                                        <ActivityInsumosForm 
+                                                            ordenItemId={item.id}
+                                                            catalog={insumoCatalog}
+                                                            hectareasAplicadas={Number(item.cantidad)}
+                                                            onAddInsumoAction={addInsumoToOrdenItem}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </>
                     ))}
                 </TableBody>
             </Table>

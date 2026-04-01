@@ -12,6 +12,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls"
 import { SearchInput } from "@/components/ui/search-input"
 import { getUserContext } from "@/server/context"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
+import { prisma } from "@/lib/prisma"
 
 export default async function PresupuestosPage({
     searchParams,

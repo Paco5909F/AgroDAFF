@@ -79,38 +79,53 @@ export async function acceptInvitation(token: string) {
 
     // Check if user table record exists for this Auth ID
     const existingUser = await prisma.usuario.findUnique({
-        where: { id: user.id }
+        where: { id: user.id },
+        include: { miembros: true }
     })
 
     if (existingUser) {
-        // User already has a profile/company?
-        // If they belong to another company, this might be tricky.
-        // For MVP, if they have a profile, we switch them? 
-        // Or if they are "New" user without profile?
-        // If they have profile and different company -> Error "Already in a company".
-        if (existingUser.empresa_id) {
-            throw new Error("You already belong to a company. Leave your current company first.")
+        // Prevent duplicate membership
+        const alreadyMember = existingUser.miembros.some(m => m.empresa_id === invitation.empresa_id)
+        if (alreadyMember) {
+            throw new Error("Ya eres miembro de esta empresa.")
         }
 
-        // Update user
-        await prisma.usuario.update({
-            where: { id: user.id },
-            data: {
-                empresa_id: invitation.empresa_id,
-                rol: invitation.rol,
-                email: invitation.email // Sync email from invite
-            }
+        // Add user to new company as Miembro and set it as active
+        await prisma.$transaction(async (tx) => {
+            await tx.miembro.create({
+                data: {
+                    usuario_id: user.id,
+                    empresa_id: invitation.empresa_id,
+                    rol: invitation.rol
+                }
+            })
+            await tx.usuario.update({
+                where: { id: user.id },
+                data: { 
+                    active_empresa_id: invitation.empresa_id,
+                    email: invitation.email // Ensure email is synced
+                }
+            })
         })
     } else {
-        // Create user
-        await prisma.usuario.create({
-            data: {
-                id: user.id,
-                nombre: user.user_metadata?.nombre || user.email?.split('@')[0] || 'User',
-                email: invitation.email,
-                rol: invitation.rol,
-                empresa_id: invitation.empresa_id
-            }
+        // Create user and initial membership
+        await prisma.$transaction(async (tx) => {
+            await tx.usuario.create({
+                data: {
+                    id: user.id,
+                    nombre: user.user_metadata?.nombre || user.email?.split('@')[0] || 'User',
+                    email: invitation.email,
+                    active_empresa_id: invitation.empresa_id,
+                    empresa_id: invitation.empresa_id // Keep for legacy compatibility during transition
+                }
+            })
+            await tx.miembro.create({
+                data: {
+                    usuario_id: user.id,
+                    empresa_id: invitation.empresa_id,
+                    rol: invitation.rol
+                }
+            })
         })
     }
 

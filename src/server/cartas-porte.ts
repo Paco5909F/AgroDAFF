@@ -10,14 +10,16 @@ export async function getCartasPorte(query?: string) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CARTAS_PORTE, 'read')
         const cartas = await prisma.cartaPorte.findMany({
-            where: query ? {
+            where: {
                 empresa_id: empresaId,
-                OR: [
-                    { cliente: { razon_social: { contains: query, mode: 'insensitive' } } },
-                    { chofer: { contains: query, mode: 'insensitive' } },
-                    { patente_camion: { contains: query, mode: 'insensitive' } }
-                ]
-            } : undefined,
+                ...(query ? {
+                    OR: [
+                        { cliente: { razon_social: { contains: query, mode: 'insensitive' } } },
+                        { chofer: { contains: query, mode: 'insensitive' } },
+                        { patente_camion: { contains: query, mode: 'insensitive' } }
+                    ]
+                } : {})
+            },
             include: {
                 cliente: true
             },
@@ -101,9 +103,22 @@ export async function deleteCartaPorte(id: string) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CARTAS_PORTE, 'delete')
-        await prisma.cartaPorte.delete({
+        
+        const check = await prisma.cartaPorte.findUnique({ where: { id } })
+        if (!check) {
+            return { success: false, error: `Error DEV: Registro UUID ${id} inexistente en PostgreSQL.` }
+        }
+        if (check.empresa_id !== empresaId) {
+            return { success: false, error: `Error DEV: La CP pertenece a ${check.empresa_id} pero tú operas sobre ${empresaId}` }
+        }
+
+        const result = await prisma.cartaPorte.deleteMany({
             where: { id, empresa_id: empresaId }
         })
+        
+        if (result.count === 0) {
+            return { success: false, error: 'Carta de porte bloqueada o no encontrada al procesar.' }
+        }
         revalidatePath('/cartas-porte')
         return { success: true }
     } catch (error) {

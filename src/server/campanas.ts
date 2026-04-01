@@ -120,16 +120,24 @@ export async function toggleCampanaActiva(id: string) {
             data: { activa: false }
         })
 
-        // Activate specific one
-        const campana = await prisma.campana.update({
-            where: { id },
+        // Activate specific one using updateMany for multi-tenant safety
+        const result = await prisma.campana.updateMany({
+            where: { 
+                id,
+                OR: [
+                    { empresa_id: empresaId },
+                    { empresa_id: null }
+                ]
+            },
             data: { activa: true }
         })
+
+        if (result.count === 0) return { success: false, error: 'Campaña no encontrada o sin autorización' }
 
         revalidatePath('/campanas')
         revalidatePath('/dashboard')
         revalidatePath('/ordenes')
-        return { success: true, data: campana }
+        return { success: true, data: { id } }
     } catch (error) {
         console.error('Error toggling campana:', error)
         return { success: false, error: 'Error al cambiar estado de campaña' }
@@ -155,8 +163,14 @@ export async function updateCampana(id: string, data: CreateCampanaInput) {
             })
         }
 
-        const campana = await prisma.campana.update({
-            where: { id },
+        const result = await prisma.campana.updateMany({
+            where: { 
+                id,
+                OR: [
+                    { empresa_id: empresaId },
+                    { empresa_id: null } // Allow updating legacy if necessary, though ideally we shouldn't mutate nulls here. Kept for compatibility.
+                ]
+            },
             data: {
                 nombre: data.nombre,
                 fecha_inicio: new Date(data.fecha_inicio),
@@ -166,11 +180,13 @@ export async function updateCampana(id: string, data: CreateCampanaInput) {
                 ciclo: data.ciclo
             }
         })
+        
+        if (result.count === 0) return { success: false, error: 'Campaña no autorizada' }
 
         revalidatePath('/campanas')
         revalidatePath('/dashboard')
         revalidatePath('/ordenes')
-        return { success: true, data: campana }
+        return { success: true, data: { id } }
     } catch (error) {
         console.error('Error updating campana:', error)
         return { success: false, error: 'Error al actualizar campaña' }
@@ -179,9 +195,20 @@ export async function updateCampana(id: string, data: CreateCampanaInput) {
 
 export async function deleteCampana(id: string) {
     try {
-        await prisma.campana.delete({
-            where: { id }
+        const empresaId = await getCompanyId()
+
+        // Use deleteMany to enforce multi-tenant isolation on non-unique fields alongside ID
+        const result = await prisma.campana.deleteMany({
+            where: { 
+                id,
+                empresa_id: empresaId
+            }
         })
+
+        if (result.count === 0) {
+            return { success: false, error: 'Campaña no encontrada o sin autorización' }
+        }
+
         revalidatePath('/campanas')
         revalidatePath('/dashboard')
         return { success: true }

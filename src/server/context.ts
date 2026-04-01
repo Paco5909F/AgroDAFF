@@ -83,9 +83,7 @@ export async function getUserContextSafe(): Promise<UserContext | null> {
             const firstCompany = await prisma.empresa.findFirst()
             if (firstCompany) {
                 targetEmpresaId = firstCompany.id
-                try {
-                    await prisma.usuario.update({ where: { id: user.id }, data: { active_empresa_id: targetEmpresaId } })
-                } catch (e) { }
+                // SECURITY FIX: Do not permanently mutate active_empresa_id for superadmins falling back to a company.
             }
         }
     }

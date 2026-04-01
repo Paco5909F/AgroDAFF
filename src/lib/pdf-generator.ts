@@ -358,7 +358,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(COLORS.textLight[0]);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text("Este documento no es válido como factura. Los precios pueden variar sin previo aviso.", margin, footerY + 3);
 
         doc.save(`Presupuesto_${presupuesto.id.slice(0, 6)}.pdf`);
@@ -438,19 +438,36 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
         cursorY += 6;
 
-        const tableBody = (orden.items || []).map((item: any) => {
+        const tableBody: any[] = [];
+        
+        (orden.items || []).forEach((item: any) => {
             let desc = item.servicio?.nombre || "Item";
             if (Number(item.kilometros) > 0) {
                 desc += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
             }
 
-            return [
+            // Main Service Row
+            tableBody.push([
                 { content: desc, styles: { fontStyle: 'bold' } },
                 Number(item.cantidad).toLocaleString('es-AR'),
                 item.servicio?.unidad_medida || "-",
                 `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
                 { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
-            ]
+            ]);
+
+            // Insumos Rows (Nested below service)
+            if (item.insumos && item.insumos.length > 0) {
+                item.insumos.forEach((ins: any) => {
+                    const insName = `  ↳ Insumo: ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
+                    tableBody.push([
+                        { content: insName, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+                        "-", // Cantidad handled by dosis/ha
+                        "-", // Unidad handled by dosis/ha
+                        "-", // Precio unit included in subtotal logic usually for display
+                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [100, 100, 100] } }
+                    ]);
+                });
+            }
         });
 
         autoTable(doc, {
@@ -537,7 +554,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(COLORS.textLight[0]);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Orden_${orden.id ? orden.id.slice(0, 6) : "Borrador"}.pdf`);
@@ -694,7 +711,7 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(100);
-        doc.text("Documento generado electronicamente por sistema de gestión EL TRISQUEL.", margin, footerY);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text("Este documento no reemplaza a la Carta de Porte Oficial emitida por AFIP si el CTG no es válido.", margin, footerY + 3);
 
         doc.save(`CP_${carta.ctg || 'Borrador'}.pdf`);

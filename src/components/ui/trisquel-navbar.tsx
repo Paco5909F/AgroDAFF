@@ -77,6 +77,7 @@ export async function TrisquelNavbar() {
                                     <NavLink href="/silos">Silos</NavLink>
                                     <NavLink href="/reportes">Reportes</NavLink>
                                     <NavLink href="/dashboard/equipo">Equipo</NavLink>
+                                    <NavLink href="/dashboard/insumos">Insumos</NavLink>
                                     {context?.rol === 'ADMIN' && (
                                         <NavLink href="/dashboard/configuracion">Config</NavLink>
                                     )}
