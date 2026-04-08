@@ -7,6 +7,8 @@ import { toast } from 'sonner'
 import { CalendarIcon, Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import { v4 as uuidv4 } from 'uuid'
+import { getOfflineDB } from '@/lib/offline/db'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from "@/components/ui/card"
@@ -105,6 +107,23 @@ export function OrdenForm({ clientes, servicios, initialData, onSuccess, mode = 
     }, [items, form])
 
     async function onSubmit(data: OrdenFormValues) {
+        if (typeof window !== 'undefined' && !navigator.onLine) {
+            const db = getOfflineDB();
+            if (db) {
+                await db.pendingActions.add({
+                    idempotencyKey: uuidv4(),
+                    action: mode === "edit" ? 'UPDATE_ORDEN' as any : 'CREATE_ORDEN',
+                    payload: mode === "edit" ? { id: initialData?.id, data } : data,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+                toast.warning("Sin conexión: La Orden se guardó en la Cola de Sincronización Local.", { duration: 5000 });
+                if (mode === "create") form.reset()
+                if (onSuccess) onSuccess()
+            }
+            return;
+        }
+
         startTransition(async () => {
             let result;
             if (mode === "edit" && initialData?.id) {

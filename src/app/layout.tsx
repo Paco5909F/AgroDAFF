@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "AgroDAFF",
   description: "Sistema de Gestión Agropecuaria SaaS",
+  manifest: "/manifest.json",
   icons: {
     icon: "/images/logo-agrodaff.jpg",
     apple: "/images/logo-agrodaff.jpg",
@@ -29,6 +30,7 @@ import { AutoLogout } from "@/components/auth/auto-logout"
 import { NavbarWrapper } from "@/components/ui/navbar-wrapper"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
 import { AIAssistantWidget } from "@/components/ui/ai-assistant-widget"
+import { OfflineSyncManager } from "@/components/offline/sync-manager"
 
 export default function RootLayout({
   children,
@@ -40,6 +42,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-screen bg-transparent`}>
         <AuthProvider>
           <AutoLogout />
+          <OfflineSyncManager />
 
           {/* Fixed Background Layer (Global) */}
           <div className="fixed inset-0 -z-50 w-full h-full">
