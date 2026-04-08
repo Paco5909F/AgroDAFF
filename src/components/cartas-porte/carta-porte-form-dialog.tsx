@@ -82,7 +82,7 @@ export function CartaPorteFormDialog({ clientes, initialData, trigger, onClose }
         resolver: zodResolver(cartaPorteSchema) as any,
         defaultValues: {
             ctg: initialData?.ctg || "",
-            origen: initialData?.origen || "Planta El Trisquel - O'Higgins",
+            origen: initialData?.origen || "Planta Principal - O'Higgins",
             destino: initialData?.destino || "",
             corredor: initialData?.corredor || "",
             destinatario: initialData?.destinatario || "",

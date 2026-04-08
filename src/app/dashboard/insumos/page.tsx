@@ -5,9 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PackageOpen } from 'lucide-react'
 
 export const metadata: Metadata = {
-    title: 'Insumos | Trisquel',
+    title: 'Insumos | AgroDAFF',
     description: 'Catálogo y precios de insumos',
 }
+
+export const dynamic = 'force-dynamic'
 
 export default async function InsumosPage() {
     const { success, insumos, error } = await getInsumos()

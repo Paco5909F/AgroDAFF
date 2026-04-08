@@ -7,9 +7,11 @@ import { prisma } from '@/lib/prisma'
 import { BarChart3 } from 'lucide-react'
 
 export const metadata: Metadata = {
-    title: 'Reportes y Cierre | Trisquel',
+    title: 'Reportes y Cierre | AgroDAFF',
     description: 'Generación de reportes y cierre de periodos',
 }
+
+export const dynamic = 'force-dynamic'
 
 export default async function ReportesPage() {
     const context = await getUserContext()

@@ -32,9 +32,9 @@ export default async function LandingPage() {
             Nuevo: Gestión Multi-Empresa
           </div>
           <h1 className="text-4xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
-            El Sistema Operativo para <br />
+            El Sistema Operativo SaaS <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-              Acopios y Agroservicios
+              AgroDAFF
             </span>
           </h1>
           <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
@@ -145,7 +145,7 @@ export default async function LandingPage() {
       <footer className="bg-slate-50 border-t border-slate-200 py-12">
         <div className="container mx-auto px-6 flex flex-col items-center gap-6 text-center">
           <div className="text-sm text-slate-500">
-            © {new Date().getFullYear()} El Trisquel Agroservicios. Todos los derechos reservados.
+            © {new Date().getFullYear()} AgroDAFF SaaS. Todos los derechos reservados.
           </div>
           <div className="flex gap-6 justify-center">
             <Link href="/contacto" className="text-sm text-slate-600 hover:text-emerald-600">Contacto</Link>

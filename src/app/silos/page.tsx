@@ -7,6 +7,8 @@ import { MovimientoDialog } from "@/components/stock/movimiento-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus, ArrowRightLeft, Warehouse } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function SilosPage() {
     const { data: silos } = await getSilos()
     const { rol } = await getUserContext()

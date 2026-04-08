@@ -94,10 +94,10 @@ export default function LoginPage() {
 
                         <div className="w-16 h-16 bg-white rounded-lg p-2 mb-6 shadow-md">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/images/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                            <img src="/images/logo-agrodaff.jpg" alt="Logo" className="w-full h-full object-contain" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight uppercase leading-tight">
-                            Agroservicios <br /> El Trisquel
+                            Plataforma <br /> AgroDAFF
                         </h1>
                         <div className="h-1 w-12 bg-yellow-500 mt-4 rounded-full"></div>
                     </div>

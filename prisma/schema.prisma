@@ -50,6 +50,7 @@ model Empresa {
   plan_status     String   @default("FREE") // FREE, PRO, CANCELLED
   subscription_id String?  // Mercado Pago Preapproval ID
   trial_ends_at   DateTime? @db.Timestamptz
+  is_lifetime     Boolean  @default(false) // Permite bypass de límites para VIPs
 
   // Invite System
   shared_invite_code String? @unique // Code for auto-joining

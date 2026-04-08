@@ -1,0 +1,74 @@
+
+> trisquel-app-v2@0.1.0 build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.0s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/11) ...
+  Generating static pages using 15 workers (2/11) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+  Generating static pages using 15 workers (5/11) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+  Generating static pages using 15 workers (8/11) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+✓ Generating static pages using 15 workers (11/11) in 219.2ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/proxy-image
+├ ƒ /api/upload-logo
+├ ƒ /api/webhooks/mercadopago
+├ ƒ /auth/callback
+├ ƒ /campanas
+├ ƒ /cartas-porte
+├ ƒ /clientes
+├ ƒ /contacto
+├ ƒ /dashboard
+├ ƒ /dashboard/configuracion
+├ ƒ /dashboard/equipo
+├ ƒ /dashboard/insumos
+├ ƒ /dashboard/servicios
+├ ƒ /invite/accept/[token]
+├ ƒ /login
+├ ƒ /onboarding
+├ ƒ /ordenes
+├ ƒ /presupuestos
+├ ƒ /pricing
+├ ƒ /profile
+├ ƒ /reportes
+├ ƒ /servicios
+├ ƒ /setup
+└ ƒ /silos
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+

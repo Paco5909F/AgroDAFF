@@ -16,7 +16,7 @@ export async function createSubscription() {
 
         const subscription = await preapproval.create({
             body: {
-                reason: "Suscripción PRO - Agroservicios El Trisquel",
+                reason: "Suscripción PRO - AgroDAFF",
                 auto_recurring: {
                     frequency: 1,
                     frequency_type: "months",

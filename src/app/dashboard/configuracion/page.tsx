@@ -7,9 +7,11 @@ import { prisma } from '@/lib/prisma'
 import { Settings } from 'lucide-react'
 
 export const metadata: Metadata = {
-    title: 'Configuración | Trisquel',
+    title: 'Configuración | AgroDAFF',
     description: 'Configuración de la empresa y perfil',
 }
+
+export const dynamic = 'force-dynamic'
 
 export default async function ConfiguracionPage() {
     const context = await getUserContext()

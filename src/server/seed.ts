@@ -7,7 +7,7 @@ export async function seedAdminUser() {
     try {
         console.log("Seeding admin user...")
         const supabase = await createClient()
-        const email = 'admin@eltrisquel.com'
+        const email = 'admin@agrodaff.com'
         const password = 'admin123'
 
         const { data: { users } } = await supabase.auth.admin.listUsers()

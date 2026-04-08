@@ -15,6 +15,8 @@ interface DashboardPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

@@ -6,6 +6,8 @@ import { Search, Plus, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardServiciosPage({
     searchParams,
 }: {

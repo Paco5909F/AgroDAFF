@@ -31,7 +31,7 @@ export const pdfService = {
         const doc = new jsPDF()
 
         // --- CONFIGURACIÓN ---
-        const companyName = "TRISQUEL AGRO SERVICIOS"
+        const companyName = "AgroDAFF"
         const companyCuit = "20-12345678-9"
         const companyAddress = "Ruta Nacional 5 Km 100, Mercedes, Bs. As."
 
@@ -144,7 +144,7 @@ export const pdfService = {
         const doc = new jsPDF()
 
         // --- CONFIGURACIÓN ---
-        const companyName = "TRISQUEL AGRO SERVICIOS"
+        const companyName = "AgroDAFF"
         const companyCuit = "20-12345678-9"
         const companyAddress = "Ruta Nacional 5 Km 100, Mercedes, Bs. As."
 

@@ -14,6 +14,8 @@ import { getUserContext } from "@/server/context"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 
+export const dynamic = 'force-dynamic'
+
 export default async function PresupuestosPage({
     searchParams,
 }: {
@@ -49,7 +51,7 @@ export default async function PresupuestosPage({
     })
 
     const branding = {
-        name: empresa?.nombre || "EL TRISQUEL AGROSERVICIOS",
+        name: empresa?.nombre || "AgroDAFF",
         address: empresa?.direccion || "O'Higgins, Buenos Aires",
         cuit: empresa?.cuit || "20-12345678-9",
         logoUrl: empresa?.logo_url || undefined,

@@ -7,6 +7,8 @@ import { SearchInput } from '@/components/ui/search-input'
 import { getUserContext } from '@/server/context'
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 // Server Component
+export const dynamic = 'force-dynamic'
+
 export default async function ClientesPage({
     searchParams,
 }: {

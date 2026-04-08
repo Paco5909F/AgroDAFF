@@ -5,9 +5,11 @@ import { Contact } from 'lucide-react'
 import { ProfileForm } from '@/components/profile/profile-form'
 
 export const metadata: Metadata = {
-    title: 'Mi Perfil | Trisquel',
+    title: 'Mi Perfil | AgroDAFF',
     description: 'Administrar cuenta de usuario',
 }
+
+export const dynamic = 'force-dynamic'
 
 export default async function ProfilePage() {
     const profile = await getUserProfile()

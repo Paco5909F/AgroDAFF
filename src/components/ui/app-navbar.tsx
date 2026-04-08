@@ -7,7 +7,7 @@ import { MobileNav } from "@/components/ui/mobile-nav"
 import { CompanySwitcher } from "@/components/admin/company-switcher"
 import { getUserContextSafe } from "@/server/context"
 
-export async function TrisquelNavbar() {
+export async function AppNavbar() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -21,10 +21,14 @@ export async function TrisquelNavbar() {
             // Fetch minimal display data, but use Context for ROLE
             userData = await prisma.usuario.findUnique({
                 where: { id: user.id },
-                select: { nombre: true, active_empresa_id: true }
+                select: { 
+                    nombre: true, 
+                    active_empresa_id: true,
+                    empresa: { select: { nombre: true, logo_url: true } }
+                }
             })
 
-            const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
+            const SUPER_ADMIN_EMAILS = ['admin@agrodaff.com']
             if (user.email && SUPER_ADMIN_EMAILS.includes(user.email)) {
                 isSuperAdmin = true
                 companies = await prisma.empresa.findMany({
@@ -54,10 +58,14 @@ export async function TrisquelNavbar() {
                 <a href={user ? "/dashboard" : "/"} className="flex items-center gap-2 md:gap-3 group">
                     <div className="relative w-10 h-10 md:w-16 md:h-16 flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/images/logo.png" alt="Trisquel Logo" className="object-contain w-full h-full" />
+                        <img 
+                            src={userData?.empresa?.logo_url || "/images/logo-agrodaff.jpg"} 
+                            alt={`${userData?.empresa?.nombre || 'AgroDAFF'} Logo`} 
+                            className="object-contain w-full h-full" 
+                        />
                     </div>
                     <span className="font-bold text-sm md:text-lg tracking-tight text-slate-800 group-hover:text-emerald-700 transition-colors">
-                        AGROSERVICIOS EL TRISQUEL
+                        {userData?.empresa?.nombre || "AgroDAFF"}
                     </span>
                 </a>
 
@@ -78,6 +86,7 @@ export async function TrisquelNavbar() {
                                     <NavLink href="/reportes">Reportes</NavLink>
                                     <NavLink href="/dashboard/equipo">Equipo</NavLink>
                                     <NavLink href="/dashboard/insumos">Insumos</NavLink>
+                                    <NavLink href="/dashboard/analytics">Analítica</NavLink>
                                     {context?.rol === 'ADMIN' && (
                                         <NavLink href="/dashboard/configuracion">Config</NavLink>
                                     )}

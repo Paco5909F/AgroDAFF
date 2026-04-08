@@ -4,6 +4,8 @@ import { CampanaDialog } from "@/components/campanas/campana-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus, Sprout } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CampanasPage() {
     const { data: campanas } = await getCampanas()
 

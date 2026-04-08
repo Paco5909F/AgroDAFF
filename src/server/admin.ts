@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
-const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
+const SUPER_ADMIN_EMAILS = ['admin@agrodaff.com']
 
 export async function switchAdminContext(targetEmpresaId: string) {
     const supabase = await createClient()

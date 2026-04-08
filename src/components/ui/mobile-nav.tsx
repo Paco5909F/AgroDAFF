@@ -123,6 +123,9 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             <MobileLink href="/dashboard/insumos" icon={<Package className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Insumos
                             </MobileLink>
+                            <MobileLink href="/dashboard/analytics" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Analítica
+                            </MobileLink>
                             {userData?.rol === 'ADMIN' && (
                                 <>
                                     <div className="h-px bg-slate-100 my-2 mx-2" />

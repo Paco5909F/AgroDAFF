@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { ordenSchema, OrdenFormValues } from "@/lib/validations/orden"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { checkPlanLimits } from "@/server/billing-limits"
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
 
@@ -84,6 +85,12 @@ export async function createOrden(data: OrdenFormValues) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.ORDENES, 'create')
+
+        // Feature Gating: Check Limits
+        const limitCheck = await checkPlanLimits(empresaId, 'ORDEN')
+        if (!limitCheck.allowed) {
+            return { success: false, error: limitCheck.message }
+        }
 
         // Auto-assign active campaign if available, using the first found active one
         const activeCampana = await prisma.campana.findFirst({

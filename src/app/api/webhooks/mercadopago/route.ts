@@ -1,53 +1,66 @@
-import { NextRequest, NextResponse } from "next/server";
-import { preapproval } from "@/lib/mercadopago";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { preapproval } from '@/lib/mercadopago'
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     try {
-        const searchParams = req.nextUrl.searchParams;
-        const topic = searchParams.get("topic") || searchParams.get("type");
-        const id = searchParams.get("id") || searchParams.get("data.id");
+        const url = new URL(req.url)
+        console.log("MercadoPago Webhook Received", url.search)
 
-        console.log(`[MP Webhook] Topic: ${topic}, ID: ${id}`);
+        const body = await req.json().catch(() => null)
+        console.log("Webhook body:", body)
 
-        if (topic === "preapproval" && id) {
-            // Verify status with MP
-            const subscription = await preapproval.get({ id: id });
+        // Extract ID. MercadoPago sends id either in query ?data.id= or body.data.id
+        const id = url.searchParams.get('data.id') || body?.data?.id
+        const type = url.searchParams.get('type') || body?.type
 
-            if (!subscription) {
-                return NextResponse.json({ error: "Subscription not found" }, { status: 404 });
+        if (!id) {
+            return NextResponse.json({ success: true, message: 'Ignorado - Sin ID' }, { status: 200 })
+        }
+
+        if (type === 'subscription_preapproval') {
+            // Verify real status with MP API
+            const subscriptionInfo = await preapproval.get({ id })
+            
+            if (!subscriptionInfo) {
+                return NextResponse.json({ success: false, error: 'Subscripcion no encontrada' }, { status: 404 })
             }
 
-            const empresaId = subscription.external_reference;
-            const status = subscription.status; // authorized, paused, cancelled
+            const status = subscriptionInfo.status // pending, authorized, paused, cancelled
+            const empresaId = subscriptionInfo.external_reference // We set this on createSubscription
 
             if (!empresaId) {
-                console.error("[MP Webhook] Missing external_reference (empresaId)");
-                return NextResponse.json({ error: "Missing external_reference" }, { status: 400 });
+                console.error("Missing external_reference on subscription", subscriptionInfo.id)
+                return NextResponse.json({ success: true }, { status: 200 })
             }
 
-            console.log(`[MP Webhook] Updating Empresa ${empresaId} to status: ${status}`);
+            // Map MP status to our DB plan_status
+            let newPlanStatus = 'FREE'
+            if (status === 'authorized') {
+                newPlanStatus = 'PRO'
+            } else if (status === 'paused' || status === 'cancelled') {
+                newPlanStatus = 'PAST_DUE'
+            }
 
-            // Map MP status to App status
-            let planStatus = "FREE";
-            if (status === "authorized") planStatus = "PRO";
-            if (status === "cancelled") planStatus = "CANCELLED";
-            // paused?
-
+            // Update Database
             await prisma.empresa.update({
                 where: { id: empresaId },
                 data: {
-                    plan_status: planStatus,
-                    subscription_id: id
+                    plan_status: newPlanStatus,
+                    subscription_id: subscriptionInfo.id
                 }
-            });
+            })
 
-            return NextResponse.json({ success: true });
+            console.log(`Empresa ${empresaId} updated to ${newPlanStatus}`)
+            return NextResponse.json({ success: true, updated: newPlanStatus }, { status: 200 })
         }
 
-        return NextResponse.json({ message: "Event ignored" });
+        // Just acknowledge other events (like payments)
+        return NextResponse.json({ success: true }, { status: 200 })
+
     } catch (error) {
-        console.error("[MP Webhook] Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        console.error('Error handling MP Webhook:', error)
+        // MP retries if we return 500, but often we just return 200 if we logged it
+        return NextResponse.json({ success: false, error: 'Internal Error' }, { status: 500 })
     }
 }

@@ -6,11 +6,11 @@ import { AuthProvider } from "@/context/auth-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Trisquel App",
-  description: "Sistema de Gestión Agropecuaria",
+  title: "AgroDAFF",
+  description: "Sistema de Gestión Agropecuaria SaaS",
   icons: {
-    icon: "/images/logo.png",
-    apple: "/images/logo.png",
+    icon: "/images/logo-agrodaff.jpg",
+    apple: "/images/logo-agrodaff.jpg",
   },
 };
 
@@ -22,12 +22,13 @@ export const viewport = {
 };
 
 import { Toaster } from "@/components/ui/sonner"
-import { TrisquelNavbar } from "@/components/ui/trisquel-navbar"
+import { AppNavbar } from "@/components/ui/app-navbar"
 
 import { AutoLogout } from "@/components/auth/auto-logout"
 
 import { NavbarWrapper } from "@/components/ui/navbar-wrapper"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
+import { AIAssistantWidget } from "@/components/ui/ai-assistant-widget"
 
 export default function RootLayout({
   children,
@@ -54,7 +55,7 @@ export default function RootLayout({
           <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Header / Navbar */}
             <NavbarWrapper>
-              <TrisquelNavbar />
+              <AppNavbar />
             </NavbarWrapper>
 
             {/* Main Content & Footer Handled by Wrapper */}
@@ -63,6 +64,7 @@ export default function RootLayout({
             </MainLayoutWrapper>
           </div>
         </AuthProvider>
+        <AIAssistantWidget />
         <Toaster />
       </body>
     </html>

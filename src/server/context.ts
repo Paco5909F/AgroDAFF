@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { logger } from "@/lib/logger"
 
 export type UserContext = {
     userId: string
@@ -48,7 +49,7 @@ export async function getUserContextSafe(): Promise<UserContext | null> {
 
     // A. DETERMINE TARGET COMPANY
     let targetEmpresaId = dbUser.active_empresa_id
-    const isSuperAdmin = user.email === 'admin@eltrisquel.com'
+    const isSuperAdmin = user.email === 'admin@agrodaff.com'
     const isValidMember = dbUser.miembros.some(m => m.empresa_id === targetEmpresaId)
 
     if (targetEmpresaId && !isValidMember && !isSuperAdmin) {
@@ -79,13 +80,7 @@ export async function getUserContextSafe(): Promise<UserContext | null> {
             const exists = await prisma.empresa.findUnique({ where: { id: targetEmpresaId }, select: { id: true } })
             if (!exists) targetEmpresaId = null
         }
-        if (!targetEmpresaId) {
-            const firstCompany = await prisma.empresa.findFirst()
-            if (firstCompany) {
-                targetEmpresaId = firstCompany.id
-                // SECURITY FIX: Do not permanently mutate active_empresa_id for superadmins falling back to a company.
-            }
-        }
+        // DELETED: Automatic fallback to random company for SuperAdmin
     }
 
     if (!targetEmpresaId) return null

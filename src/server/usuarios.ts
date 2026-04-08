@@ -31,7 +31,7 @@ export async function getUserProfile() {
         }
 
         // --- ROLE RESOLUTION LOGIC ---
-        const SUPER_ADMIN_EMAILS = ['admin@eltrisquel.com']
+        const SUPER_ADMIN_EMAILS = ['admin@agrodaff.com']
         const isSuperAdmin = user.email && SUPER_ADMIN_EMAILS.includes(user.email)
 
         let effectiveRole = dbUser.rol // Default fallback

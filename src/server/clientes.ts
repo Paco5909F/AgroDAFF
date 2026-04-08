@@ -5,6 +5,7 @@ import { clienteSchema, ClienteFormValues } from "@/lib/validations/cliente"
 import { revalidatePath } from "next/cache"
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
+import { checkPlanLimits } from "@/server/billing-limits"
 
 export async function getClientes(query?: string) {
     const { empresaId, rol } = await getUserContext()
@@ -46,6 +47,12 @@ export async function createCliente(data: ClienteFormValues) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CLIENTES, 'create')
+
+        // Feature Gating: Check Limits
+        const limitCheck = await checkPlanLimits(empresaId, 'CLIENTE')
+        if (!limitCheck.allowed) {
+            return { success: false, error: limitCheck.message }
+        }
         // Create client first
         const cliente = await prisma.cliente.create({
             data: {

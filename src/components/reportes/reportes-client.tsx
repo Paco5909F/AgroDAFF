@@ -64,7 +64,7 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
         }
 
         const branding = empresa ? {
-            name: empresa.nombre || "El Trisquel Agroservicios",
+            name: empresa.nombre || "AgroDAFF",
             address: empresa.direccion || "O'Higgins, Buenos Aires",
             cuit: empresa.cuit || "",
             logoUrl: empresa.logo_url || undefined,

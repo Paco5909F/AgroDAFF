@@ -17,10 +17,10 @@ export default function ContactoPage() {
                         <div className="flex items-center gap-3 group">
                             <div className="relative w-10 h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-100 transition-transform group-hover:scale-105 bg-white p-0.5 border border-emerald-50">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="/images/logo.png" alt="Trisquel Logo" className="object-contain w-full h-full" />
+                                <img src="/images/logo-agrodaff.jpg" alt="Trisquel Logo" className="object-contain w-full h-full" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-lg font-bold text-slate-800 leading-tight tracking-tight group-hover:text-emerald-700 transition-colors">EL TRISQUEL</span>
+                                <span className="text-lg font-bold text-slate-800 leading-tight tracking-tight group-hover:text-emerald-700 transition-colors">AgroDAFF</span>
                                 <span className="text-[10px] font-bold text-emerald-600 tracking-[0.2em] uppercase">Agroservicios</span>
                             </div>
                         </div>
@@ -58,7 +58,7 @@ export default function ContactoPage() {
                             <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
                                 <Phone className="w-6 h-6" />
                             </div>
-                            <CardTitle className="text-xl font-bold text-slate-800">EL TRISQUEL AGROSERVICIOS</CardTitle>
+                            <CardTitle className="text-xl font-bold text-slate-800">AgroDAFF AGROSERVICIOS</CardTitle>
                             <CardDescription className="text-slate-500">Información Comercial y Administrativa</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">

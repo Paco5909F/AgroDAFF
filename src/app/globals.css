@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@source "../app";
+@source "../components";
+@source "../lib";
+@source "../server";
 
 @theme {
   --color-border: hsl(var(--border));
@@ -75,12 +79,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 140 30% 15%;
 
-    /* Primary: Trisquel Green (Vibrant but natural) */
+    /* Primary: AgroDAFF Green (Vibrant but natural) */
     --primary: 95 38% 35%;
     /* #416828 approx */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Earth Gold/Wheat (Trisquel accent) */
+    /* Secondary: Earth Gold/Wheat (AgroDAFF accent) */
     --secondary: 40 40% 90%;
     /* Light wheat for buttons */
     --secondary-foreground: 35 60% 30%;

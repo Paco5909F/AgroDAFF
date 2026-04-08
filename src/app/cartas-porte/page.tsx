@@ -12,6 +12,8 @@ import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 import { prisma } from "@/lib/prisma"
 import { PdfBranding } from "@/lib/pdf-generator"
 
+export const dynamic = 'force-dynamic'
+
 export default async function CartasPortePage({
     searchParams,
 }: {

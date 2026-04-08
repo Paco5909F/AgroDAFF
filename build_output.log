@@ -1,0 +1,171 @@
+
+> trisquel-app-v2@0.1.0 build
+> next build
+
+▲ Next.js 16.1.1 (Turbopack)
+- Environments: .env
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 4.9s
+  Running TypeScript ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/26) ...
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+  Generating static pages using 15 workers (6/26) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Error fetching campanas: Error: Dynamic server usage: Route /campanas couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at w (.next/server/chunks/ssr/_d7bcad8b._.js:1:14294)
+    at n (.next/server/chunks/ssr/_d7bcad8b._.js:4:11054)
+    at cx (.next/server/chunks/ssr/_d7bcad8b._.js:58:71)
+    at k (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:500)
+    at l (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:807)
+    at m (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:1425)
+    at j (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:436)
+    at j (.next/server/chunks/ssr/_dbe979b4._.js:1:1054)
+    at l (.next/server/chunks/ssr/[root-of-the-server]__7bf4f2de._.js:1:7821) {
+  description: "Route /campanas couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+  Generating static pages using 15 workers (12/26) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+  Generating static pages using 15 workers (19/26) 
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Error fetching silos: Error: Dynamic server usage: Route /silos couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at w (.next/server/chunks/ssr/_d7bcad8b._.js:1:14294)
+    at n (.next/server/chunks/ssr/_d7bcad8b._.js:4:11054)
+    at cx (.next/server/chunks/ssr/_d7bcad8b._.js:58:71)
+    at k (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:500)
+    at l (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:807)
+    at m (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:1425)
+    at k (.next/server/chunks/ssr/_953e8d23._.js:1:8011)
+    at n (.next/server/chunks/ssr/[root-of-the-server]__88052c4a._.js:1:7842) {
+  description: "Route /silos couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+getInsumos Error: Error: Dynamic server usage: Route /dashboard/insumos couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+    at w (.next/server/chunks/ssr/_d7bcad8b._.js:1:14294)
+    at n (.next/server/chunks/ssr/_d7bcad8b._.js:4:11054)
+    at cx (.next/server/chunks/ssr/_d7bcad8b._.js:58:71)
+    at k (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:500)
+    at l (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:807)
+    at m (.next/server/chunks/ssr/[root-of-the-server]__7408b73b._.js:2:1425)
+    at j (.next/server/chunks/ssr/_cd01ad31._.js:1:1067)
+    at j (.next/server/chunks/ssr/[root-of-the-server]__68f7a593._.js:1:4302) {
+  description: "Route /dashboard/insumos couldn't be rendered statically because it used `cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error",
+  digest: 'DYNAMIC_SERVER_USAGE'
+}
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+Supabase URL: https://ypjckowvcadyzaqrcsgi.supabase.co
+Supabase Key defined: true
+✓ Generating static pages using 15 workers (26/26) in 269.6ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /api/proxy-image
+├ ƒ /api/upload-logo
+├ ƒ /api/webhooks/mercadopago
+├ ƒ /auth/callback
+├ ƒ /campanas
+├ ƒ /cartas-porte
+├ ƒ /clientes
+├ ƒ /contacto
+├ ƒ /dashboard
+├ ƒ /dashboard/configuracion
+├ ƒ /dashboard/equipo
+├ ƒ /dashboard/insumos
+├ ƒ /dashboard/servicios
+├ ƒ /invite/accept/[token]
+├ ƒ /login
+├ ƒ /onboarding
+├ ƒ /ordenes
+├ ƒ /presupuestos
+├ ƒ /pricing
+├ ƒ /profile
+├ ƒ /reportes
+├ ƒ /servicios
+├ ƒ /setup
+└ ƒ /silos
+
+
+ƒ Proxy (Middleware)
+
+ƒ  (Dynamic)  server-rendered on demand
+
