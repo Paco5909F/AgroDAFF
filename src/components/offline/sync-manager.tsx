@@ -1,22 +1,24 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { getOfflineDB, PendingAction } from '@/lib/offline/db'
 import { toast } from 'sonner'
 import { createOrden, updateOrden } from '@/server/ordenes' // The server action
 
 export function OfflineSyncManager() {
-  const [isSyncing, setIsSyncing] = useState(false)
+  const isSyncingRef = useRef(false)
+  const [isSyncingUI, setIsSyncingUI] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
 
   // Polling offline DB and resyncing
   const syncPendingActions = useCallback(async () => {
-    if (typeof window === 'undefined' || !navigator.onLine || isSyncing) return;
+    if (typeof window === 'undefined' || !navigator.onLine || isSyncingRef.current) return;
     
     const db = getOfflineDB();
     if (!db) return;
 
-    setIsSyncing(true);
+    isSyncingRef.current = true;
+    setIsSyncingUI(true);
     let syncedCount = 0;
 
     try {
@@ -65,10 +67,11 @@ export function OfflineSyncManager() {
     } catch (err) {
       console.error("General Sync Error", err);
     } finally {
-      setIsSyncing(false);
+      isSyncingRef.current = false;
+      setIsSyncingUI(false);
     }
 
-  }, [isSyncing]);
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -106,7 +109,7 @@ export function OfflineSyncManager() {
               Offline - Guardado Seguro Activado
             </div>
          )}
-         {isSyncing && (
+         {isSyncingUI && (
              <div className="bg-blue-500 text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg flex items-center justify-center gap-2 animate-in slide-in-from-top-4">
                <span className="w-2 h-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
                Sincronizando al Backend...

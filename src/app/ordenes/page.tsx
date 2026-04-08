@@ -39,7 +39,16 @@ export default async function OrdenesPage({
             cantidad: Number(item.cantidad),
             precio_unit: Number(item.precio_unit),
             total: Number(item.total),
-            kilometros: item.kilometros ? Number(item.kilometros) : null
+            kilometros: item.kilometros ? Number(item.kilometros) : null,
+            insumos: item.insumos ? item.insumos.map((ins: any) => ({
+                ...ins,
+                dosis_por_ha: Number(ins.dosis_por_ha || 0),
+                precio_unit_usado: Number(ins.precio_unit_usado || 0),
+                costo_por_ha: Number(ins.costo_por_ha || 0),
+                costo_total: Number(ins.costo_total || 0),
+                interes_mensual: Number(ins.interes_mensual || 0),
+                costo_total_financiado: Number(ins.costo_total_financiado || 0)
+            })) : []
         }))
     }))
     const clientes = await getClientes()

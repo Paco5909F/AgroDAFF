@@ -9,10 +9,10 @@ export function AIAssistantWidget() {
     const [isOpen, setIsOpen] = useState(false)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [messages, setMessages] = useState<{role: 'user' | 'ai', content: string}[]>([
+    const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
         { role: 'ai', content: '¡Hola! Soy la IA de AgroDAFF. Consultame por tus costos, sugerencias o análisis de campaña actual.' }
     ])
-    
+
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
     // Auto-scroll to bottom of chat
@@ -24,7 +24,7 @@ export function AIAssistantWidget() {
 
     const handleSend = async () => {
         if (!input.trim()) return;
-        
+
         const userMsg = input;
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
@@ -38,7 +38,7 @@ export function AIAssistantWidget() {
             });
 
             const data = await res.json();
-            
+
             if (data.success) {
                 setMessages(prev => [...prev, { role: 'ai', content: data.message }]);
             } else {
@@ -52,7 +52,7 @@ export function AIAssistantWidget() {
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if(e.key === 'Enter') {
+        if (e.key === 'Enter') {
             handleSend();
         }
     }
@@ -65,7 +65,7 @@ export function AIAssistantWidget() {
                     <div className="p-4 bg-primary/10 border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-2 text-primary overflow-hidden">
                             <Bot className="w-5 h-5 flex-shrink-0" />
-                            <span className="font-semibold truncate">AgroDAFF Heuristic AI</span>
+                            <span className="font-semibold truncate">AgroDAFF AI</span>
                         </div>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-background/20" onClick={() => setIsOpen(false)}>
                             <X className="w-4 h-4" />
@@ -75,9 +75,9 @@ export function AIAssistantWidget() {
                     {/* Chat Box */}
                     <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3">
                         {messages.map((m, i) => (
-                            <div key={i} className={cn("max-w-[85%] rounded-lg p-3 text-sm", 
-                                m.role === 'ai' 
-                                    ? "bg-muted text-foreground self-start rounded-tl-none border border-border/50" 
+                            <div key={i} className={cn("max-w-[85%] rounded-lg p-3 text-sm",
+                                m.role === 'ai'
+                                    ? "bg-muted text-foreground self-start rounded-tl-none border border-border/50"
                                     : "bg-primary text-primary-foreground self-end rounded-tr-none shadow-sm"
                             )}>
                                 {/* Basic markdown bold support for rendering prices */}
@@ -95,8 +95,8 @@ export function AIAssistantWidget() {
 
                     {/* Input Area */}
                     <div className="p-3 bg-card border-t border-border flex gap-2">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             className="flex-1 bg-background border border-input rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                             placeholder="Preguntame sobre tus lotes..."
                             value={input}
@@ -110,8 +110,8 @@ export function AIAssistantWidget() {
                 </div>
             )}
 
-            <Button 
-                onClick={() => setIsOpen(!isOpen)} 
+            <Button
+                onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "rounded-full w-14 h-14 shadow-2xl transition-all duration-300",
                     isOpen ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -119,7 +119,7 @@ export function AIAssistantWidget() {
             >
                 <Bot className="w-6 h-6 absolute" />
             </Button>
-            
+
             {/* Visual indicator (optional ping) */}
             {!isOpen && messages.length === 1 && (
                 <span className="absolute top-0 right-0 flex h-3 w-3">
