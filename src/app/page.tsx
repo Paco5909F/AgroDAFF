@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { LayoutDashboard, UserCircle2, Wrench, Mail, ArrowRight, Wheat, Tractor, BarChart3, FileSpreadsheet, ShieldCheck, Truck } from "lucide-react"
+import { LayoutDashboard, UserCircle2, Wrench, Mail, ArrowRight, Wheat, Tractor, BarChart3, FileSpreadsheet, ShieldCheck, Truck, Brain } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = 'force-dynamic'
@@ -93,14 +93,14 @@ export default async function LandingPage() {
               description="Métricas clave de su negocio en una sola pantalla. Tome decisiones basadas en datos."
             />
             <FeatureCard
-              icon={<UserCircle2 className="w-6 h-6 text-purple-600" />}
-              title="Gestión de Equipo"
-              description="Invite a encargados, maquinistas y administrativos con roles y permisos específicos."
+              icon={<ShieldCheck className="w-6 h-6 text-purple-600" />}
+              title="Funciona Sin Internet"
+              description="Nuestra App móvil (PWA) sincroniza datos en segundo plano. Cargá labores en el campo profundo sin señal."
             />
             <FeatureCard
-              icon={<BarChart3 className="w-6 h-6 text-rose-600" />}
-              title="Multi-Empresa"
-              description="¿Administra varios campos o sociedades? Gestione todo desde una sola cuenta."
+              icon={<Brain className="w-6 h-6 text-rose-600" />}
+              title="Análisis con IA"
+              description="Motor predictivo de costos y sugerencias de ahorro automáticas. Tomá decisiones más inteligentes."
             />
           </div>
         </div>
