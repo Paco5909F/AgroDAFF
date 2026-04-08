@@ -5,6 +5,7 @@ import { startOfMonth, endOfMonth } from "date-fns"
 import { getCompanyId } from "@/server/context"
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
+import { getCampaignAnalytics } from "@/server/analytics"
 
 export async function getDashboardStats(userId?: string) {
     const now = new Date()
@@ -142,8 +143,30 @@ export async function getDashboardStats(userId?: string) {
             }
         }
     } catch (error) {
-        console.warn("Could not fetch active campaign (DB sync pending?):", error)
+        console.warn("Could not fetch active campaign:", error)
     }
+
+    // 7. ERP Cost & Margins (Integrated from Phase 6 Analystics)
+    const analyticsData = await getCampaignAnalytics(activeCampaign?.id || null);
+    
+    // Calculate Margin: Facturation this month minus ALL time spending inside that campaign. 
+    // Usually margin is total revenue of campaign - total cost of campaign. 
+    // Since facturacionReal._sum is monthly, we must calculate total facturacion for campaign to get a real margin.
+    
+    // Total Revenue of active campaign
+    let totalRevenueCampaign = 0;
+    if (activeCampaign?.id) {
+        const ag = await prisma.ordenItem.aggregate({
+            _sum: { total: true },
+            where: {
+                campana_id: activeCampaign.id,
+                orden: { estado: { in: ['completada', 'facturada'] }, ...companyFilter, ...userFilter }
+            }
+        });
+        totalRevenueCampaign = Number(ag._sum?.total || 0);
+    }
+
+    const margenBrutoCampana = totalRevenueCampaign - analyticsData.gastoTotal;
 
     return {
         trabajosMes,
@@ -152,6 +175,11 @@ export async function getDashboardStats(userId?: string) {
         clientesActivos,
         recentActivity, // Serialized
         monthlyRevenue,
-        activeCampaign // Serialized
+        activeCampaign, // Serialized
+        erp: {
+            analyticsData,
+            totalRevenueCampaign,
+            margenBrutoCampana
+        }
     }
 }
