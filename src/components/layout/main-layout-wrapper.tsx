@@ -31,7 +31,7 @@ export function MainLayoutWrapper({ children }: { children: React.ReactNode }) {
                 {children}
             </main>
             <footer className="py-6 px-4 text-center text-xs text-slate-400 border-t border-slate-100 bg-white mt-auto">
-                <p>© {new Date().getFullYear()} AgroDAFF SaaS - O'Higgins</p>
+                <p>© {new Date().getFullYear()} AgroDAFF - O'Higgins</p>
             </footer>
         </>
     )

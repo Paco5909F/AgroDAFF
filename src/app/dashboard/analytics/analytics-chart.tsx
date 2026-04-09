@@ -43,8 +43,8 @@ export const AnalyticsChart = memo(function AnalyticsChart({ type, data }: Analy
                         axisLine={false} 
                         tickFormatter={(value) => `$${value}`}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{fill: 'var(--muted)'}} />
-                    <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 0, 0]}>
+                    <Tooltip content={<CustomTooltip />} cursor={{fill: '#f1f5f9'}} />
+                    <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]}>
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}

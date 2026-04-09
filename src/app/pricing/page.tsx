@@ -48,7 +48,7 @@ export default async function PricingPage() {
                                 TU PLAN ACTUAL
                             </span>
                         )}
-                        <h2 className="text-2xl font-bold text-slate-900 mb-2">Semilla (Free)</h2>
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">Gratis (Free)</h2>
                         <p className="text-slate-500 mb-6">Ideal para pequeños productores probando la plataforma.</p>
                         <div className="text-4xl font-black text-slate-900 mb-8">
                             $0 <span className="text-lg text-slate-500 font-normal">/mes</span>
@@ -69,7 +69,7 @@ export default async function PricingPage() {
                         <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-yellow-500 text-emerald-950 text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                             Recomendado
                         </span>
-                        <h2 className="text-2xl font-bold mb-2">Cosecha (Pro)</h2>
+                        <h2 className="text-2xl font-bold mb-2">Profesional (Pro)</h2>
                         <p className="text-emerald-200 mb-6">Para empresas que quieren el control total de sus campos.</p>
                         <div className="text-4xl font-black mb-8">
                             $25.000 <span className="text-lg text-emerald-300 font-normal">/mes</span>

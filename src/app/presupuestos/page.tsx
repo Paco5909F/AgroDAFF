@@ -51,12 +51,12 @@ export default async function PresupuestosPage({
     })
 
     const branding = {
-        name: empresa?.nombre || "AgroDAFF",
-        address: empresa?.direccion || "O'Higgins, Buenos Aires",
-        cuit: empresa?.cuit || "20-12345678-9",
+        name: empresa?.nombre || "Sistema AgroDAFF",
+        address: empresa?.direccion || "",
+        cuit: empresa?.cuit || "",
         logoUrl: empresa?.logo_url || undefined,
-        email: empresa?.email || "agroserviciosciglieri@hotmail.com",
-        phone: empresa?.telefono || "2364-610322"
+        email: empresa?.email || "",
+        phone: empresa?.telefono || ""
     }
 
     return (

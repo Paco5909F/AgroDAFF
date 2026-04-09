@@ -94,7 +94,7 @@ export default function LoginPage() {
 
                         <div className="w-16 h-16 bg-white rounded-lg p-2 mb-6 shadow-md">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/images/logo-agrodaff.jpg" alt="Logo" className="w-full h-full object-contain mix-blend-multiply" />
+                            <img src="/images/logo-agrodaff.png" alt="Logo" className="w-full h-full object-contain mix-blend-multiply" />
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight uppercase leading-tight">
                             Plataforma <br /> AgroDAFF

@@ -47,13 +47,26 @@ export async function AppNavbar() {
         <nav className="bg-background border-b border-border sticky top-0 z-50 shadow-sm transition-all duration-300">
             <div className="container mx-auto px-4 lg:px-8 h-16 md:h-20 flex items-center justify-between">
                 {/* Mobile Menu (< lg) - Left Side */}
-                <div className="lg:hidden">
+                <div className="lg:hidden flex items-center gap-3">
                     <MobileNav
                         user={user}
                         userData={{ ...userData, rol: context?.rol }}
                         companies={isSuperAdmin ? companies : []}
                         currentCompanyId={userData?.active_empresa_id || undefined}
                     />
+                    <a href={user ? "/dashboard" : "/"} className="flex items-center gap-2 group shrink-0">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                                src={userData?.empresa?.logo_url || "/images/logo-agrodaff.png"} 
+                                alt={`${userData?.empresa?.nombre || 'AgroDAFF'} Logo`} 
+                                className="object-contain w-full h-full mix-blend-multiply" 
+                            />
+                        </div>
+                        <span className="font-bold text-lg tracking-tight text-slate-800">
+                            {userData?.empresa?.nombre || "AgroDAFF"}
+                        </span>
+                    </a>
                 </div>
 
                 {/* Desktop Navbar (Left, Center, Right) */}
@@ -64,7 +77,7 @@ export async function AppNavbar() {
                         <div className="w-10 h-10 flex items-center justify-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
-                                src={userData?.empresa?.logo_url || "/images/logo-agrodaff.jpg"} 
+                                src={userData?.empresa?.logo_url || "/images/logo-agrodaff.png"} 
                                 alt={`${userData?.empresa?.nombre || 'AgroDAFF'} Logo`} 
                                 className="object-contain w-full h-full mix-blend-multiply" 
                             />

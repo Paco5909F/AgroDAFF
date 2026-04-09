@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   description: "Sistema de Gestión Agropecuaria SaaS",
   manifest: "/manifest.json",
   icons: {
-    icon: "/images/logo-agrodaff.jpg",
-    apple: "/images/logo-agrodaff.jpg",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
 };
 
