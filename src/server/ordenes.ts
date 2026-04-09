@@ -118,7 +118,8 @@ export async function createOrden(data: OrdenFormValues) {
                         total: item.total,
                         kilometros: item.kilometros,
                         observaciones: item.observaciones,
-                        campana_id: activeCampana?.id // Assign campaign to item
+                        lote_id: item.lote_id || undefined,
+                        campana_id: item.campana_id || activeCampana?.id || undefined
                     }))
                 }
             },
@@ -152,35 +153,20 @@ export async function updateOrden(id: string, data: OrdenFormValues) {
                     observaciones: data.observaciones,
                     moneda: data.moneda,
                     total: data.total,
+                    items: {
+                        create: data.items.map(item => ({
+                            servicio_id: item.servicio_id,
+                            cantidad: item.cantidad,
+                            precio_unit: item.precio_unit,
+                            kilometros: item.kilometros,
+                            total: item.total,
+                            observaciones: item.observaciones,
+                            lote_id: item.lote_id || undefined,
+                            campana_id: item.campana_id || undefined
+                        }))
+                    }
                 }
             })
-
-            // 3. Create new items
-            // We need to fetch campaign again or assume we keep the same logic 
-            // (or better: if we edit, do we re-assign campaign? For now, let's keep it simple and just re-create without specific campaign if it's not in the form, OR fetch active one. 
-            // Ideally the form should carry campaign info, but for now we default to active or null).
-            const activeCampana = await tx.campana.findFirst({
-                where: { activa: true, empresa_id: empresaId }
-            }).catch(() => null) // Ignore mismatch if field name differs, simple fix manually if needed
-
-            if (data.items && data.items.length > 0) {
-                await tx.ordenItem.createMany({
-                    data: data.items.map(item => ({
-                        orden_id: id,
-                        servicio_id: item.servicio_id,
-                        cantidad: item.cantidad,
-                        precio_unit: item.precio_unit,
-                        total: item.total,
-                        kilometros: item.kilometros,
-                        observaciones: item.observaciones,
-                        // Note: If we want to preserve the ORIGINAL campaign of the item, we'd need to have read it first. 
-                        // But since we are deleting and re-creating, we lose that history unless we assume active campaign.
-                        // This is a trade-off of the delete-recreate strategy. 
-                        // For this refactor, assigning active campaign is acceptable.
-                        // However, 'campana_id' is optional.
-                    }))
-                })
-            }
         })
 
         revalidatePath('/ordenes')

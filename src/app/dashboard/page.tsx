@@ -30,13 +30,41 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     // Fetch User Profile for Greeting
     let userName = user?.email?.split('@')[0] || "Usuario"
     let empresaName = "Tu Organización"
+    let brandingFull = {
+        name: "Tu Organización",
+        address: "Dirección no registrada",
+        phone: "",
+        email: "",
+        cuit: "",
+        logoUrl: undefined as string | undefined
+    }
     if (user) {
+        const { getUserContextSafe } = await import('@/server/context');
+        const context = await getUserContextSafe();
+        
         const profile = await prisma.usuario.findUnique({
             where: { id: user.id },
-            select: { nombre: true, empresa: { select: { nombre: true } } }
+            select: { nombre: true }
         })
         if (profile?.nombre) userName = profile.nombre
-        if (profile?.empresa?.nombre) empresaName = profile.empresa.nombre
+        
+        if (context?.empresaId) {
+            const empresa = await prisma.empresa.findUnique({
+                where: { id: context.empresaId },
+                select: { nombre: true, cuit: true, direccion: true, logo_url: true, email: true, telefono: true }
+            })
+            if (empresa?.nombre) {
+                empresaName = empresa.nombre
+                brandingFull = {
+                    name: empresa.nombre,
+                    address: empresa.direccion || "Dirección no registrada",
+                    phone: empresa.telefono || "",
+                    email: empresa.email || "",
+                    cuit: empresa.cuit || "",
+                    logoUrl: empresa.logo_url || undefined
+                }
+            }
+        }
     }
 
     const stats = await getDashboardStats(filterUserId)
@@ -58,8 +86,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         <LayoutDashboard className="h-8 w-8 text-emerald-600" />
                         Hola, <span className="font-semibold">{userName}</span>
                     </h1>
-                    <p className="text-slate-500 font-light mt-1">
-                        Centro de Control ERP de <span className="font-medium text-slate-700">{empresaName}</span>
+                    <p className="text-slate-500 font-medium mt-1 uppercase text-xs tracking-widest">
+                        {empresaName}
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
@@ -76,12 +104,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     <StatsFilter />
                     <ExportErpButton 
                         empresa={empresaName}
+                        branding={brandingFull}
                         campana={stats.activeCampaign?.nombre || 'Actual'}
                         ingresos={totalRevenueCampaign}
                         costos={analyticsData.gastoTotal}
                         margen={margenBrutoCampana}
                         gastosPorLote={analyticsData.gastoPorLote}
                         gastosPorInsumo={analyticsData.gastoPorInsumo}
+                        costoPorHectarea={analyticsData.costoPorHectarea}
+                        totalHectareas={analyticsData.totalHectareas}
+                        labores={analyticsData.labores}
                     />
                 </div>
             </div>
@@ -137,14 +169,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 <Card className="border-t-4 border-t-amber-500 shadow-sm bg-white overflow-hidden group hover:shadow-md transition-all duration-300">
                     <CardContent className="p-5">
                         <div className="flex justify-between items-start mb-2">
-                            <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">Lote Crítico</p>
+                            <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">Costo por Hectárea</p>
                             <AlertTriangle className="h-5 w-5 text-amber-500/50" />
                         </div>
-                        <h3 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight line-clamp-1 h-8">
-                            {loteMasCaro}
+                        <h3 className="text-3xl font-bold text-slate-800 tracking-tight">
+                            ${analyticsData.costoPorHectarea.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </h3>
-                        <p className="text-xs text-amber-600 font-medium mt-1 bg-amber-50 px-2 py-0.5 rounded-full w-fit">
-                            Mayor tracción de capital
+                        <p className="text-xs text-amber-600 font-medium mt-2 bg-amber-50 px-2 py-0.5 rounded-full w-fit">
+                            Promedio ponderado ({analyticsData.totalHectareas} ha)
                         </p>
                     </CardContent>
                 </Card>
@@ -157,19 +189,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 <div className="lg:col-span-1 space-y-4">
                     <h3 className="font-semibold text-slate-700 flex items-center gap-2">
                         <Brain className="w-5 h-5 text-purple-600" />
-                        Motor de Alertas y Sugerencias
+                        Avisos Inteligentes (IA)
                     </h3>
                     <div className="space-y-3">
                         {analyticsData.sugerencias.length === 0 ? (
-                            <div className="p-6 bg-slate-50 border border-slate-100 rounded-xl text-center">
+                            <div className="p-6 bg-white border border-slate-200 shadow-sm rounded-xl text-center">
                                 <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                                <p className="text-sm text-slate-500">Los ratios financieros de tu campaña están estables.</p>
+                                <p className="text-sm text-slate-600 font-medium">Los ratios financieros de tu campaña están estables.</p>
                             </div>
                         ) : (
                             analyticsData.sugerencias.map((sug: string, i: number) => (
-                                <div key={i} className="p-4 bg-purple-50/50 border border-purple-100 rounded-xl flex gap-3 shadow-sm hover:shadow-md transition-all">
+                                <div key={i} className="p-4 bg-white border border-purple-200 shadow-sm rounded-xl flex gap-3 hover:shadow-md transition-all">
                                     <AlertTriangle className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-                                    <p className="text-sm text-purple-900 leading-relaxed font-medium">{sug}</p>
+                                    <p className="text-sm text-slate-800 leading-relaxed font-medium">{sug}</p>
                                 </div>
                             ))
                         )}

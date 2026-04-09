@@ -58,12 +58,14 @@ import { createOrden, updateOrden } from '@/server/ordenes'
 interface OrdenFormProps {
     clientes: { id: string, razon_social: string }[]
     servicios: { id: string, nombre: string, unidad_medida: string, precio_base: number, moneda?: string }[]
+    lotes?: any[]
+    campanas?: any[]
     initialData?: any
     onSuccess?: () => void
     mode?: "create" | "edit"
 }
 
-export function OrdenForm({ clientes, servicios, initialData, onSuccess, mode = "create" }: OrdenFormProps) {
+export function OrdenForm({ clientes, servicios, lotes = [], campanas = [], initialData, onSuccess, mode = "create" }: OrdenFormProps) {
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<OrdenFormValues>({
@@ -281,12 +283,14 @@ export function OrdenForm({ clientes, servicios, initialData, onSuccess, mode = 
                         <Table className="table-fixed min-w-[900px]">
                             <TableHeader className="bg-emerald-50/50">
                                 <TableRow>
-                                    <TableHead className="w-[30%] text-xs font-bold text-slate-500 uppercase">Servicio</TableHead>
-                                    <TableHead className="w-[12%] text-xs font-bold text-slate-500 uppercase">Km</TableHead>
-                                    <TableHead className="w-[12%] text-xs font-bold text-slate-500 uppercase">Cant.</TableHead>
-                                    <TableHead className="w-[20%] text-xs font-bold text-slate-500 uppercase">Precio</TableHead>
-                                    <TableHead className="w-[20%] text-right text-xs font-bold text-slate-500 uppercase">Total</TableHead>
-                                    <TableHead className="w-[6%]"></TableHead>
+                                    <TableHead className="w-[20%] text-xs font-bold text-slate-500 uppercase">Labor / Servicio</TableHead>
+                                    <TableHead className="w-[15%] text-xs font-bold text-slate-500 uppercase">Lote</TableHead>
+                                    <TableHead className="w-[15%] text-xs font-bold text-slate-500 uppercase">Campaña</TableHead>
+                                    <TableHead className="w-[8%] text-xs font-bold text-slate-500 uppercase">Km</TableHead>
+                                    <TableHead className="w-[10%] text-xs font-bold text-slate-500 uppercase">Cant. / Ha</TableHead>
+                                    <TableHead className="w-[12%] text-xs font-bold text-slate-500 uppercase">Precio</TableHead>
+                                    <TableHead className="w-[15%] text-right text-xs font-bold text-slate-500 uppercase">Total</TableHead>
+                                    <TableHead className="w-[5%]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -330,6 +334,54 @@ export function OrdenForm({ clientes, servicios, initialData, onSuccess, mode = 
                                                                     {servicios.map((s) => (
                                                                         <SelectItem key={s.id} value={s.id}>
                                                                             {s.nombre} ({s.unidad_medida})
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-1">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`items.${index}.lote_id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="space-y-0">
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl>
+                                                                    <SelectTrigger className="h-9 w-full bg-white border-slate-200 rounded-sm focus:ring-emerald-400 focus:ring-1 focus:ring-offset-0 px-3 text-left">
+                                                                        <SelectValue placeholder="Opcional..." className="truncate" />
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    {lotes?.map((l: any) => (
+                                                                        <SelectItem key={l.id} value={l.id}>
+                                                                            {l.nombre} ({l.hectareas} ha)
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </TableCell>
+                                            <TableCell className="p-1">
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`items.${index}.campana_id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="space-y-0">
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl>
+                                                                    <SelectTrigger className="h-9 w-full bg-white border-slate-200 rounded-sm focus:ring-emerald-400 focus:ring-1 focus:ring-offset-0 px-3 text-left">
+                                                                        <SelectValue placeholder="Opcional..." className="truncate" />
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    {campanas?.map((c: any) => (
+                                                                        <SelectItem key={c.id} value={c.id}>
+                                                                            {c.nombre}
                                                                         </SelectItem>
                                                                     ))}
                                                                 </SelectContent>
@@ -485,6 +537,60 @@ export function OrdenForm({ clientes, servicios, initialData, onSuccess, mode = 
                                                     </FormItem>
                                                 )}
                                             />
+                                        </div>
+
+                                        {/* Grid for Lote and Campaña */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1.5">
+                                                <span className="text-xs font-bold text-slate-500 uppercase">Lote</span>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`items.${index}.lote_id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="space-y-0">
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl>
+                                                                    <SelectTrigger className="h-9 w-full bg-white border-slate-200 rounded-sm px-2 text-left">
+                                                                        <SelectValue placeholder="Opcional..." className="truncate" />
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    {lotes?.map((l: any) => (
+                                                                        <SelectItem key={l.id} value={l.id}>
+                                                                            {l.nombre}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <span className="text-xs font-bold text-slate-500 uppercase">Campaña</span>
+                                                <FormField
+                                                    control={form.control}
+                                                    name={`items.${index}.campana_id`}
+                                                    render={({ field }) => (
+                                                        <FormItem className="space-y-0">
+                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <FormControl>
+                                                                    <SelectTrigger className="h-9 w-full bg-white border-slate-200 rounded-sm px-2 text-left">
+                                                                        <SelectValue placeholder="Opcional..." className="truncate" />
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    {campanas?.map((c: any) => (
+                                                                        <SelectItem key={c.id} value={c.id}>
+                                                                            {c.nombre}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            </div>
                                         </div>
 
                                         {/* Grid for Numbers */}

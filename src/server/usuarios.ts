@@ -19,7 +19,7 @@ export async function getUserProfile() {
                 miembros: {
                     include: {
                         empresa: {
-                            select: { plan_status: true }
+                            select: { plan_status: true, nombre: true, id: true }
                         }
                     }
                 }
@@ -36,6 +36,8 @@ export async function getUserProfile() {
 
         let effectiveRole = dbUser.rol // Default fallback
         let planStatus = 'FREE' // Default plan
+        let organizacionNombre = "Sin Organización"
+        let organizacionId = null
 
         if (isSuperAdmin) {
             effectiveRole = 'ADMIN'
@@ -47,6 +49,10 @@ export async function getUserProfile() {
                 if (activeMembership.empresa?.plan_status) {
                     planStatus = activeMembership.empresa.plan_status
                 }
+                if (activeMembership.empresa?.nombre) {
+                    organizacionNombre = activeMembership.empresa.nombre
+                    organizacionId = activeMembership.empresa.id
+                }
             }
         }
 
@@ -57,7 +63,9 @@ export async function getUserProfile() {
                 email: user.email,
                 nombre: dbUser.nombre,
                 rol: effectiveRole,
-                plan: planStatus
+                plan: planStatus,
+                organizacionNombre,
+                organizacionId
             }
         }
     } catch (error) {
@@ -113,5 +121,30 @@ export async function updateUserPassword(password: string) {
     } catch (error) {
         console.error("Error updating password:", error)
         return { success: false, error: "Error al actualizar contraseña" }
+    }
+}
+
+export async function updateOrganizacionName(empresaId: string, nombre: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: "No autenticado" }
+    }
+
+    try {
+        await prisma.empresa.update({
+            where: { id: empresaId },
+            data: { nombre }
+        })
+
+        revalidatePath('/profile')
+        revalidatePath('/dashboard')
+        revalidatePath('/')
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating organizacion:", error)
+        return { success: false, error: "Error al actualizar organización" }
     }
 }

@@ -24,7 +24,7 @@ import { PdfBranding } from '@/lib/pdf-generator'
 import { ActivityInsumosForm } from '@/components/insumos/activity-insumos-form'
 import { addInsumoToOrdenItem, deleteOrdenItemInsumo } from '@/server/orden-insumos'
 import { getInsumos } from '@/server/insumos'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 
 interface OrdenListProps {
     ordenes: any[]
@@ -104,9 +104,8 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                 </TableHeader>
                 <TableBody>
                     {ordenes.map((orden) => (
-                        <>
+                        <Fragment key={orden.id}>
                         <TableRow 
-                            key={orden.id} 
                             className={`group cursor-pointer ${expandedRows.has(orden.id) ? 'bg-slate-50/80 border-l-4 border-l-emerald-500' : ''}`}
                             onClick={() => toggleRow(orden.id)}
                         >
@@ -281,7 +280,7 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                                 </TableCell>
                             </TableRow>
                         )}
-                    </>
+                    </Fragment>
                     ))}
                 </TableBody>
             </Table>

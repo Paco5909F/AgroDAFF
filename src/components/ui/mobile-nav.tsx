@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NavLink } from '@/components/ui/nav-link'
@@ -22,6 +22,17 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
     const [isOpen, setIsOpen] = useState(false)
     const router = useRouter()
     const supabase = createClient()
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'unset'
+        }
+        return () => {
+            document.body.style.overflow = 'unset'
+        }
+    }, [isOpen])
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
