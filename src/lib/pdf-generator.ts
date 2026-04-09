@@ -458,9 +458,9 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             // Insumos Rows (Nested below service)
             if (item.insumos && item.insumos.length > 0) {
                 item.insumos.forEach((ins: any) => {
-                    const insName = `  ↳ Insumo: ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
+                    const insName = `  - Insumo: ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
                     tableBody.push([
-                        { content: insName, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+                        { content: insName, styles: { font: 'helvetica', fontStyle: 'normal', textColor: [100, 100, 100] } },
                         "-", // Cantidad handled by dosis/ha
                         "-", // Unidad handled by dosis/ha
                         "-", // Precio unit included in subtotal logic usually for display
@@ -961,17 +961,18 @@ export const generateDashboardPdf = async (data: DashboardPdfData, branding: Pdf
         doc.setTextColor(0);
         doc.text(`COSTO PROMEDIO / Ha: $ ${data.costoPorHectarea.toLocaleString('es-AR', { minimumFractionDigits: 0 })}`, pageWidth - margin - 5, currentY + 8, { align: 'right' });
 
-        currentY += 25;
+        currentY += 15;
 
-        if (currentY > 210) {
+        // Force new page earlier if it won't fit the table head
+        if (currentY > 220) {
             doc.addPage();
-            currentY = 20;
+            currentY = margin;
         }
 
         // --- DETALLE LABORES DIVIDER ---
         doc.setLineWidth(0.8);
         doc.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 8;
+        currentY += 6;
 
         doc.setFontSize(11);
         doc.setFont(FONTS.header, 'bold');
@@ -996,10 +997,10 @@ export const generateDashboardPdf = async (data: DashboardPdfData, branding: Pdf
             styles: { fontSize: 8, cellPadding: 5, textColor: 0, lineColor: 0, lineWidth: 0.2 },
             headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
             columnStyles: {
-                0: { cellWidth: 20 },
+                0: { cellWidth: 24 }, // increased for long date
                 1: { cellWidth: 'auto' },
                 2: { cellWidth: 25 },
-                3: { halign: 'center', cellWidth: 18 },
+                3: { halign: 'center', cellWidth: 20 }, // increased for CANTIDAD
                 4: { halign: 'right', cellWidth: 25 },
                 5: { halign: 'right', cellWidth: 25 },
                 6: { halign: 'right', cellWidth: 25 }
@@ -1007,7 +1008,13 @@ export const generateDashboardPdf = async (data: DashboardPdfData, branding: Pdf
         });
 
         // @ts-ignore
-        currentY = doc.lastAutoTable.finalY + 15;
+        currentY = doc.lastAutoTable.finalY + 8;
+
+        // Prevent overlapping with footer ONLY if it truly will overlap
+        if (currentY + 15 > pageHeight - 16) {
+            doc.addPage();
+            currentY = margin;
+        }
 
         // TOTAL DE LA CAMPAÑA
         doc.setLineWidth(0.8);

@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { getDashboardStats } from '@/server/dashboard'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Tractor, DollarSign, Activity, TrendingUp, Calendar, Sprout, LayoutDashboard, Brain, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { Users, Tractor, DollarSign, Activity, TrendingUp, Calendar, Sprout, LayoutDashboard, Brain, AlertTriangle, CheckCircle2, Building2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { OverviewChart } from "@/components/dashboard/overview-chart"
 import { createClient } from "@/lib/supabase/server"
@@ -86,8 +86,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                         <LayoutDashboard className="h-8 w-8 text-emerald-600" />
                         Hola, <span className="font-semibold">{userName}</span>
                     </h1>
-                    <p className="text-slate-500 font-medium mt-1 uppercase text-xs tracking-widest">
-                        {empresaName}
+                    <p className="text-slate-500 font-medium mt-1 text-xs tracking-widest flex items-center gap-1.5 opacity-90">
+                        <Building2 className="w-4 h-4" />
+                        <span className="uppercase">{empresaName}</span>
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">

@@ -8,11 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "AgroDAFF",
   description: "Sistema de Gestión Agropecuaria SaaS",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
-  },
+  manifest: "/manifest.json"
 };
 
 export const viewport = {
