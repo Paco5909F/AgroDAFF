@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { getOrdenes } from '@/server/ordenes'
 import { getClientes } from '@/server/clientes'
 import { getServicios, createServicio } from '@/server/servicios'
+import { getLotes } from '@/server/lotes'
+import { getCampanas } from '@/server/campanas'
 import { OrdenForm } from '@/components/ordenes/orden-form'
 import { OrdenList } from '@/components/ordenes/orden-list'
 import { PDFDownloadButton } from '@/components/ordenes/pdf-download-button'
@@ -67,6 +69,12 @@ export default async function OrdenesPage({
         }
     })
 
+    const { data: lotesData } = await getLotes()
+    const lotes = lotesData || []
+    
+    const { data: campanasData } = await getCampanas()
+    const campanas = campanasData || []
+
     const branding: PdfBranding = {
         name: empresa?.nombre || "Empresa",
         address: empresa?.direccion || "",
@@ -100,16 +108,21 @@ export default async function OrdenesPage({
                         <div className="mb-6">
                             <h1 className="text-3xl font-light text-slate-800 tracking-tight flex items-center gap-3">
                                 <FilePlus className="h-8 w-8 text-slate-400" />
-                                Nueva Orden
+                                Registrar Labor
                             </h1>
                             <p className="text-slate-500 font-light mt-1 text-sm">
-                                Registre un nuevo servicio realizado.
+                                Registre una nueva actividad o parte de trabajo.
                             </p>
                         </div>
                         <Card className="border-none shadow-lg shadow-emerald-100/50 overflow-hidden">
                             <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-1 h-2 w-full"></div>
                             <CardContent className="p-6">
-                                <OrdenForm clientes={clientes} servicios={servicios} />
+                                <OrdenForm 
+                                    clientes={clientes} 
+                                    servicios={servicios}
+                                    lotes={lotes}
+                                    campanas={campanas}
+                                />
                             </CardContent>
                         </Card>
                     </div>

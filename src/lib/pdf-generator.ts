@@ -439,7 +439,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         cursorY += 6;
 
         const tableBody: any[] = [];
-        
+
         (orden.items || []).forEach((item: any) => {
             let desc = item.servicio?.nombre || "Item";
             if (Number(item.kilometros) > 0) {
@@ -807,5 +807,230 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Reporte_Gestion_${format(new Date(), 'yyyyMMdd')}.pdf`);
+    });
+};
+
+export interface DashboardPdfData {
+    campana: string;
+    ingresos: number;
+    costos: number;
+    margen: number;
+    costoPorHectarea: number;
+    gastosPorInsumo: Record<string, number>;
+    gastosPorLote: Record<string, number>;
+    labores: {
+        fecha: Date;
+        lote: string;
+        servicio: string;
+        cantidad: number;
+        costoLabor: number;
+        costoInsumos: number;
+        total: number;
+    }[];
+}
+
+export const generateDashboardPdf = async (data: DashboardPdfData, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl || LOGO_URL, (img) => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 14;
+
+        let currentY = 15;
+
+        // 1. Logo or Company Details
+        const logoW = 35;
+        const aspect = img.width && img.height ? img.width / img.height : 1;
+        const logoH = logoW / aspect;
+        if (img.complete && img.naturalHeight !== 0) {
+            doc.addImage(img, 'PNG', margin, currentY, logoW, logoH);
+            currentY += Math.max(logoH, 10);
+        }
+
+        // Company Details Next to/Below Logo
+        doc.setFontSize(14);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(0);
+        doc.text(branding.name || "Empresa", margin, currentY + 6);
+
+        doc.setFontSize(8);
+        doc.setFont(FONTS.body, 'normal');
+        doc.setTextColor(50);
+        doc.text(branding.address || "Dirección no registrada", margin, currentY + 12);
+        doc.text(`Tel: ${branding.phone || '-'} | Email: ${branding.email || '-'}`, margin, currentY + 17);
+
+        // 2. Report Box (Right Aligned)
+        const boxX = pageWidth - margin - 75;
+        const boxY = 15;
+        const boxW = 75;
+        const boxH = 25;
+
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(0);
+        doc.rect(boxX, boxY, boxW, boxH);
+
+        doc.setFontSize(10);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(0);
+        doc.text("REPORTE DE CAMPAÑA", boxX + boxW / 2, boxY + 7, { align: 'center' });
+        doc.text("ESTADO DE RESULTADOS", boxX + boxW / 2, boxY + 12, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.text(`FECHA: ${format(new Date(), 'dd/MM/yyyy')}`, boxX + 5, boxY + 18);
+        doc.text(`CAMPAÑA: ${data.campana}`, boxX + 5, boxY + 23);
+
+        currentY = Math.max(currentY + 22, boxY + boxH + 10);
+
+        // --- DIVIDER LINE ---
+        doc.setLineWidth(0.8);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 5;
+
+        // KPI Box instead of grid Client Box
+        doc.setLineWidth(0.2);
+        doc.rect(margin, currentY, pageWidth - margin * 2, 20);
+
+        doc.setFontSize(7);
+        doc.setFont(FONTS.body, 'bold');
+        doc.setTextColor(100);
+        doc.text("INGRESOS TOTALES", margin + 5, currentY + 7);
+        doc.text("COSTOS OPERATIVOS", margin + 65, currentY + 7);
+        doc.text("MARGEN BRUTO", margin + 125, currentY + 7);
+
+        doc.setFontSize(10);
+        doc.setFont(FONTS.body, 'bold');
+        doc.setTextColor(0);
+        doc.text(`$ ${data.ingresos.toLocaleString('es-AR')}`, margin + 5, currentY + 14);
+        doc.text(`$ ${data.costos.toLocaleString('es-AR')}`, margin + 65, currentY + 14);
+        doc.text(`$ ${data.margen.toLocaleString('es-AR')}`, margin + 125, currentY + 14);
+
+        currentY += 28;
+
+        // --- SECOND DIVIDER LINE ---
+        doc.setLineWidth(0.8);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 8;
+
+        // --- SUBTABLES (Lotes and Insumos) ---
+        // Let's use the exact Presupuesto style (Black header)
+
+        const loteData = Object.entries(data.gastosPorLote)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, val]) => [name, `$ ${val.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`]);
+
+        autoTable(doc, {
+            startY: currentY,
+            head: [['LOTE / ESTABLECIMIENTO', 'INVERSIÓN']],
+            body: loteData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 4, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+            headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
+            alternateRowStyles: { fillColor: 255 },
+            margin: { left: margin, right: margin },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', cellWidth: 40 } }
+        });
+
+        // @ts-ignore
+        currentY = doc.lastAutoTable.finalY + 10;
+
+        const insumoData = Object.entries(data.gastosPorInsumo)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, val]) => [name, `$ ${val.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`]);
+
+        autoTable(doc, {
+            startY: currentY,
+            head: [['TIPO DE INSUMO', 'COSTO ACUMULADO']],
+            body: insumoData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 4, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+            headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
+            alternateRowStyles: { fillColor: 255 },
+            margin: { left: margin, right: margin },
+            columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', cellWidth: 40 } }
+        });
+
+        // @ts-ignore
+        currentY = doc.lastAutoTable.finalY + 15;
+
+        // Costo x Ha Box (Like the Total box in Presupuesto)
+        doc.setLineWidth(0.5);
+        const cpBoxW = 90;
+        doc.rect(pageWidth - margin - cpBoxW, currentY, cpBoxW, 12);
+        doc.setFontSize(10);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(0);
+        doc.text(`COSTO PROMEDIO / Ha: $ ${data.costoPorHectarea.toLocaleString('es-AR', { minimumFractionDigits: 0 })}`, pageWidth - margin - 5, currentY + 8, { align: 'right' });
+
+        currentY += 25;
+
+        if (currentY > 210) {
+            doc.addPage();
+            currentY = 20;
+        }
+
+        // --- DETALLE LABORES DIVIDER ---
+        doc.setLineWidth(0.8);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 8;
+
+        doc.setFontSize(11);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text("DETALLE EXACTO DE LABORES Y COSTOS (REPORT)", margin, currentY);
+        currentY += 6;
+
+        const laboresData = data.labores.map(labor => [
+            format(new Date(labor.fecha), 'dd/MM/yyyy'),
+            labor.servicio,
+            labor.lote,
+            `${labor.cantidad}`,
+            `$ ${labor.costoLabor.toLocaleString('es-AR', { minimumFractionDigits: 0 })}`,
+            `$ ${labor.costoInsumos.toLocaleString('es-AR', { minimumFractionDigits: 0 })}`,
+            { content: `$ ${labor.total.toLocaleString('es-AR', { minimumFractionDigits: 0 })}`, styles: { halign: 'right' as const, fontStyle: 'bold' as const } }
+        ]);
+
+        autoTable(doc, {
+            startY: currentY,
+            head: [['FECHA', 'CONCEPTO', 'LOTE', 'CANTIDAD', 'VALOR LABOR', 'INSUMOS', 'COSTO FINAL']],
+            body: laboresData,
+            theme: 'plain',
+            styles: { fontSize: 8, cellPadding: 5, textColor: 0, lineColor: 0, lineWidth: 0.2 },
+            headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 25 },
+                3: { halign: 'center', cellWidth: 18 },
+                4: { halign: 'right', cellWidth: 25 },
+                5: { halign: 'right', cellWidth: 25 },
+                6: { halign: 'right', cellWidth: 25 }
+            }
+        });
+
+        // @ts-ignore
+        currentY = doc.lastAutoTable.finalY + 15;
+
+        // TOTAL DE LA CAMPAÑA
+        doc.setLineWidth(0.8);
+        const totalBoxW = 90;
+        doc.rect(pageWidth - margin - totalBoxW, currentY, totalBoxW, 14);
+        doc.setFontSize(11);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text(`TOTAL COSTOS: $ ${data.costos.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, pageWidth - margin - 5, currentY + 9, { align: 'right' });
+
+
+        // Footer
+        const pageCount = (doc.internal as any).getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            const footerY = pageHeight - 15;
+
+            doc.setLineWidth(0.5);
+            doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
+            doc.setFontSize(8);
+            doc.setTextColor(0);
+            doc.text(`Documento generado por AgroDAFF | Página ${i} de ${pageCount}`, pageWidth - margin, footerY + 2, { align: 'right' });
+        }
+
+        doc.save(`Reporte_AgroDAFF_${format(new Date(), 'yyyyMMdd')}.pdf`);
     });
 };

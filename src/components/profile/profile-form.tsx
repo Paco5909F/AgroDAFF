@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard } from 'lucide-react'
-import { updateUserProfile, updateUserPassword } from '@/server/usuarios'
+import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard, Building } from 'lucide-react'
+import { updateUserProfile, updateUserPassword, updateOrganizacionName } from '@/server/usuarios'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
@@ -22,11 +22,14 @@ interface ProfileFormProps {
         nombre: string
         rol: string
         plan?: string
+        organizacionNombre?: string
+        organizacionId?: string | null
     }
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
     const [nombre, setNombre] = useState(user.nombre)
+    const [organizacion, setOrganizacion] = useState(user.organizacionNombre || "Sin Organización")
 
     // Password State
     const [password, setPassword] = useState("")
@@ -35,6 +38,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const [isPending, startTransition] = useTransition()
     const router = useRouter()
     const supabase = createClient()
+
+    // Import the update action at the top inside startTransition or dynamically if needed.
+    // Actually, we can just import it at the top of the file.
+
 
     // Calculate Strength
     const getStrength = (pass: string) => {
@@ -62,6 +69,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 const result = await updateUserProfile(nombre)
                 if (!result.success) {
                     toast.error(result.error as string)
+                    return
+                }
+            }
+
+            // Update Organizacion
+            if (organizacion !== user.organizacionNombre && user.organizacionId) {
+                const resultOrg = await updateOrganizacionName(user.organizacionId, organizacion)
+                if (!resultOrg.success) {
+                    toast.error(resultOrg.error as string)
                     return
                 }
             }
@@ -147,15 +163,34 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </div>
                     </div>
 
-                    {/* Name (Editable) */}
-                    <div className="space-y-2">
-                        <Label htmlFor="nombre">Nombre Visible</Label>
-                        <Input
-                            id="nombre"
-                            value={nombre}
-                            onChange={(e) => setNombre(e.target.value)}
-                            className="text-lg"
-                        />
+                    {/* Name & Org (Editable) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="nombre" className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-slate-500" />
+                                Tu Nombre Visible
+                            </Label>
+                            <Input
+                                id="nombre"
+                                value={nombre}
+                                onChange={(e) => setNombre(e.target.value)}
+                                className="text-base"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="organizacion" className="flex items-center gap-2">
+                                <Building className="h-4 w-4 text-slate-500" />
+                                Nombre de tu Organización
+                            </Label>
+                            <Input
+                                id="organizacion"
+                                value={organizacion}
+                                onChange={(e) => setOrganizacion(e.target.value)}
+                                disabled={!user.organizacionId}
+                                className="text-base"
+                                placeholder="Ej: Pacosa S.A."
+                            />
+                        </div>
                     </div>
 
                     <div className="border-t pt-4">
@@ -215,7 +250,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         Cerrar Sesión
                     </Button>
 
-                    <Button onClick={handleSave} disabled={isPending || (!password && nombre === user.nombre)} className="bg-emerald-600 hover:bg-emerald-700">
+                    <Button onClick={handleSave} disabled={isPending || (!password && nombre === user.nombre && organizacion === (user.organizacionNombre || "Sin Organización"))} className="bg-emerald-600 hover:bg-emerald-700">
                         {isPending ? 'Guardando...' : (
                             <>
                                 <Save className="h-4 w-4 mr-2" />

@@ -32,13 +32,13 @@ export default async function LandingPage() {
             Nuevo: Gestión Multi-Empresa
           </div>
           <h1 className="text-4xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
-            El Sistema Operativo SaaS <br />
+            Plataforma Integral de Gestión <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
               AgroDAFF
             </span>
           </h1>
           <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Gestione clientes, órdenes de trabajo, stocks de silos y logística desde una única plataforma en la nube. Simple, potente y diseñado para el campo argentino.
+            Gestione clientes, órdenes de trabajo, control de insumos y logística desde una única plataforma en la nube. Simple, potente y diseñado para el campo productivo.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -145,12 +145,12 @@ export default async function LandingPage() {
       <footer className="bg-slate-50 border-t border-slate-200 py-12">
         <div className="container mx-auto px-6 flex flex-col items-center gap-6 text-center">
           <div className="text-sm text-slate-500">
-            © {new Date().getFullYear()} AgroDAFF SaaS. Todos los derechos reservados.
+            © {new Date().getFullYear()} AgroDAFF. Todos los derechos reservados.
           </div>
           <div className="flex gap-6 justify-center">
-            <Link href="/contacto" className="text-sm text-slate-600 hover:text-emerald-600">Contacto</Link>
-            <Link href="/politica" className="text-sm text-slate-600 hover:text-emerald-600">Política de Privacidad</Link>
-            <Link href="/terminos" className="text-sm text-slate-600 hover:text-emerald-600">Términos de Uso</Link>
+            <Link href="https://wa.me/5491123456789" target="_blank" className="text-sm border border-slate-200 px-3 py-1 rounded-full text-slate-600 hover:border-emerald-500 hover:text-emerald-600 font-medium">Contactar Ventas</Link>
+            <Link href="/politica" className="text-sm flex items-center text-slate-600 hover:text-emerald-600">Política de Privacidad</Link>
+            <Link href="/terminos" className="text-sm flex items-center text-slate-600 hover:text-emerald-600">Términos de Uso</Link>
           </div>
         </div>
       </footer>

@@ -8,8 +8,19 @@ export interface AnalyticsSummary {
     gastoTotal: number;
     gastoPorInsumo: Record<string, number>;
     gastoPorLote: Record<string, number>;
+    costoPorHectarea: number;
+    totalHectareas: number;
     tendencia: string;
     sugerencias: string[];
+    labores: {
+        fecha: Date;
+        lote: string;
+        servicio: string;
+        cantidad: number;
+        costoLabor: number;
+        costoInsumos: number;
+        total: number;
+    }[];
 }
 
 export async function getCampaignAnalytics(campanaId: string | null): Promise<AnalyticsSummary> {
@@ -29,8 +40,11 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
         gastoTotal: 0,
         gastoPorInsumo: {},
         gastoPorLote: {},
+        costoPorHectarea: 0,
+        totalHectareas: 0,
         tendencia: "ESTABLE",
-        sugerencias: []
+        sugerencias: [],
+        labores: []
     };
 
     if (!finalCampanaId) {
@@ -45,6 +59,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
             campana_id: finalCampanaId
         },
         include: {
+            orden: true,
             servicio: true,
             lote: true,
             insumos: {
@@ -55,6 +70,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
 
     let totalLabores = 0;
     const loteCounter: Record<string, typeof ordenesItems> = {};
+    const processedLotes = new Set<string>();
 
     for (const item of ordenesItems) {
         // Cost of Service/Labor
@@ -65,8 +81,15 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
         const loteName = item.lote ? item.lote.nombre : 'Sin Lote Asignado';
         output.gastoPorLote[loteName] = (output.gastoPorLote[loteName] || 0) + costoLabor;
 
+        if (item.lote && !processedLotes.has(item.lote.id)) {
+            processedLotes.add(item.lote.id);
+            output.totalHectareas += Number(item.lote.hectareas);
+        }
+
         if (!loteCounter[loteName]) loteCounter[loteName] = [];
         loteCounter[loteName].push(item);
+
+        let insumosTotalCost = 0;
 
         // Cost of Insumos
         for (const oi of item.insumos) {
@@ -79,7 +102,22 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
             
             output.gastoTotal += insumoCost;
             output.gastoPorLote[loteName] += insumoCost;
+            insumosTotalCost += insumoCost;
         }
+
+        output.labores.push({
+            fecha: item.orden.fecha,
+            lote: loteName,
+            servicio: item.servicio.nombre,
+            cantidad: Number(item.cantidad),
+            costoLabor: costoLabor,
+            costoInsumos: insumosTotalCost,
+            total: costoLabor + insumosTotalCost
+        });
+    }
+
+    if (output.totalHectareas > 0) {
+        output.costoPorHectarea = output.gastoTotal / output.totalHectareas;
     }
 
     // 2. IA Heuristics (Generación Inteligente de Sugerencias)
@@ -115,7 +153,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
     if (output.sugerencias.length === 0 && output.gastoTotal > 0) {
         output.sugerencias.push("✅ Tus costos se mantienen dentro de la homeostasis estadística de campanas productivas. ¡Excelente!");
     } else if (output.gastoTotal === 0) {
-        output.sugerencias.push("⏳ Cargá insumos o cerrá Órdenes de Trabajo para nutrir a la IA con datos fiables.");
+        output.sugerencias.push("ℹ️ Registrá insumos o finalizá de procesar Órdenes de Trabajo para nutrir al modelo con datos financieros y obtener márgenes.");
     }
 
     return output;
