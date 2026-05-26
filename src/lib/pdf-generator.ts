@@ -19,6 +19,11 @@ export interface PdfBranding {
     email: string;
     cuit: string;
     logoUrl?: string;
+    ciudad?: string;
+    provincia?: string;
+    pdf_footer?: string;
+    pdf_primary_color?: string;
+    is_profile_completed?: boolean;
 }
 
 // Default fallback (Generic)
@@ -33,15 +38,27 @@ const DEFAULT_BRANDING: PdfBranding = {
 
 const LOGO_URL = '/images/logo.png';
 
+// --- HELPER FUNCTION: Hex to RGB ---
+function hexToRgb(hex: string): [number, number, number] {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16)
+    ] : [0, 0, 0];
+}
+
 // --- STYLING CONSTANTS ---
-const COLORS: Record<string, [number, number, number]> = {
-    primary: [0, 0, 0], // Black
-    secondary: [80, 80, 80], // Dark Gray
-    accent: [240, 240, 240], // Light Gray (Backgrounds)
-    text: [20, 20, 20], // Almost Black
-    textLight: [100, 100, 100], // Gray Text
-    border: [200, 200, 200] // Light Border
-};
+const getColors = (branding: PdfBranding) => ({
+    primary: branding.pdf_primary_color ? hexToRgb(branding.pdf_primary_color) : [0, 0, 0] as [number, number, number],
+    secondary: [80, 80, 80] as [number, number, number],
+    accent: [240, 240, 240] as [number, number, number],
+    text: [20, 20, 20] as [number, number, number],
+    textLight: [100, 100, 100] as [number, number, number],
+    border: [200, 200, 200] as [number, number, number]
+});
+const COLORS_FALLBACK = getColors(DEFAULT_BRANDING); // For backwards compatibility if needed.
+
 
 const FONTS = {
     header: 'helvetica',
@@ -87,12 +104,12 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
 
     doc.setFontSize(20);
     doc.setFont(FONTS.header, 'bold');
-    doc.setTextColor(COLORS.primary[0]);
+    doc.setTextColor(getColors(branding).primary[0]);
     doc.text(title, pageWidth - margin, currentY + 8, { align: 'right' });
 
     doc.setFontSize(10);
     doc.setFont(FONTS.header, 'normal');
-    doc.setTextColor(COLORS.secondary[0]);
+    doc.setTextColor(getColors(branding).secondary[0]);
     // Using branding Name
     doc.text(branding.name, pageWidth - margin, currentY + 14, { align: 'right' });
 
@@ -101,12 +118,12 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
     docData.forEach(item => {
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'bold');
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text(item.label, headerRightsX, infoY);
 
         doc.setFontSize(9);
         doc.setFont(FONTS.body, 'bold'); // Value is bold
-        doc.setTextColor(COLORS.text[0]);
+        doc.setTextColor(getColors(branding).text[0]);
         doc.text(item.value, pageWidth - margin, infoY, { align: 'right' });
         infoY += 5;
     });
@@ -115,11 +132,11 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
     const companyY = currentY + logoH + 5;
     doc.setFontSize(8);
     doc.setFont(FONTS.body, 'bold');
-    doc.setTextColor(COLORS.primary[0]);
+    doc.setTextColor(getColors(branding).primary[0]);
     doc.text(branding.name, margin, companyY);
 
     doc.setFont(FONTS.body, 'normal');
-    doc.setTextColor(COLORS.secondary[0]);
+    doc.setTextColor(getColors(branding).secondary[0]);
     doc.text(branding.address, margin, companyY + 4);
     doc.text(`${branding.phone} | ${branding.email}`, margin, companyY + 8);
     if (branding.cuit) {
@@ -131,21 +148,21 @@ const drawHeader = (doc: jsPDF, img: HTMLImageElement, margin: number, pageWidth
 
 
 
-const drawDivider = (doc: jsPDF, y: number, margin: number, pageWidth: number) => {
-    doc.setDrawColor(COLORS.border[0]);
+const drawDivider = (doc: jsPDF, y: number, margin: number, pageWidth: number, branding: PdfBranding = DEFAULT_BRANDING) => {
+    doc.setDrawColor(getColors(branding).border[0]);
     doc.setLineWidth(0.1);
     doc.line(margin, y, pageWidth - margin, y);
 };
 
-const drawLabelValue = (doc: jsPDF, label: string, value: string, x: number, y: number, w: number) => {
+const drawLabelValue = (doc: jsPDF, label: string, value: string, x: number, y: number, w: number, branding: PdfBranding = DEFAULT_BRANDING) => {
     doc.setFontSize(7);
     doc.setFont(FONTS.body, 'bold');
-    doc.setTextColor(COLORS.textLight[0]);
+    doc.setTextColor(getColors(branding).textLight[0]);
     doc.text(label.toUpperCase(), x, y);
 
     doc.setFontSize(9);
     doc.setFont(FONTS.body, 'normal');
-    doc.setTextColor(COLORS.text[0]);
+    doc.setTextColor(getColors(branding).text[0]);
     const splitText = doc.splitTextToSize(value || "-", w);
     doc.text(splitText, x, y + 5);
     return splitText.length * 4; // Return approximated height
@@ -297,12 +314,12 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             styles: {
                 fontSize: 8,
                 cellPadding: 4,
-                textColor: COLORS.text[0],
-                lineColor: COLORS.primary[0], // Black lines for boxed look
+                textColor: getColors(branding).text[0],
+                lineColor: getColors(branding).primary[0], // Black lines for boxed look
                 lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: COLORS.primary, // Black Header
+                fillColor: getColors(branding).primary, // Black Header
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
@@ -366,7 +383,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         // Footer
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text("Este documento no es válido como factura. Los precios pueden variar sin previo aviso.", margin, footerY + 3);
 
@@ -489,12 +506,12 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             styles: {
                 fontSize: 8,
                 cellPadding: 4,
-                textColor: COLORS.text[0],
-                lineColor: COLORS.primary[0],
+                textColor: getColors(branding).text[0],
+                lineColor: getColors(branding).primary[0],
                 lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: COLORS.primary,
+                fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
@@ -548,21 +565,21 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 
         // --- SIGNATURE AREA ---
         const sigY = pageHeight - 50;
-        doc.setDrawColor(COLORS.border[0]);
+        doc.setDrawColor(getColors(branding).border[0]);
         // Centered signature line
         const sigWidth = 100;
         const sigStart = (pageWidth - sigWidth) / 2;
         doc.line(sigStart, sigY, sigStart + sigWidth, sigY);
 
         doc.setFontSize(8);
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text("FIRMA CONFORME CLIENTE / RESPONSABLE", pageWidth / 2, sigY + 5, { align: 'center' });
 
 
         // Footer
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
@@ -680,8 +697,8 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
             theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
-            styles: { fontSize: 8, cellPadding: 4, textColor: COLORS.text[0], lineColor: COLORS.primary[0], lineWidth: 0.1 },
-            headStyles: { fillColor: COLORS.primary, textColor: 255, fontStyle: 'bold', halign: 'center' },
+            styles: { fontSize: 8, cellPadding: 4, textColor: getColors(branding).text[0], lineColor: getColors(branding).primary[0], lineWidth: 0.1 },
+            headStyles: { fillColor: getColors(branding).primary, textColor: 255, fontStyle: 'bold', halign: 'center' },
             columnStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 30, halign: 'center' }, 2: { cellWidth: 20, halign: 'center' }, 3: { cellWidth: 35, halign: 'right' }, 4: { cellWidth: 35, halign: 'right' } }
         });
 
@@ -718,7 +735,7 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
         // Footer
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text("Documento de liquidación proforma. Valores sujetos a revisión final.", margin, footerY);
         
         doc.save(`Liquidacion_${orden.id ? orden.id.slice(0, 6) : "Orden"}.pdf`);
@@ -897,7 +914,7 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
             { label: "HASTA:", value: format(filters.to, 'dd/MM/yyyy') }
         ], branding);
 
-        drawDivider(doc, currentY, margin, pageWidth);
+        drawDivider(doc, currentY, margin, pageWidth, branding);
         currentY += 10;
 
         // Table
@@ -927,12 +944,12 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
             styles: {
                 fontSize: 8,
                 cellPadding: 3,
-                textColor: COLORS.text[0],
-                lineColor: COLORS.border[0],
+                textColor: getColors(branding).text[0],
+                lineColor: getColors(branding).border[0],
                 lineWidth: 0.1
             },
             headStyles: {
-                fillColor: COLORS.primary,
+                fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'left'
@@ -956,17 +973,17 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
 
         doc.setFontSize(12);
         doc.setFont(FONTS.body, 'bold');
-        doc.setTextColor(COLORS.primary[0]);
+        doc.setTextColor(getColors(branding).primary[0]);
         doc.text("TOTAL PERIODO", totalBoxX, currentY + 5, { align: 'left' });
         doc.text(`$ ${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, pageWidth - margin, currentY + 5, { align: 'right' });
 
         // Footer
         const footerY = pageHeight - 15;
-        doc.setDrawColor(COLORS.border[0]);
+        doc.setDrawColor(getColors(branding).border[0]);
         doc.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
 
         doc.setFontSize(7);
-        doc.setTextColor(COLORS.textLight[0]);
+        doc.setTextColor(getColors(branding).textLight[0]);
         doc.text("Reporte generado automáticamente por sistema de gestión.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 

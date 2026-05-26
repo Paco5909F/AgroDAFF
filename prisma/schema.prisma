@@ -29,6 +29,14 @@ model Empresa {
   logo_url    String? // URL to Supabase Storage
   email       String?
   telefono    String?
+  ciudad      String?
+  provincia   String?
+  codigo_postal String?
+
+  // Configuración de PDF / Branding
+  pdf_footer        String?
+  pdf_primary_color String? @default("#10b981") // Emerald 500
+  setup_completed_at DateTime? @db.Timestamptz
   
   
   usuarios    Usuario[]

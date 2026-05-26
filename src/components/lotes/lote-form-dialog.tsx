@@ -46,7 +46,7 @@ export function LoteFormDialog({ lote, establecimientos, trigger }: LoteFormDial
     const [isPending, startTransition] = useTransition()
     const isEditing = !!lote
 
-    const form = useForm<LoteFormValues>({
+    const form = useForm({
         resolver: zodResolver(loteSchema),
         defaultValues: {
             nombre: lote?.nombre || '',
@@ -139,7 +139,7 @@ export function LoteFormDialog({ lote, establecimientos, trigger }: LoteFormDial
                                 <FormItem>
                                     <FormLabel>Hectáreas (ha)</FormLabel>
                                     <FormControl>
-                                        <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                                        <Input type="number" step="0.01" placeholder="0.00" value={field.value as number} onChange={field.onChange} name={field.name} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

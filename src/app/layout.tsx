@@ -27,6 +27,8 @@ import { NavbarWrapper } from "@/components/ui/navbar-wrapper"
 import { MainLayoutWrapper } from "@/components/layout/main-layout-wrapper"
 import { AIAssistantWidget } from "@/components/ui/ai-assistant-widget"
 import { OfflineSyncManager } from "@/components/offline/sync-manager"
+import { SetupBanner } from "@/components/layout/setup-banner"
+import { Suspense } from "react"
 
 export default function RootLayout({
   children,
@@ -53,6 +55,9 @@ export default function RootLayout({
 
           <div className="min-h-screen flex flex-col overflow-x-hidden">
             {/* Header / Navbar */}
+            <Suspense fallback={null}>
+              <SetupBanner />
+            </Suspense>
             <NavbarWrapper>
               <AppNavbar />
             </NavbarWrapper>

@@ -69,9 +69,7 @@ export default async function OrdenesPage({
         }
     })
 
-    const { data: lotesData } = await getLotes()
-    const lotes = lotesData || []
-    
+    const lotes = await getLotes()
     const { data: campanasData } = await getCampanas()
     const campanas = campanasData || []
 
