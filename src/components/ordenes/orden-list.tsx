@@ -17,6 +17,7 @@ import { deleteOrden } from '@/server/ordenes'
 import { OrdenEditDialog } from './orden-edit-dialog'
 import { FacturaDialog } from '@/components/facturacion/factura-dialog'
 import { PDFDownloadButton } from './pdf-download-button'
+import { LiquidacionDialog } from './liquidacion-dialog'
 
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 
@@ -156,14 +157,24 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                             <TableCell className="text-right">
                                 <div className="flex justify-end items-center gap-1">
                                     {orden.estado !== 'facturada' && canBill && (
-                                        <FacturaDialog
-                                            orden={orden}
-                                            trigger={
-                                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" title="Facturar">
-                                                    <FileText className="h-4 w-4" />
-                                                </Button>
-                                            }
-                                        />
+                                        <>
+                                            <LiquidacionDialog
+                                                orden={orden}
+                                                trigger={
+                                                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" title="Generar Liquidación">
+                                                        <FileText className="h-4 w-4" />
+                                                    </Button>
+                                                }
+                                            />
+                                            <FacturaDialog
+                                                orden={orden}
+                                                trigger={
+                                                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" title="Facturar">
+                                                        <FileText className="h-4 w-4" />
+                                                    </Button>
+                                                }
+                                            />
+                                        </>
                                     )}
 
                                     <PDFDownloadButton
