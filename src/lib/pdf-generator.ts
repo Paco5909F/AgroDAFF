@@ -253,7 +253,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         // --- 2. DATOS DEL CLIENTE ---
         drawSectionHeader(doc, "DATOS DEL CLIENTE", cursorY, margin, pageWidth, margin);
         cursorY += 6;
-        drawBox(doc, margin, cursorY, width, 22);
+        drawBox(doc, margin, cursorY, width, 30);
 
         // Left Column
         let innerY = cursorY + 6;
@@ -272,7 +272,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         innerY += 8;
         drawField(doc, "HECTÁREAS", `${presupuesto.hectareas || 1} ha`, col2X, innerY);
 
-        cursorY += 30;
+        cursorY += 38;
 
         // --- 3. DETALLE DEL SERVICIO (Table) ---
         drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
@@ -324,7 +324,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         // --- 4. TOTAL BOX ---
         const totalBoxW = 70;
-        const totalBoxH = 12;
+        const totalBoxH = 18;
         const totalBoxX = pageWidth - margin - totalBoxW;
 
         // Gap before total
@@ -513,7 +513,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 
         // --- 4. TOTAL BOX ---
         const totalBoxW = 70;
-        const totalBoxH = 12;
+        const totalBoxH = 18;
         const totalBoxX = pageWidth - margin - totalBoxW;
 
         // Gap before total
