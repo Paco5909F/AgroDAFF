@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import { updatePresupuestoStatus, deletePresupuesto } from '@/server/presupuestos'
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { PresupuestoFormDialog } from './presupuesto-form-dialog'
+import { PresupuestoFormSheet } from './presupuesto-form-sheet'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -193,15 +193,16 @@ export function PresupuestosList({ data, clientes, servicios, insumos = [], lote
                                         </Button>
 
                                         {canEdit && (
-                                            <PresupuestoFormDialog
+                                            <PresupuestoFormSheet
                                                 clientes={clientes}
                                                 servicios={servicios}
                                                 insumos={insumos}
                                                 lotes={lotes}
                                                 presupuesto={presupuesto}
                                                 trigger={
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50" title="Editar">
-                                                        <Pencil className="h-4 w-4" />
+                                                    <Button variant="outline" size="sm" className="h-8 gap-1">
+                                                        <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                                                        <span className="sr-only sm:not-sr-only sm:ml-1 text-slate-600">Editar</span>
                                                     </Button>
                                                 }
                                             />

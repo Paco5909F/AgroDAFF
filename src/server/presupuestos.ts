@@ -140,46 +140,39 @@ export async function updatePresupuestoStatus(id: string, status: string) {
             })
 
             // 2. If Approved, Create Work Order automatically
-            if (status === 'APROBADO' && presupuesto.items.length > 0) {
-                const servicios = presupuesto.items.filter(i => i.tipo === 'servicio')
-                const insumos = presupuesto.items.filter(i => i.tipo === 'insumo')
-
-                // Create Order only if there is at least one service, as orders are service-centric
-                if (servicios.length > 0) {
-                    await tx.ordenTrabajo.create({
-                        data: {
-                            empresa_id: empresaId,
-                            fecha: new Date(),
-                            cliente_id: presupuesto.cliente_id,
-                            observaciones: `Generado desde Presupuesto #${presupuesto.id.slice(0, 8)}.\n${presupuesto.observaciones || ''}`,
-                            total: presupuesto.total_final,
-                            moneda: 'ARS',
-                            estado: 'pendiente',
-                            items: {
-                                create: servicios.map((s, index) => ({
-                                    servicio_id: s.referencia_id,
-                                    lote_id: presupuesto.lote_id, // Lote belongs to item
-                                    cantidad: s.cantidad,
-                                    precio_unit: s.precio_unit,
-                                    total: s.subtotal,
-                                    kilometros: 0,
-                                    // Attach all insumos to the first service item to preserve them
-                                    insumos: index === 0 && insumos.length > 0 ? {
-                                        create: insumos.map(i => ({
-                                            insumo_id: i.referencia_id,
-                                            dosis_por_ha: i.cantidad,
-                                            cantidad_pasadas: 1,
-                                            precio_unit_usado: i.precio_unit,
-                                            moneda_usada: 'ARS',
-                                            costo_por_ha: i.subtotal, // simplified
-                                            costo_total: i.subtotal
-                                        }))
-                                    } : undefined
-                                }))
-                            }
+            if (status === 'APROBADO') {
+                await tx.ordenTrabajo.create({
+                    data: {
+                        empresa_id: empresaId,
+                        fecha: new Date(),
+                        cliente_id: presupuesto.cliente_id,
+                        observaciones: `Generado desde Presupuesto #${presupuesto.id.slice(0, 8)}.\n${presupuesto.observaciones || ''}`,
+                        total: presupuesto.total_final,
+                        moneda: 'ARS',
+                        estado: 'pendiente',
+                        items: {
+                            create: presupuesto.items.map(item => ({
+                                servicio_id: item.tipo === 'servicio' ? item.referencia_id : undefined,
+                                lote_id: presupuesto.lote_id,
+                                cantidad: item.cantidad,
+                                precio_unit: item.precio_unit,
+                                total: item.subtotal,
+                                kilometros: 0,
+                                insumos: item.tipo === 'insumo' ? {
+                                    create: [{
+                                        insumo_id: item.referencia_id,
+                                        dosis_por_ha: item.cantidad,
+                                        cantidad_pasadas: 1,
+                                        precio_unit_usado: item.precio_unit,
+                                        moneda_usada: 'ARS',
+                                        costo_por_ha: item.subtotal,
+                                        costo_total: item.subtotal
+                                    }]
+                                } : undefined
+                            }))
                         }
-                    })
-                }
+                    }
+                })
             }
             return presupuesto
         })

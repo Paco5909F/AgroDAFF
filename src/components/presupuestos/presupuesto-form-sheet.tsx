@@ -10,12 +10,12 @@ import { es } from "date-fns/locale"
 
 import { Button } from '@/components/ui/button'
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog'
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet'
 import {
     Form,
     FormControl,
@@ -62,9 +62,10 @@ interface PresupuestoFormDialogProps {
     trigger?: React.ReactNode // Optional custom trigger
 }
 
-export function PresupuestoFormDialog({ clientes, servicios, insumos, lotes, presupuesto, trigger }: PresupuestoFormDialogProps) {
+export function PresupuestoFormSheet({ clientes, servicios, insumos, lotes, presupuesto, trigger }: PresupuestoFormDialogProps) {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
+    const isEditing = !!presupuesto
 
     const form = useForm<PresupuestoFormValues>({
         resolver: zodResolver(presupuestoSchema) as any,
@@ -195,19 +196,19 @@ export function PresupuestoFormDialog({ clientes, servicios, insumos, lotes, pre
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {trigger ? trigger : (
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-100 transition-all hover:scale-105">
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                {trigger || (
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Presupuesto
                     </Button>
                 )}
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-light text-slate-700">Nuevo Presupuesto</DialogTitle>
-                </DialogHeader>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
+                <SheetHeader className="mb-6">
+                    <SheetTitle>{isEditing ? 'Editar Presupuesto' : 'Nuevo Presupuesto'}</SheetTitle>
+                </SheetHeader>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
@@ -609,7 +610,7 @@ export function PresupuestoFormDialog({ clientes, servicios, insumos, lotes, pre
                         </div>
                     </form>
                 </Form>
-            </DialogContent>
-        </Dialog>
+            </SheetContent>
+        </Sheet>
     )
 }

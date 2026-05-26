@@ -1,7 +1,7 @@
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 
-const terms = ['Trisquel', 'El Trisquel', 'TrisquelAPP', 'Agroservicios', 'TrisquelApp'];
+const terms = ['AgroDAFF'];
 
 for (const term of terms) {
   try {

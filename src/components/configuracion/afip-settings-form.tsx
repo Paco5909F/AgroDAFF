@@ -44,12 +44,32 @@ export function AfipSettingsForm({ initialData }: AfipSettingsFormProps) {
         })
     }
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'crt' | 'key') => {
-        // Here we would implement real Supabase Storage upload
-        // For phase 1, we will just show a UI message
-        toast.info(`Carga de archivo .${type} iniciada.`, {
-            description: "La subida segura de certificados está en desarrollo."
-        })
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'crt' | 'key') => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', type)
+
+        const toastId = toast.loading(`Subiendo archivo .${type}...`)
+        
+        try {
+            const res = await fetch('/api/upload-cert', {
+                method: 'POST',
+                body: formData
+            })
+            
+            const data = await res.json()
+            
+            if (res.ok) {
+                toast.success(`Archivo .${type} subido exitosamente`, { id: toastId })
+            } else {
+                toast.error(data.error || 'Error al subir', { id: toastId })
+            }
+        } catch (error) {
+            toast.error('Error de red al subir', { id: toastId })
+        }
     }
 
     return (
