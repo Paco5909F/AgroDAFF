@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { getUserContext } from '@/server/context'
 import { redirect } from 'next/navigation'
 import { EmpresaForm } from '@/components/configuracion/empresa-form'
+import { AfipSettingsForm } from '@/components/configuracion/afip-settings-form'
 import { prisma } from '@/lib/prisma'
 import { Settings } from 'lucide-react'
 
@@ -50,6 +51,7 @@ export default async function ConfiguracionPage() {
             </div>
 
             <EmpresaForm initialData={empresa} />
+            <AfipSettingsForm initialData={empresa} />
         </div>
     )
 }

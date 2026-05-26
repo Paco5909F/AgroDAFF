@@ -52,13 +52,37 @@ model Empresa {
   trial_ends_at   DateTime? @db.Timestamptz
   is_lifetime     Boolean  @default(false) // Permite bypass de límites para VIPs
 
+  // AFIP Integration Fields (Multi-Tenant)
+  afip_cuit                 String?
+  condicion_iva             String?  // Responsable Inscripto, Monotributo, etc.
+  afip_punto_venta_default  Int?
+  afip_crt_url              String?  // Path in Supabase Storage
+  afip_key_url              String?  // Path in Supabase Storage
+  afip_production_mode      Boolean  @default(false)
+
   // Invite System
   shared_invite_code String? @unique // Code for auto-joining
 
   created_at  DateTime @default(now()) @db.Timestamptz
   tipos_cambio TipoCambio[]
+  pagos        SuscripcionLog[]
   
   @@map("empresas")
+}
+
+model SuscripcionLog {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  empresa_id      String    @db.Uuid
+  payment_id      String    @unique // MercadoPago Payment ID or Preapproval ID
+  status          String    // approved, rejected, pending, cancelled
+  amount          Decimal   @db.Decimal(12, 2)
+  currency        String    @default("ARS")
+  created_at      DateTime  @default(now()) @db.Timestamptz
+  
+  empresa         Empresa   @relation(fields: [empresa_id], references: [id], onDelete: Cascade)
+
+  @@map("suscripciones_logs")
+  @@index([empresa_id])
 }
 
 model TipoCambio {
@@ -144,6 +168,7 @@ model Cliente {
   telefono      String?
   persona_contacto String?
   tipo_cliente  String?   // Productor, Acopio, etc.
+  tipo_documento String?  @default("80") // 80 = CUIT, 96 = DNI, etc. (AFIP table)
   localidad     String?
   provincia     String?
   observaciones String?
@@ -337,17 +362,24 @@ model OrdenItem {
 model Factura {
   id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   orden_trabajo_id  String    @unique @db.Uuid
-  tipo_comprobante  String
+  tipo_comprobante  String    // 1 (Factura A), 6 (Factura B), 11 (Factura C)
   empresa_id        String?   @db.Uuid
   empresa           Empresa?  @relation(fields: [empresa_id], references: [id])
+  
   punto_venta       Int
   numero            BigInt
   cae               String?
+  vto_cae           DateTime? @db.Date // Vencimiento del CAE
+  
+  doc_tipo          String?   // 80 (CUIT), 96 (DNI)
+  doc_nro           String?   // Nro de documento del cliente al facturar
+
   fecha_vencimiento DateTime? @db.Date
   total             Decimal   @db.Decimal(14, 2)
   fecha_emision     DateTime? @default(now()) @db.Timestamptz
-  estado_afip       String?   @default("PENDIENTE")
-  observaciones_afip String?
+  
+  estado_afip       String?   @default("PENDIENTE") // APROBADO, RECHAZADO, PENDIENTE
+  observaciones_afip String?  // Guardar error exacto de AFIP
   pdf_url           String?
   created_at        DateTime  @default(now()) @db.Timestamptz
 
