@@ -16,7 +16,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const prisma = new PrismaClient();
 
 async function seedUser() {
-    const email = 'admin@eltrisquel.com';
+    const email = 'admin@agrodaff.com';
     const password = 'admin123';
 
     console.log(`Seeding user: ${email}...`);

@@ -43,7 +43,7 @@ export function FacturaDialog({ orden, trigger }: FacturaDialogProps) {
                 toast.success('Factura emitida correctamente (CAE Generado)')
                 setOpen(false)
             } else {
-                toast.error(result.error as string)
+                toast.error('error' in result ? result.error as string : 'Error desconocido')
             }
         })
     }
