@@ -49,3 +49,46 @@ export async function updateEmpresaProfile(data: z.infer<typeof updateEmpresaSch
         return { success: false, error: "Error al actualizar el perfil" }
     }
 }
+
+const updateAfipSchema = z.object({
+    afip_cuit: z.string().min(1, "El CUIT es requerido"),
+    condicion_iva: z.string().min(1, "La condición ante el IVA es requerida"),
+    afip_punto_venta_default: z.number().int().positive("Debe ser un punto de venta válido").optional(),
+    afip_production_mode: z.boolean().default(false)
+})
+
+export async function updateEmpresaAfip(data: any) {
+    try {
+        const context = await getUserContext()
+
+        if (context.rol !== 'ADMIN') {
+            return { success: false, error: "No tienes permisos" }
+        }
+
+        const validData = updateAfipSchema.parse({
+            afip_cuit: data.afip_cuit,
+            condicion_iva: data.condicion_iva,
+            afip_punto_venta_default: data.afip_punto_venta_default ? Number(data.afip_punto_venta_default) : undefined,
+            afip_production_mode: data.afip_production_mode === true
+        })
+
+        await prisma.empresa.update({
+            where: { id: context.empresaId },
+            data: {
+                afip_cuit: validData.afip_cuit,
+                condicion_iva: validData.condicion_iva,
+                afip_punto_venta_default: validData.afip_punto_venta_default,
+                afip_production_mode: validData.afip_production_mode
+            }
+        })
+
+        revalidatePath('/dashboard/configuracion')
+        return { success: true }
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return { success: false, error: error.issues[0].message }
+        }
+        console.error("Error updating afip config:", error)
+        return { success: false, error: "Error al actualizar la configuración fiscal" }
+    }
+}
