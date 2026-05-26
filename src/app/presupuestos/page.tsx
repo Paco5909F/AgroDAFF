@@ -35,8 +35,7 @@ export default async function PresupuestosPage({
         ...s,
         precio_base: Number(s.precio_base)
     }))
-    const lotesResult = await getLotes()
-    const lotes = lotesResult.success && lotesResult.data ? lotesResult.data : []
+    const lotes = await getLotes()
     const insumosResult = await getInsumos()
     const insumosRaw = insumosResult.success && insumosResult.insumos ? insumosResult.insumos : []
     const insumos = insumosRaw.map((i: any) => ({

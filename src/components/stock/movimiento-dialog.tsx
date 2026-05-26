@@ -74,7 +74,7 @@ export function MovimientoDialog({ trigger, onSuccess, defaultSiloId }: Movimien
 
     useEffect(() => {
         if (open) {
-            getLotes().then(res => { if (res.success) setLotes(res.data || []) })
+            getLotes().then(res => { setLotes(res || []) })
             getSilos().then(res => { if (res.success) setSilos(res.data || []) })
         }
     }, [open])
