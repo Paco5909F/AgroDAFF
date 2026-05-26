@@ -2,10 +2,40 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { preapproval } from '@/lib/mercadopago'
 
+import crypto from 'crypto'
+
 export async function POST(req: Request) {
     try {
         const url = new URL(req.url)
         console.log("MercadoPago Webhook Received", url.search)
+
+        // Webhook security validation (if secret is provided)
+        const secret = process.env.MP_WEBHOOK_SECRET
+        if (secret) {
+            const signatureHeader = req.headers.get('x-signature')
+            const requestId = req.headers.get('x-request-id')
+            
+            if (signatureHeader && requestId) {
+                // signatureHeader looks like: ts=12345,v1=abcdef...
+                const parts = signatureHeader.split(',')
+                let ts = '', v1 = ''
+                parts.forEach(p => {
+                    if (p.startsWith('ts=')) ts = p.replace('ts=', '')
+                    if (p.startsWith('v1=')) v1 = p.replace('v1=', '')
+                })
+                
+                // MP validation formula: manifest = "id=" + data.id + "&request-id=" + request-id + "&ts=" + ts + ";"
+                const dataId = url.searchParams.get('data.id')
+                if (dataId && ts && v1) {
+                    const manifest = `id=${dataId}&request-id=${requestId}&ts=${ts};`
+                    const hmac = crypto.createHmac('sha256', secret).update(manifest).digest('hex')
+                    if (hmac !== v1) {
+                        console.error('Invalid MP Webhook Signature')
+                        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+                    }
+                }
+            }
+        }
 
         const body = await req.json().catch(() => null)
         console.log("Webhook body:", body)

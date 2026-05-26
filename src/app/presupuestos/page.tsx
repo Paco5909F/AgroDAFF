@@ -6,7 +6,7 @@ import { getServicios } from '@/server/servicios'
 import { getLotes } from '@/server/lotes'
 import { getInsumos } from '@/server/insumos'
 import { PresupuestosList } from '@/components/presupuestos/presupuesto-list'
-import { PresupuestoFormDialog } from '@/components/presupuestos/presupuesto-form-dialog'
+import { PresupuestoFormSheet } from '@/components/presupuestos/presupuesto-form-sheet'
 import { Input } from '@/components/ui/input'
 import { Search, Calculator } from 'lucide-react'
 
@@ -83,7 +83,7 @@ export default async function PresupuestosPage({
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <SearchInput placeholder="Buscar presupuesto..." />
                     {canCreate && (
-                        <PresupuestoFormDialog clientes={clientes} servicios={servicios} insumos={insumos} lotes={lotes} />
+                        <PresupuestoFormSheet clientes={clientes} servicios={servicios} insumos={insumos} lotes={lotes} />
                     )}
                 </div>
             </div>

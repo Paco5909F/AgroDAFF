@@ -108,7 +108,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
         output.labores.push({
             fecha: item.orden.fecha,
             lote: loteName,
-            servicio: item.servicio.nombre,
+            servicio: item.servicio?.nombre || 'Insumo Directo',
             cantidad: Number(item.cantidad),
             costoLabor: costoLabor,
             costoInsumos: insumosTotalCost,

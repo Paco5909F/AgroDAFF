@@ -53,16 +53,32 @@ export async function emitirFactura(ordenId: string, tipoComprobante: string) {
                 return await simularFacturacionTesting(orden, tipoComprobante, empresa)
             }
             return { success: false, error: 'Debe subir su Certificado (.crt) y Clave (.key) en la Configuración Fiscal.' }
-        } else {
-            // TODO: Descargar certificados temporalmente a /tmp
-            // Este bloque requiere que el Storage esté bien configurado
-            // certPath = await downloadCert(empresa.afip_crt_url)
-            // keyPath = await downloadCert(empresa.afip_key_url)
-            return { success: false, error: 'La descarga segura de certificados desde Supabase Storage está pendiente de activación por seguridad en esta fase.' }
         }
 
-        // --- CÓDIGO REAL DE CONEXIÓN CON AFIP (Cuando los certs estén descargados en certPath y keyPath) ---
-        /*
+        certPath = path.join('/tmp', `cert_${context.empresaId}_${Date.now()}.crt`)
+        keyPath = path.join('/tmp', `key_${context.empresaId}_${Date.now()}.key`)
+
+        try {
+            // Descargar CRT
+            const { data: crtData, error: crtError } = await supabase.storage.from('afip_certs').download(empresa.afip_crt_url)
+            if (crtError || !crtData) throw new Error('No se pudo descargar el certificado fiscal.')
+            const crtBuffer = Buffer.from(await crtData.arrayBuffer())
+            fs.writeFileSync(certPath, crtBuffer)
+
+            // Descargar KEY
+            const { data: keyData, error: keyError } = await supabase.storage.from('afip_certs').download(empresa.afip_key_url)
+            if (keyError || !keyData) throw new Error('No se pudo descargar la clave fiscal.')
+            const keyBuffer = Buffer.from(await keyData.arrayBuffer())
+            fs.writeFileSync(keyPath, keyBuffer)
+            
+        } catch (e: any) {
+            // Cleanup on fail
+            if (fs.existsSync(certPath)) fs.unlinkSync(certPath)
+            if (fs.existsSync(keyPath)) fs.unlinkSync(keyPath)
+            return { success: false, error: e.message || 'Error al obtener credenciales fiscales seguras.' }
+        }
+
+        // @ts-ignore
         const afip = new Afip({
             CUIT: parseInt(empresa.afip_cuit),
             cert: certPath,
@@ -77,7 +93,9 @@ export async function emitirFactura(ordenId: string, tipoComprobante: string) {
         const lastVoucher = await afip.ElectronicBilling.getLastVoucher(ptoVta, cbteTipo)
         const newVoucherNumber = lastVoucher + 1
 
-        const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0].replace(/-/g, '')
+        // Formato YYYYMMDD para AFIP
+        const fechaObj = new Date()
+        const fecha = `${fechaObj.getFullYear()}${String(fechaObj.getMonth() + 1).padStart(2, '0')}${String(fechaObj.getDate()).padStart(2, '0')}`
         const importeTotal = Number(orden.total_final || orden.total)
 
         const data = {
@@ -103,10 +121,20 @@ export async function emitirFactura(ordenId: string, tipoComprobante: string) {
             'MonCotiz' 	: 1, // Cotización de la moneda
         }
 
-        const res = await afip.ElectronicBilling.createVoucher(data)
+        let res;
+        try {
+            res = await afip.ElectronicBilling.createVoucher(data)
+        } finally {
+            // Siempre limpiar certificados del File System (Seguridad)
+            if (fs.existsSync(certPath)) fs.unlinkSync(certPath)
+            if (fs.existsSync(keyPath)) fs.unlinkSync(keyPath)
+        }
         
         // El resultado (res) contiene el CAE y el Vencimiento (CAEFchVto)
-        
+        // Parsear fecha YYYYMMDD a Date
+        const vtoCaeStr = res.CAEFchVto.toString()
+        const vtoCaeDate = new Date(`${vtoCaeStr.slice(0,4)}-${vtoCaeStr.slice(4,6)}-${vtoCaeStr.slice(6,8)}T12:00:00Z`)
+
         const factura = await prisma.factura.upsert({
             where: { orden_trabajo_id: ordenId },
             create: {
@@ -115,30 +143,34 @@ export async function emitirFactura(ordenId: string, tipoComprobante: string) {
                 punto_venta: ptoVta,
                 numero: newVoucherNumber,
                 cae: res.CAE,
-                vto_cae: new Date(res.CAEFchVto), // YYYYMMDD string a Date necesita parseo
+                fecha_vencimiento: vtoCaeDate,
                 total: importeTotal,
                 estado_afip: 'APROBADO',
                 empresa_id: context.empresaId,
-                doc_tipo: orden.cliente.tipo_documento || '80',
-                doc_nro: orden.cliente.cuit
+                observaciones_afip: 'Facturado correctamente via WS AFIP'
             },
             update: {
                 punto_venta: ptoVta,
                 numero: newVoucherNumber,
                 cae: res.CAE,
-                vto_cae: new Date(res.CAEFchVto),
+                fecha_vencimiento: vtoCaeDate,
                 total: importeTotal,
                 estado_afip: 'APROBADO',
                 empresa_id: context.empresaId,
-                doc_tipo: orden.cliente.tipo_documento || '80',
-                doc_nro: orden.cliente.cuit
+                observaciones_afip: 'Facturado correctamente via WS AFIP'
             }
         })
-        */
+
+        await prisma.ordenTrabajo.update({
+            where: { id: orden.id },
+            data: { estado: 'facturada' }
+        })
+
+        revalidatePath('/ordenes')
+        return { success: true, data: factura }
 
     } catch (error: any) {
         console.error('Error emitting factura:', error)
-        // Guardar el error de AFIP en la base de datos si falla la validación (ej. CUIT inválido)
         return { success: false, error: error.message || 'Error al conectar con los WebServices de AFIP' }
     }
 }

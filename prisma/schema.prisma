@@ -341,8 +341,8 @@ model OrdenItem {
   orden_id      String   @db.Uuid
   orden         OrdenTrabajo @relation(fields: [orden_id], references: [id], onDelete: Cascade)
   
-  servicio_id   String   @db.Uuid
-  servicio      Servicio @relation(fields: [servicio_id], references: [id], onDelete: Restrict)
+  servicio_id   String?  @db.Uuid
+  servicio      Servicio? @relation(fields: [servicio_id], references: [id], onDelete: Restrict)
   
   lote_id       String?  @db.Uuid // Optional: each item might be for a different lot? or keep global? keeping per item is flexible
   lote          Lote?    @relation(fields: [lote_id], references: [id])
