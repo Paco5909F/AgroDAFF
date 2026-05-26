@@ -1,6 +1,7 @@
 import Afip from '@afipsdk/afip.js'
 
 // Initialize AFIP SDK with env vars
+// @ts-ignore
 const afip = new Afip({
     CUIT: process.env.AFIP_CUIT ? parseInt(process.env.AFIP_CUIT) : 0,
     cert: process.env.AFIP_CERT_PATH || './afip/cert.crt',

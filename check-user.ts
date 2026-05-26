@@ -24,7 +24,7 @@ async function main() {
             where: { id: 'aecae584-60ea-43e2-873e-c95f53bd8f73' },
             data: {
                 rol: 'ADMIN',
-                email: 'admin@eltrisquel.com'
+                email: 'admin@agrodaff.com'
             }
         })
         console.log('User updated with email:', updatedUser)
