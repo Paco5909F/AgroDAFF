@@ -3,8 +3,10 @@ import { Suspense } from 'react'
 import { getPresupuestos } from '@/server/presupuestos' // We just created this
 import { getClientes } from '@/server/clientes'
 import { getServicios } from '@/server/servicios'
-import { PresupuestosList } from '@/components/presupuestos/presupuesto-list' // We will create this
-import { PresupuestoFormDialog } from '@/components/presupuestos/presupuesto-form-dialog' // And this
+import { getLotes } from '@/server/lotes'
+import { getInsumos } from '@/server/insumos'
+import { PresupuestosList } from '@/components/presupuestos/presupuesto-list'
+import { PresupuestoFormDialog } from '@/components/presupuestos/presupuesto-form-dialog'
 import { Input } from '@/components/ui/input'
 import { Search, Calculator } from 'lucide-react'
 
@@ -32,6 +34,14 @@ export default async function PresupuestosPage({
     const servicios = serviciosRaw.map((s: any) => ({
         ...s,
         precio_base: Number(s.precio_base)
+    }))
+    const lotesResult = await getLotes()
+    const lotes = lotesResult.success && lotesResult.data ? lotesResult.data : []
+    const insumosResult = await getInsumos()
+    const insumosRaw = insumosResult.success && insumosResult.insumos ? insumosResult.insumos : []
+    const insumos = insumosRaw.map((i: any) => ({
+        ...i,
+        precio_actual: Number(i.precio_actual)
     }))
 
     const { rol, empresaId } = await getUserContext()
@@ -74,7 +84,7 @@ export default async function PresupuestosPage({
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <SearchInput placeholder="Buscar presupuesto..." />
                     {canCreate && (
-                        <PresupuestoFormDialog clientes={clientes} servicios={servicios} />
+                        <PresupuestoFormDialog clientes={clientes} servicios={servicios} insumos={insumos} lotes={lotes} />
                     )}
                 </div>
             </div>
@@ -85,6 +95,8 @@ export default async function PresupuestosPage({
                         data={presupuestos}
                         clientes={clientes}
                         servicios={servicios}
+                        insumos={insumos}
+                        lotes={lotes}
                         rol={rol}
                         branding={branding}
                     />

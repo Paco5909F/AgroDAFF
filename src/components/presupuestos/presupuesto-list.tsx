@@ -35,11 +35,13 @@ interface PresupuestosListProps {
     data: any[]
     clientes: any[]
     servicios: any[]
+    insumos?: any[]
+    lotes?: any[]
     rol: string
     branding: PdfBranding
 }
 
-export function PresupuestosList({ data, clientes, servicios, rol, branding }: PresupuestosListProps) {
+export function PresupuestosList({ data, clientes, servicios, insumos = [], lotes = [], rol, branding }: PresupuestosListProps) {
     const [loadingMap, setLoadingMap] = useState<Record<string, string | null>>({})
     const [deleteId, setDeleteId] = useState<string | null>(null)
     const [isDeleting, startDeleteTransition] = useTransition()
@@ -112,7 +114,8 @@ export function PresupuestosList({ data, clientes, servicios, rol, branding }: P
                         <TableRow className="hover:bg-transparent border-slate-100">
                             <TableHead>Fecha</TableHead>
                             <TableHead>Cliente</TableHead>
-                            <TableHead>Total</TableHead>
+                            <TableHead>Total Final</TableHead>
+                            <TableHead>Hectáreas</TableHead>
                             <TableHead>Estado</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -127,7 +130,13 @@ export function PresupuestosList({ data, clientes, servicios, rol, branding }: P
                                     {presupuesto.cliente.razon_social}
                                 </TableCell>
                                 <TableCell className="font-medium text-slate-900">
-                                    ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                    ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                </TableCell>
+                                <TableCell className="text-slate-600">
+                                    {Number(presupuesto.hectareas || 1)} ha
+                                    <div className="text-xs text-slate-400 mt-0.5">
+                                        ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha
+                                    </div>
                                 </TableCell>
                                 <TableCell>
                                     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
@@ -187,6 +196,8 @@ export function PresupuestosList({ data, clientes, servicios, rol, branding }: P
                                             <PresupuestoFormDialog
                                                 clientes={clientes}
                                                 servicios={servicios}
+                                                insumos={insumos}
+                                                lotes={lotes}
                                                 presupuesto={presupuesto}
                                                 trigger={
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50" title="Editar">

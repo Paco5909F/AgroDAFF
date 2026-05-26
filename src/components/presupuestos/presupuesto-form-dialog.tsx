@@ -31,6 +31,8 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
+    SelectGroup,
+    SelectLabel
 } from "@/components/ui/select"
 import {
     Popover,
@@ -54,11 +56,13 @@ import { createPresupuesto, updatePresupuesto } from '@/server/presupuestos'
 interface PresupuestoFormDialogProps {
     clientes: any[]
     servicios: any[]
+    insumos: any[]
+    lotes: any[]
     presupuesto?: any // Optional budget to edit
     trigger?: React.ReactNode // Optional custom trigger
 }
 
-export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigger }: PresupuestoFormDialogProps) {
+export function PresupuestoFormDialog({ clientes, servicios, insumos, lotes, presupuesto, trigger }: PresupuestoFormDialogProps) {
     const [open, setOpen] = useState(false)
     const [isPending, startTransition] = useTransition()
 
@@ -66,16 +70,22 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
         resolver: zodResolver(presupuestoSchema) as any,
         defaultValues: {
             cliente_id: presupuesto?.cliente_id || "",
+            lote_id: presupuesto?.lote_id || undefined,
+            hectareas: presupuesto ? Number(presupuesto.hectareas) : 1,
             fecha: presupuesto?.fecha ? new Date(presupuesto.fecha) : new Date(),
-            valido_hasta: presupuesto?.valido_hasta ? new Date(presupuesto.valido_hasta) : undefined, // Add this
+            valido_hasta: presupuesto?.valido_hasta ? new Date(presupuesto.valido_hasta) : undefined,
             items: presupuesto?.items ? presupuesto.items.map((i: any) => ({
-                servicio_id: i.servicio_id,
+                tipo: i.tipo,
+                referencia_id: i.referencia_id,
+                nombre: i.nombre,
+                unidad: i.unidad,
                 cantidad: Number(i.cantidad),
                 precio_unit: Number(i.precio_unit),
                 subtotal: Number(i.subtotal),
-                detalle: i.detalle || "" // Add this
+                detalle: i.detalle || ""
             })) : [],
             total: presupuesto ? Number(presupuesto.total) : 0,
+            total_final: presupuesto ? Number(presupuesto.total_final) : 0,
             observaciones: presupuesto?.observaciones || "",
         },
     })
@@ -85,16 +95,22 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
         if (open) {
             form.reset({
                 cliente_id: presupuesto?.cliente_id || "",
+                lote_id: presupuesto?.lote_id || undefined,
+                hectareas: presupuesto ? Number(presupuesto.hectareas) : 1,
                 fecha: presupuesto?.fecha ? new Date(presupuesto.fecha) : new Date(),
-                valido_hasta: presupuesto?.valido_hasta ? new Date(presupuesto.valido_hasta) : undefined, // Add this
+                valido_hasta: presupuesto?.valido_hasta ? new Date(presupuesto.valido_hasta) : undefined,
                 items: presupuesto?.items ? presupuesto.items.map((i: any) => ({
-                    servicio_id: i.servicio_id,
+                    tipo: i.tipo,
+                    referencia_id: i.referencia_id,
+                    nombre: i.nombre,
+                    unidad: i.unidad,
                     cantidad: Number(i.cantidad),
                     precio_unit: Number(i.precio_unit),
                     subtotal: Number(i.subtotal),
-                    detalle: i.detalle || "" // Add this
+                    detalle: i.detalle || ""
                 })) : [],
                 total: presupuesto ? Number(presupuesto.total) : 0,
+                total_final: presupuesto ? Number(presupuesto.total_final) : 0,
                 observaciones: presupuesto?.observaciones || "",
             })
         }
@@ -107,8 +123,9 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
 
     // Watch items to calculate totals
     const items = form.watch("items")
+    const hectareas = form.watch("hectareas") || 1
 
-    // Update Totals when items change
+    // Update Totals when items or hectareas change
     useEffect(() => {
         if (!items) return
 
@@ -118,16 +135,34 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
             const price = Number(item.precio_unit) || 0
             const sub = qty * price
             newTotal += sub
+            if (form.getValues(`items.${index}.subtotal`) !== sub) {
+                 form.setValue(`items.${index}.subtotal`, sub, { shouldValidate: false })
+            }
         })
         form.setValue("total", Number(newTotal.toFixed(2)))
-    }, [JSON.stringify(items), form])
+        form.setValue("total_final", Number((newTotal * hectareas).toFixed(2)))
+    }, [JSON.stringify(items), hectareas, form])
 
-    const handleServiceChange = (index: number, serviceId: string) => {
-        const service = servicios.find(s => s.id === serviceId)
+    const handleItemChange = (index: number, itemId: string) => {
+        // Try to find in servicios first, then insumos
+        const service = servicios.find(s => s.id === itemId)
         if (service) {
+            form.setValue(`items.${index}.tipo`, "servicio")
+            form.setValue(`items.${index}.referencia_id`, service.id)
+            form.setValue(`items.${index}.nombre`, service.nombre)
+            form.setValue(`items.${index}.unidad`, service.unidad_medida || "unidad")
             form.setValue(`items.${index}.precio_unit`, Number(service.precio_base))
+            return
         }
-        form.setValue(`items.${index}.servicio_id`, serviceId)
+
+        const insumo = insumos.find(i => i.id === itemId)
+        if (insumo) {
+            form.setValue(`items.${index}.tipo`, "insumo")
+            form.setValue(`items.${index}.referencia_id`, insumo.id)
+            form.setValue(`items.${index}.nombre`, insumo.nombre)
+            form.setValue(`items.${index}.unidad`, insumo.unidad_medida || "unidad")
+            form.setValue(`items.${index}.precio_unit`, Number(insumo.precio_actual))
+        }
     }
 
     async function onSubmit(data: PresupuestoFormValues) {
@@ -298,6 +333,48 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                             />
                         </div>
 
+                        {/* LOTE Y HECTAREAS */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="lote_id"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Lote (Opcional)</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Seleccione un lote" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {lotes.map((lote) => (
+                                                    <SelectItem key={lote.id} value={lote.id}>
+                                                        {lote.nombre} {lote.establecimiento ? `(${lote.establecimiento.nombre})` : ''}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="hectareas"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Hectáreas</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" step="0.01" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
                         {/* ITEMS SECTION */}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
@@ -306,7 +383,7 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => append({ servicio_id: "", cantidad: 1, precio_unit: 0, subtotal: 0, detalle: "" })}
+                                    onClick={() => append({ tipo: "servicio", referencia_id: "", nombre: "", unidad: "unidad", cantidad: 1, precio_unit: 0, subtotal: 0, detalle: "" })}
                                     className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                                 >
                                     <Plus className="w-3 h-3 mr-1" /> Agregar Ítem
@@ -321,18 +398,18 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                 )}
                                 {fields.map((field, index) => (
                                     <div key={field.id} className="p-3 bg-white hover:bg-slate-50/50 transition-colors grid grid-cols-12 gap-2 items-end">
-                                        {/* SERVICE SELECT */}
+                                        {/* ITEM SELECT */}
                                         <div className="col-span-12 md:col-span-5">
                                             <FormField
                                                 control={form.control}
-                                                name={`items.${index}.servicio_id`}
+                                                name={`items.${index}.referencia_id`}
                                                 render={({ field }) => (
                                                     <FormItem className="mb-2">
-                                                        <FormLabel className="text-xs text-slate-500">Servicio</FormLabel>
+                                                        <FormLabel className="text-xs text-slate-500">Ítem (Servicio o Insumo)</FormLabel>
                                                         <Select
                                                             onValueChange={(val) => {
                                                                 field.onChange(val);
-                                                                handleServiceChange(index, val);
+                                                                handleItemChange(index, val);
                                                             }}
                                                             defaultValue={field.value}
                                                         >
@@ -342,11 +419,22 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                                                 </SelectTrigger>
                                                             </FormControl>
                                                             <SelectContent>
-                                                                {servicios.map((s) => (
-                                                                    <SelectItem key={s.id} value={s.id}>
-                                                                        {s.nombre} ({s.unidad_medida})
-                                                                    </SelectItem>
-                                                                ))}
+                                                                <SelectGroup>
+                                                                    <SelectLabel>Servicios</SelectLabel>
+                                                                    {servicios.map((s) => (
+                                                                        <SelectItem key={s.id} value={s.id}>
+                                                                            {s.nombre} ({s.unidad_medida})
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectGroup>
+                                                                <SelectGroup>
+                                                                    <SelectLabel>Insumos</SelectLabel>
+                                                                    {insumos.map((i) => (
+                                                                        <SelectItem key={i.id} value={i.id}>
+                                                                            {i.nombre} ({i.unidad_medida})
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectGroup>
                                                             </SelectContent>
                                                         </Select>
                                                         <FormMessage />
@@ -377,10 +465,8 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                                 control={form.control}
                                                 name={`items.${index}.cantidad`}
                                                 render={({ field }) => {
-                                                    const currentServiceId = form.watch(`items.${index}.servicio_id`);
-                                                    const selectedService = servicios.find(s => s.id === currentServiceId);
+                                                    const unitLower = form.watch(`items.${index}.unidad`)?.toLowerCase() || "";
                                                     let quantityLabel = "Cant.";
-                                                    const unitLower = selectedService?.unidad_medida?.toLowerCase() || "";
 
                                                     if (unitLower.includes("km")) quantityLabel = "Kms";
                                                     else if (unitLower.includes("ha")) quantityLabel = "Has";
@@ -410,17 +496,19 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                                 control={form.control}
                                                 name={`items.${index}.precio_unit`}
                                                 render={({ field }) => {
-                                                    const currentServiceId = form.watch(`items.${index}.servicio_id`);
-                                                    const selectedService = servicios.find(s => s.id === currentServiceId);
-                                                    const isModified = selectedService && Math.abs(Number(field.value) - Number(selectedService.precio_base)) > 0.01;
+                                                    const currentId = form.watch(`items.${index}.referencia_id`);
+                                                    const selectedService = servicios.find(s => s.id === currentId);
+                                                    const selectedInsumo = insumos.find(i => i.id === currentId);
+                                                    const basePrice = selectedService ? Number(selectedService.precio_base) : (selectedInsumo ? Number(selectedInsumo.precio_actual) : null);
+                                                    const isModified = basePrice !== null && Math.abs(Number(field.value) - basePrice) > 0.01;
 
                                                     return (
                                                         <FormItem className="mb-0">
                                                             <div className="flex justify-between items-baseline">
                                                                 <FormLabel className="text-xs text-slate-500">Precio</FormLabel>
-                                                                {selectedService && isModified && (
+                                                                {basePrice !== null && isModified && (
                                                                     <span className="text-[10px] text-amber-600 font-medium">
-                                                                        Lista: ${Number(selectedService.precio_base)}
+                                                                        Lista: ${basePrice}
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -494,6 +582,19 @@ export function PresupuestoFormDialog({ clientes, servicios, presupuesto, trigge
                                         <FormLabel className="font-bold text-emerald-700">Total Estimado</FormLabel>
                                         <FormControl>
                                             <Input type="number" className="bg-emerald-50 text-xl font-bold text-emerald-800 text-right" {...field} readOnly />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="total_final"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-emerald-700">Total Final (x Ha)</FormLabel>
+                                        <FormControl>
+                                            <Input type="number" className="bg-emerald-100 text-xl font-bold text-emerald-900 text-right" {...field} readOnly />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

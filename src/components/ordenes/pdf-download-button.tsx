@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { FileDown } from 'lucide-react'
-import { generateOrdenPDF, PdfBranding } from '@/lib/pdf-generator'
+import { generateOrdenPDF, generateLiquidacionPDF, PdfBranding } from '@/lib/pdf-generator'
 
 interface PDFDownloadButtonProps {
     orden: any
@@ -20,9 +20,13 @@ export function PDFDownloadButton({ orden, className, variant = "ghost", size = 
             className={className}
             onClick={(e) => {
                 e.stopPropagation() // Prevent card click
-                generateOrdenPDF(orden, branding)
+                if (orden.estado === 'facturada' || orden.estado === 'completada') {
+                    generateLiquidacionPDF(orden, branding)
+                } else {
+                    generateOrdenPDF(orden, branding)
+                }
             }}
-            title="Descargar PDF"
+            title={orden.estado === 'facturada' || orden.estado === 'completada' ? "Descargar Liquidación" : "Descargar PDF"}
         >
             {size === 'icon' ? (
                 <FileDown className="h-4 w-4 text-emerald-600" />

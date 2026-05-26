@@ -258,15 +258,19 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         // Left Column
         let innerY = cursorY + 6;
         drawField(doc, "RAZÓN SOCIAL / NOMBRE", presupuesto.cliente.razon_social, margin + 5, innerY);
-        innerY += 10;
+        innerY += 8;
         drawField(doc, "CUIT", presupuesto.cliente.cuit || "-", margin + 5, innerY);
+        innerY += 8;
+        drawField(doc, "LOTE", presupuesto.lote?.nombre || "No especificado", margin + 5, innerY);
 
         // Right Column
         innerY = cursorY + 6;
         const col2X = margin + (width / 2) + 20;
         drawField(doc, "EMAIL", presupuesto.cliente.email || "-", col2X, innerY);
-        innerY += 10;
+        innerY += 8;
         drawField(doc, "CONDICIÓN IVA", presupuesto.cliente.condicion_iva || "Consumidor Final", col2X, innerY);
+        innerY += 8;
+        drawField(doc, "HECTÁREAS", `${presupuesto.hectareas || 1} ha`, col2X, innerY);
 
         cursorY += 30;
 
@@ -276,9 +280,9 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         // Table logic
         const tableBody = presupuesto.items.map((item: any) => [
-            { content: item.servicio.nombre, styles: { fontStyle: 'bold' } },
+            { content: item.nombre || item.servicio?.nombre || 'Ítem', styles: { fontStyle: 'bold' } },
             Number(item.cantidad).toLocaleString('es-AR'),
-            item.servicio.unidad_medida, // Unidad centered
+            item.unidad || item.servicio?.unidad_medida || 'u', // Unidad centered
             `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
             { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
         ]);
@@ -333,12 +337,17 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         doc.setLineWidth(0.5); // Thicker border
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
 
+        doc.setFontSize(10);
+        doc.setFont(FONTS.body, 'normal');
+        doc.setTextColor(100, 100, 100);
+        const subTotalStr = `Subtotal: $ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha`;
+        doc.text(subTotalStr, totalBoxX + totalBoxW - 5, cursorY + 6, { align: 'right' });
+
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
         doc.setTextColor(0);
-        // "TOTAL: $ 123.456,00" aligned right or center
-        const totalStr = `TOTAL: $ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 8, { align: 'right' });
+        const totalStr = `TOTAL FINAL: $ ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
 
         cursorY += 25;
 
@@ -558,6 +567,161 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Orden_${orden.id ? orden.id.slice(0, 6) : "Borrador"}.pdf`);
+    });
+};
+
+// --- LIQUIDACION PDF ---
+export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
+    loadLogoAndRun(branding.logoUrl, (img) => {
+        const doc = new jsPDF();
+        const margin = 15;
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const width = pageWidth - (margin * 2);
+
+        let cursorY = margin;
+
+        // --- 1. HEADER ROW ---
+        // Left: Logo + Company Data
+        const logoW = 25;
+        const aspect = img.width && img.height ? img.width / img.height : 1;
+        const logoH = logoW / aspect;
+
+        if (img.complete && img.naturalHeight !== 0) {
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
+        }
+
+        const companyX = margin + logoW + 5;
+        doc.setFontSize(12);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text(branding.name, companyX, cursorY + 6);
+
+        doc.setFontSize(8);
+        doc.setFont(FONTS.body, 'normal');
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
+
+        // Right: Box with Liquidacion Data
+        const boxX = pageWidth - margin - 75;
+        const boxW = 75;
+        const boxH = 26;
+        drawBox(doc, boxX, cursorY, boxW, boxH);
+
+        doc.setFontSize(10);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text("LIQUIDACIÓN DE TRABAJOS", boxX + (boxW / 2), cursorY + 6, { align: 'center' });
+        doc.text(`ORDEN N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, boxX + (boxW / 2), cursorY + 11, { align: 'center' });
+
+        doc.setFontSize(8);
+        doc.text(`FECHA CIERRE: ${orden.fecha_cierre ? format(new Date(orden.fecha_cierre), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 20);
+        doc.text(`COTIZACIÓN USD: $ ${orden.cotizacion_usd ? Number(orden.cotizacion_usd).toFixed(2) : '1.00'}`, boxX + 5, cursorY + 24);
+
+        cursorY += 35; // Move down below header row
+
+        // --- 2. DATOS DEL CLIENTE ---
+        drawSectionHeader(doc, "DATOS DEL CLIENTE", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 18);
+
+        let innerY = cursorY + 6;
+        drawField(doc, "RAZÓN SOCIAL", orden.cliente.razon_social, margin + 5, innerY);
+        const col2X = margin + (width / 2) + 20;
+        drawField(doc, "CUIT", orden.cliente.cuit || "-", col2X, innerY);
+
+        cursorY += 25;
+
+        // --- 3. DETALLE DE LIQUIDACIÓN ---
+        drawSectionHeader(doc, "DETALLE DE LIQUIDACIÓN (CANTIDADES REALES)", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+
+        const tableBody: any[] = [];
+        let totalUSD = 0;
+
+        orden.items.forEach((item: any) => {
+            const qty = Number(item.cantidad_real || item.cantidad);
+            const price = Number(item.precio_congelado || item.precio_unit);
+            const subtotal = qty * price;
+            totalUSD += subtotal;
+
+            tableBody.push([
+                { content: item.servicio?.nombre || 'Servicio', styles: { fontStyle: 'bold' } },
+                qty.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
+                item.servicio?.unidad_medida || 'u',
+                `$ ${price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                { content: `$ ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
+            ]);
+
+            if (item.insumos && item.insumos.length > 0) {
+                item.insumos.forEach((insumo: any) => {
+                    const insQty = Number(insumo.cantidad_real || (Number(insumo.dosis_por_ha) * Number(item.cantidad)));
+                    const insPrice = Number(insumo.precio_congelado || insumo.precio_unit_usado);
+                    const insSubtotal = insQty * insPrice;
+                    totalUSD += insSubtotal;
+
+                    tableBody.push([
+                        { content: `  ↳ Insumo: ${insumo.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+                        insQty.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
+                        insumo.insumo?.unidad_medida || 'u',
+                        `$ ${insPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                        { content: `$ ${insSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [100, 100, 100] } }
+                    ]);
+                });
+            }
+        });
+
+        autoTable(doc, {
+            startY: cursorY,
+            head: [['CONCEPTO', 'CANTIDAD REAL', 'UNIDAD', 'PRECIO CONG.', 'SUBTOTAL']],
+            body: tableBody,
+            theme: 'plain',
+            margin: { left: margin, right: margin },
+            tableWidth: width,
+            styles: { fontSize: 8, cellPadding: 4, textColor: COLORS.text[0], lineColor: COLORS.primary[0], lineWidth: 0.1 },
+            headStyles: { fillColor: COLORS.primary, textColor: 255, fontStyle: 'bold', halign: 'center' },
+            columnStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 30, halign: 'center' }, 2: { cellWidth: 20, halign: 'center' }, 3: { cellWidth: 35, halign: 'right' }, 4: { cellWidth: 35, halign: 'right' } }
+        });
+
+        // @ts-ignore
+        cursorY = doc.lastAutoTable.finalY + 10;
+
+        // --- 4. TOTAL BOXES ---
+        const totalBoxW = 75;
+        const totalBoxH = 18;
+        const totalBoxX = pageWidth - margin - totalBoxW;
+
+        doc.setFillColor(240, 240, 240);
+        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
+        doc.setDrawColor(0);
+        doc.setLineWidth(0.5);
+        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
+
+        doc.setFontSize(10);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(0);
+        const finalTotalStr = `TOTAL LIQUIDACIÓN: $ ${Number(orden.total_final || totalUSD).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+        doc.text(finalTotalStr, totalBoxX + totalBoxW - 5, cursorY + 7, { align: 'right' });
+        
+        doc.setFontSize(8);
+        doc.setFont(FONTS.body, 'normal');
+        doc.setTextColor(100, 100, 100);
+        if (orden.cotizacion_usd && orden.cotizacion_usd > 1) {
+            const totalARS = Number(orden.total_final || totalUSD) * Number(orden.cotizacion_usd);
+            doc.text(`Equivalente ARS: $ ${totalARS.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+        } else {
+            doc.text(`Valores expresados en USD`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+        }
+
+        // Footer
+        const footerY = pageHeight - 15;
+        doc.setFontSize(6);
+        doc.setTextColor(COLORS.textLight[0]);
+        doc.text("Documento de liquidación proforma. Valores sujetos a revisión final.", margin, footerY);
+        
+        doc.save(`Liquidacion_${orden.id ? orden.id.slice(0, 6) : "Orden"}.pdf`);
     });
 };
 

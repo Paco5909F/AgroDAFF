@@ -32,11 +32,8 @@ export async function getPresupuestos(
                 take: limit,
                 include: {
                     cliente: true,
-                    items: {
-                        include: {
-                            servicio: true
-                        }
-                    }
+                    lote: true,
+                    items: true
                 },
                 orderBy: { created_at: 'desc' }
             })
@@ -47,16 +44,14 @@ export async function getPresupuestos(
         const serializedPresupuestos = presupuestos.map((p) => ({
             ...p,
             total: Number(p.total),
+            total_final: Number(p.total_final),
+            hectareas: Number(p.hectareas),
             fechaFormatted: format(new Date(p.fecha), 'dd/MM/yyyy'),
             items: p.items.map((i) => ({
                 ...i,
                 cantidad: Number(i.cantidad),
                 precio_unit: Number(i.precio_unit),
                 subtotal: Number(i.subtotal),
-                servicio: {
-                    ...i.servicio,
-                    precio_base: Number(i.servicio.precio_base)
-                }
             }))
         }))
 
@@ -87,14 +82,20 @@ export async function createPresupuesto(data: any) {
             data: {
                 empresa_id: empresaId,
                 cliente_id: data.cliente_id,
+                lote_id: data.lote_id || null,
+                hectareas: data.hectareas || 1,
                 fecha: new Date(data.fecha),
                 valido_hasta: data.valido_hasta ? new Date(data.valido_hasta) : null,
                 total: data.total,
+                total_final: data.total_final || data.total,
                 observaciones: data.observaciones,
                 estado: 'PENDIENTE',
                 items: {
                     create: data.items.map((item: any) => ({
-                        servicio_id: item.servicio_id,
+                        tipo: item.tipo,
+                        referencia_id: item.referencia_id,
+                        nombre: item.nombre,
+                        unidad: item.unidad,
                         cantidad: item.cantidad,
                         precio_unit: item.precio_unit,
                         subtotal: item.subtotal,
@@ -138,28 +139,43 @@ export async function updatePresupuestoStatus(id: string, status: string) {
                 include: { items: true }
             })
 
-            // 2. If Approved, Create Work Order automatically for EACH item
+            // 2. If Approved, Create Work Order automatically
             if (status === 'APROBADO' && presupuesto.items.length > 0) {
-                // We create one order per item found in the budget
-                for (const item of presupuesto.items as any[]) {
+                const servicios = presupuesto.items.filter(i => i.tipo === 'servicio')
+                const insumos = presupuesto.items.filter(i => i.tipo === 'insumo')
+
+                // Create Order only if there is at least one service, as orders are service-centric
+                if (servicios.length > 0) {
                     await tx.ordenTrabajo.create({
                         data: {
                             empresa_id: empresaId,
-                            fecha: new Date(), // Order starts now
+                            fecha: new Date(),
                             cliente_id: presupuesto.cliente_id,
-                            // Servicio moved to items relation
-                            observaciones: `Generado automáticamente desde Presupuesto #${presupuesto.id.slice(0, 8)}. ${item.detalle ? `\nDetalle: ${item.detalle}.` : ''} ${presupuesto.observaciones || ''}`,
-                            total: item.subtotal,
-                            moneda: 'ARS', // Default to ARS as Presupuesto schema might not have currency yet, TODO: Add currency to Presupuesto
+                            observaciones: `Generado desde Presupuesto #${presupuesto.id.slice(0, 8)}.\n${presupuesto.observaciones || ''}`,
+                            total: presupuesto.total_final,
+                            moneda: 'ARS',
                             estado: 'pendiente',
                             items: {
-                                create: [{
-                                    servicio_id: item.servicio_id,
-                                    cantidad: item.cantidad,
-                                    precio_unit: item.precio_unit,
-                                    total: item.subtotal,
-                                    kilometros: 0
-                                }]
+                                create: servicios.map((s, index) => ({
+                                    servicio_id: s.referencia_id,
+                                    lote_id: presupuesto.lote_id, // Lote belongs to item
+                                    cantidad: s.cantidad,
+                                    precio_unit: s.precio_unit,
+                                    total: s.subtotal,
+                                    kilometros: 0,
+                                    // Attach all insumos to the first service item to preserve them
+                                    insumos: index === 0 && insumos.length > 0 ? {
+                                        create: insumos.map(i => ({
+                                            insumo_id: i.referencia_id,
+                                            dosis_por_ha: i.cantidad,
+                                            cantidad_pasadas: 1,
+                                            precio_unit_usado: i.precio_unit,
+                                            moneda_usada: 'ARS',
+                                            costo_por_ha: i.subtotal, // simplified
+                                            costo_total: i.subtotal
+                                        }))
+                                    } : undefined
+                                }))
                             }
                         }
                     })
@@ -188,9 +204,12 @@ export async function updatePresupuesto(id: string, data: any) {
                 where: { id, empresa_id: empresaId },
                 data: {
                     cliente_id: data.cliente_id,
+                    lote_id: data.lote_id || null,
+                    hectareas: data.hectareas || 1,
                     fecha: new Date(data.fecha),
                     valido_hasta: data.valido_hasta ? new Date(data.valido_hasta) : null,
                     total: data.total,
+                    total_final: data.total_final || data.total,
                     observaciones: data.observaciones,
                 }
             })
@@ -205,7 +224,10 @@ export async function updatePresupuesto(id: string, data: any) {
                 await tx.presupuestoItem.createMany({
                     data: data.items.map((item: any) => ({
                         presupuesto_id: id,
-                        servicio_id: item.servicio_id,
+                        tipo: item.tipo,
+                        referencia_id: item.referencia_id,
+                        nombre: item.nombre,
+                        unidad: item.unidad,
                         cantidad: item.cantidad,
                         precio_unit: item.precio_unit,
                         subtotal: item.subtotal,
