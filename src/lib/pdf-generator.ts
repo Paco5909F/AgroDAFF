@@ -335,18 +335,18 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 4,
+                cellPadding: 6,
                 textColor: getColors(branding).text[0],
-                lineColor: getColors(branding).primary[0], // Black lines for boxed look
+                lineColor: [226, 232, 240], // slate-200
                 lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: getColors(branding).primary, // Black Header
+                fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
@@ -375,10 +375,10 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         cursorY += 10;
 
         // Draw standard box style
-        doc.setFillColor(240, 240, 240); // Light gray fill
+        doc.setFillColor(248, 250, 252); // Light gray fill slate-50
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5); // Thicker border
+        doc.setDrawColor(203, 213, 225); // slate-300 border
+        doc.setLineWidth(0.3); // Thinner border
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
 
         doc.setFontSize(10);
@@ -527,14 +527,14 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             startY: cursorY,
             head: [['SERVICIO / PRODUCTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'TOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 4,
+                cellPadding: 6,
                 textColor: getColors(branding).text[0],
-                lineColor: getColors(branding).primary[0],
+                lineColor: [226, 232, 240], // slate-200
                 lineWidth: 0.1,
             },
             headStyles: {
@@ -564,10 +564,10 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         cursorY += 10;
 
         // Draw standard box style
-        doc.setFillColor(240, 240, 240); // Light gray fill
+        doc.setFillColor(248, 250, 252); // slate-50
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5); // Thicker border
+        doc.setDrawColor(203, 213, 225); // slate-300
+        doc.setLineWidth(0.3); // Thinner border
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
 
         doc.setFontSize(12);
@@ -721,10 +721,10 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD REAL', 'UNIDAD', 'PRECIO CONG.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
-            styles: { fontSize: 8, cellPadding: 4, textColor: getColors(branding).text[0], lineColor: getColors(branding).primary[0], lineWidth: 0.1 },
+            styles: { fontSize: 8, cellPadding: 6, textColor: getColors(branding).text[0], lineColor: [226, 232, 240], lineWidth: 0.1 },
             headStyles: { fillColor: getColors(branding).primary, textColor: 255, fontStyle: 'bold', halign: 'center' },
             columnStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 30, halign: 'center' }, 2: { cellWidth: 20, halign: 'center' }, 3: { cellWidth: 35, halign: 'right' }, 4: { cellWidth: 35, halign: 'right' } }
         });
@@ -737,10 +737,10 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
         const totalBoxH = 18;
         const totalBoxX = pageWidth - margin - totalBoxW;
 
-        doc.setFillColor(240, 240, 240);
+        doc.setFillColor(248, 250, 252);
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
         doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
 
         doc.setFontSize(10);
