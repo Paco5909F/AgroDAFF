@@ -281,6 +281,7 @@ model Lote {
   ordenItems      OrdenItem[]
   movimientos     MovimientoStock[]
   presupuestos    Presupuesto[]
+  lotes_campana   LoteCampana[]
 
   
   @@map("lotes")
@@ -410,8 +411,35 @@ model Campana {
 
   ordenItems    OrdenItem[]
   silos         Silo[]
+  lotes_campana LoteCampana[]
 
   @@map("campanas")
+}
+
+model LoteCampana {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  lote_id            String   @db.Uuid
+  campana_id         String   @db.Uuid
+  cultivo            String   // Ej: SOJA, MAIZ, TRIGO
+  superficie         Decimal  @db.Decimal(10, 4) // Hectáreas reales sembradas en esta campaña
+  
+  rinde_estimado_qq  Decimal? @db.Decimal(10, 2)
+  rinde_real_qq      Decimal? @db.Decimal(10, 2)
+  
+  fecha_siembra      DateTime? @db.Date
+  fecha_cosecha      DateTime? @db.Date
+  
+  observaciones      String?
+  created_at         DateTime @default(now()) @db.Timestamptz
+  updated_at         DateTime @default(now()) @db.Timestamptz
+
+  lote               Lote     @relation(fields: [lote_id], references: [id], onDelete: Cascade)
+  campana            Campana  @relation(fields: [campana_id], references: [id], onDelete: Cascade)
+
+  @@unique([lote_id, campana_id])
+  @@map("lotes_campanas")
+  @@index([lote_id])
+  @@index([campana_id])
 }
 
 model Presupuesto {

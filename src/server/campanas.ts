@@ -45,6 +45,25 @@ export async function getCampanas() {
     }
 }
 
+export async function getCampanaById(id: string) {
+    try {
+        const empresaId = await getCompanyId()
+        const campana = await prisma.campana.findFirst({
+            where: {
+                id,
+                OR: [
+                    { empresa_id: empresaId },
+                    { empresa_id: null }
+                ]
+            }
+        })
+        if (!campana) return { success: false, error: 'No encontrado' }
+        return { success: true, data: campana }
+    } catch (error) {
+        return { success: false, error: 'Error al obtener campaña' }
+    }
+}
+
 export async function getCampanaActiva() {
     try {
         const empresaId = await getCompanyId()
