@@ -295,14 +295,41 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
         cursorY += 6;
 
-        // Table logic
-        const tableBody = presupuesto.items.map((item: any) => [
-            { content: item.nombre || item.servicio?.nombre || 'Ítem', styles: { fontStyle: 'bold' } },
-            Number(item.cantidad).toLocaleString('es-AR'),
-            item.unidad || item.servicio?.unidad_medida || 'u', // Unidad centered
-            `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-            { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
-        ]);
+        // Table logic with Row Grouping
+        const servicios = presupuesto.items.filter((i: any) => i.tipo === 'servicio' || !i.tipo);
+        const insumos = presupuesto.items.filter((i: any) => i.tipo === 'insumo');
+
+        const tableBody: any[] = [];
+        
+        if (servicios.length > 0) {
+            tableBody.push([
+                { content: '🚜 LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+            ]);
+            servicios.forEach((item: any) => {
+                tableBody.push([
+                    { content: `   ${item.nombre || item.servicio?.nombre || 'Servicio'}`, styles: { fontStyle: 'bold' } },
+                    Number(item.cantidad).toLocaleString('es-AR'),
+                    item.unidad || item.servicio?.unidad_medida || 'u',
+                    `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
+                ]);
+            });
+        }
+
+        if (insumos.length > 0) {
+            tableBody.push([
+                { content: '📦 INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+            ]);
+            insumos.forEach((item: any) => {
+                tableBody.push([
+                    { content: `   ${item.nombre || item.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'normal', textColor: [100, 100, 100] } },
+                    Number(item.cantidad).toLocaleString('es-AR'),
+                    item.unidad || item.insumo?.unidad_medida || 'u',
+                    `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'normal', textColor: [100, 100, 100] } }
+                ]);
+            });
+        }
 
         autoTable(doc, {
             startY: cursorY,

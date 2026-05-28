@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package, Map } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NavLink } from '@/components/ui/nav-link'
 import { createClient } from '@/lib/supabase/client'
@@ -121,6 +121,12 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             </MobileLink>
                             <MobileLink href="/campanas" icon={<Calendar className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Campañas
+                            </MobileLink>
+                            <MobileLink href="/lotes" icon={<Map className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                <div className="flex items-center gap-2">
+                                    Lotes
+                                    <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">PRO</span>
+                                </div>
                             </MobileLink>
                             <MobileLink href="/silos" icon={<Warehouse className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Silos (Stock)
