@@ -322,11 +322,11 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             ]);
             insumos.forEach((item: any) => {
                 tableBody.push([
-                    { content: `   ${item.nombre || item.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'normal', textColor: [100, 100, 100] } },
+                    { content: `   ${item.nombre || item.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'bold' } },
                     Number(item.cantidad).toLocaleString('es-AR'),
                     item.unidad || item.insumo?.unidad_medida || 'u',
                     `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'normal', textColor: [100, 100, 100] } }
+                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
                 ]);
             });
         }
@@ -513,11 +513,11 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
                 item.insumos.forEach((ins: any) => {
                     const insName = `  - Insumo: ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
                     tableBody.push([
-                        { content: insName, styles: { font: 'helvetica', fontStyle: 'normal', textColor: [100, 100, 100] } },
+                        { content: insName, styles: { font: 'helvetica', fontStyle: 'italic', textColor: [71, 85, 105] } },
                         "-", // Cantidad handled by dosis/ha
                         "-", // Unidad handled by dosis/ha
                         "-", // Precio unit included in subtotal logic usually for display
-                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [100, 100, 100] } }
+                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'italic', textColor: [71, 85, 105] } }
                     ]);
                 });
             }
@@ -707,11 +707,11 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
                     totalUSD += insSubtotal;
 
                     tableBody.push([
-                        { content: `  ↳ Insumo: ${insumo.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'italic', textColor: [100, 100, 100] } },
+                        { content: `  ↳ Insumo: ${insumo.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'italic', textColor: [71, 85, 105] } },
                         insQty.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
                         insumo.insumo?.unidad_medida || 'u',
                         `$ ${insPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                        { content: `$ ${insSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [100, 100, 100] } }
+                        { content: `$ ${insSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'italic', textColor: [71, 85, 105] } }
                     ]);
                 });
             }
