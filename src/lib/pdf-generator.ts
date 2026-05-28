@@ -335,63 +335,63 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'grid',
+            theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 6,
-                textColor: getColors(branding).text[0],
-                lineColor: [226, 232, 240], // slate-200
-                lineWidth: 0.1,
+                cellPadding: 8,
+                textColor: [71, 85, 105], // slate-500
             },
             headStyles: {
-                fillColor: getColors(branding).primary,
-                textColor: 255,
+                textColor: [15, 23, 42], // slate-900
                 fontStyle: 'bold',
                 halign: 'center'
             },
             columnStyles: {
-                0: { cellWidth: 'auto', halign: 'left' },
+                0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold', textColor: [15, 23, 42] },
                 1: { cellWidth: 30, halign: 'center' },
                 2: { cellWidth: 30, halign: 'center' },
                 3: { cellWidth: 35, halign: 'right' },
-                4: { cellWidth: 35, halign: 'right' }
+                4: { cellWidth: 35, halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] }
             },
-            didDrawPage: (data) => {
-                // Draw a box around the table if needed, but 'plain' theme with line color usually handles grid
+            didDrawCell: (data) => {
+                doc.setDrawColor(226, 232, 240); // slate-200
+                doc.setLineWidth(0.1);
+                doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                
+                if (data.row.section === 'head') {
+                    doc.setDrawColor(15, 23, 42); // slate-900
+                    doc.setLineWidth(0.5);
+                    doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
+                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                }
             }
         });
 
         // @ts-ignore
         cursorY = doc.lastAutoTable.finalY;
 
-        // --- 4. TOTAL BOX ---
-        const totalBoxW = 70;
-        const totalBoxH = 18;
-        const totalBoxX = pageWidth - margin - totalBoxW;
-
-        // Gap before total
-        cursorY += 10;
-
-        // Draw standard box style
-        doc.setFillColor(248, 250, 252); // Light gray fill slate-50
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(203, 213, 225); // slate-300 border
-        doc.setLineWidth(0.3); // Thinner border
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
+        // --- 4. TOTAL AREA ---
+        cursorY += 15;
 
         doc.setFontSize(10);
         doc.setFont(FONTS.body, 'normal');
-        doc.setTextColor(100, 100, 100);
+        doc.setTextColor(100, 116, 139); // slate-500
         const subTotalStr = `Subtotal: $ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha`;
-        doc.text(subTotalStr, totalBoxX + totalBoxW - 5, cursorY + 6, { align: 'right' });
+        doc.text(subTotalStr, pageWidth - margin, cursorY, { align: 'right' });
 
+        cursorY += 8;
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.setTextColor(0);
+        doc.setTextColor(15, 23, 42); // slate-900
         const totalStr = `TOTAL FINAL: $ ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+        doc.text(totalStr, pageWidth - margin, cursorY, { align: 'right' });
+        
+        cursorY += 4;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.1);
+        doc.line(pageWidth - margin - 80, cursorY, pageWidth - margin, cursorY);
 
         cursorY += 25;
 
@@ -527,54 +527,56 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             startY: cursorY,
             head: [['SERVICIO / PRODUCTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'TOTAL']],
             body: tableBody,
-            theme: 'grid',
+            theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 6,
-                textColor: getColors(branding).text[0],
-                lineColor: [226, 232, 240], // slate-200
-                lineWidth: 0.1,
+                cellPadding: 8,
+                textColor: [71, 85, 105], // slate-500
             },
             headStyles: {
-                fillColor: getColors(branding).primary,
-                textColor: 255,
+                textColor: [15, 23, 42], // slate-900
                 fontStyle: 'bold',
                 halign: 'center'
             },
             columnStyles: {
-                0: { cellWidth: 'auto', halign: 'left' },
+                0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold', textColor: [15, 23, 42] },
                 1: { cellWidth: 30, halign: 'center' },
                 2: { cellWidth: 30, halign: 'center' },
                 3: { cellWidth: 35, halign: 'right' },
-                4: { cellWidth: 35, halign: 'right' }
+                4: { cellWidth: 35, halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] }
+            },
+            didDrawCell: (data) => {
+                doc.setDrawColor(226, 232, 240); // slate-200
+                doc.setLineWidth(0.1);
+                doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                
+                if (data.row.section === 'head') {
+                    doc.setDrawColor(15, 23, 42); // slate-900
+                    doc.setLineWidth(0.5);
+                    doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
+                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                }
             }
         });
 
         // @ts-ignore
         cursorY = doc.lastAutoTable.finalY;
 
-        // --- 4. TOTAL BOX ---
-        const totalBoxW = 70;
-        const totalBoxH = 18;
-        const totalBoxX = pageWidth - margin - totalBoxW;
-
-        // Gap before total
-        cursorY += 10;
-
-        // Draw standard box style
-        doc.setFillColor(248, 250, 252); // slate-50
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(203, 213, 225); // slate-300
-        doc.setLineWidth(0.3); // Thinner border
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
+        // --- 4. TOTAL AREA ---
+        cursorY += 15;
 
         doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.setTextColor(0);
+        doc.setTextColor(15, 23, 42); // slate-900
         const totalStr = `TOTAL: $ ${Number(orden.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 8, { align: 'right' });
+        doc.text(totalStr, pageWidth - margin, cursorY, { align: 'right' });
+        
+        cursorY += 4;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.1);
+        doc.line(pageWidth - margin - 80, cursorY, pageWidth - margin, cursorY);
 
         cursorY += 25;
 
@@ -721,43 +723,65 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD REAL', 'UNIDAD', 'PRECIO CONG.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'grid',
+            theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
-            styles: { fontSize: 8, cellPadding: 6, textColor: getColors(branding).text[0], lineColor: [226, 232, 240], lineWidth: 0.1 },
-            headStyles: { fillColor: getColors(branding).primary, textColor: 255, fontStyle: 'bold', halign: 'center' },
-            columnStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 30, halign: 'center' }, 2: { cellWidth: 20, halign: 'center' }, 3: { cellWidth: 35, halign: 'right' }, 4: { cellWidth: 35, halign: 'right' } }
+            styles: {
+                fontSize: 8,
+                cellPadding: 8,
+                textColor: [71, 85, 105] // slate-500
+            },
+            headStyles: {
+                textColor: [15, 23, 42], // slate-900
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold', textColor: [15, 23, 42] },
+                1: { cellWidth: 30, halign: 'center' },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 35, halign: 'right' },
+                4: { cellWidth: 35, halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] }
+            },
+            didDrawCell: (data) => {
+                doc.setDrawColor(226, 232, 240); // slate-200
+                doc.setLineWidth(0.1);
+                doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                
+                if (data.row.section === 'head') {
+                    doc.setDrawColor(15, 23, 42); // slate-900
+                    doc.setLineWidth(0.5);
+                    doc.line(data.cell.x, data.cell.y, data.cell.x + data.cell.width, data.cell.y);
+                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
+                }
+            }
         });
 
         // @ts-ignore
-        cursorY = doc.lastAutoTable.finalY + 10;
+        cursorY = doc.lastAutoTable.finalY + 15;
 
-        // --- 4. TOTAL BOXES ---
-        const totalBoxW = 75;
-        const totalBoxH = 18;
-        const totalBoxX = pageWidth - margin - totalBoxW;
-
-        doc.setFillColor(248, 250, 252);
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
-        doc.setDrawColor(203, 213, 225);
-        doc.setLineWidth(0.3);
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "S");
-
-        doc.setFontSize(10);
+        // --- 4. TOTAL AREA ---
+        doc.setFontSize(12);
         doc.setFont(FONTS.header, 'bold');
-        doc.setTextColor(0);
+        doc.setTextColor(15, 23, 42);
         const finalTotalStr = `TOTAL LIQUIDACIÓN: $ ${Number(orden.total_final || totalUSD).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-        doc.text(finalTotalStr, totalBoxX + totalBoxW - 5, cursorY + 7, { align: 'right' });
+        doc.text(finalTotalStr, pageWidth - margin, cursorY, { align: 'right' });
         
+        cursorY += 6;
         doc.setFontSize(8);
         doc.setFont(FONTS.body, 'normal');
-        doc.setTextColor(100, 100, 100);
+        doc.setTextColor(100, 116, 139);
         if (orden.cotizacion_usd && orden.cotizacion_usd > 1) {
             const totalARS = Number(orden.total_final || totalUSD) * Number(orden.cotizacion_usd);
-            doc.text(`Equivalente ARS: $ ${totalARS.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+            doc.text(`Equivalente ARS: $ ${totalARS.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, pageWidth - margin, cursorY, { align: 'right' });
         } else {
-            doc.text(`Valores expresados en USD`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+            doc.text(`Valores expresados en USD`, pageWidth - margin, cursorY, { align: 'right' });
         }
+
+        cursorY += 4;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.1);
+        doc.line(pageWidth - margin - 100, cursorY, pageWidth - margin, cursorY);
 
         // Footer
         const footerY = pageHeight - 15;
