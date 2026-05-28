@@ -303,7 +303,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         
         if (servicios.length > 0) {
             tableBody.push([
-                { content: '🚜 LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+                { content: ' LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
             ]);
             servicios.forEach((item: any) => {
                 tableBody.push([
@@ -318,7 +318,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         if (insumos.length > 0) {
             tableBody.push([
-                { content: '📦 INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+                { content: ' INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
             ]);
             insumos.forEach((item: any) => {
                 tableBody.push([
