@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Trash2, CheckCircle2, Circle, Pencil } from "lucide-react"
+import { Calendar, Trash2, CheckCircle2, Circle, Pencil, LayoutDashboard } from "lucide-react"
 import { deleteCampana, toggleCampanaActiva } from "@/server/campanas"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import { CampanaDialog } from "./campana-dialog"
 
@@ -112,6 +113,12 @@ export function CampanaList({ campanas }: CampanaListProps) {
                                     >
                                         {campana.activa ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
                                     </Button>
+
+                                    <Link href={`/campanas/${campana.id}`}>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50" title="Planificar Lotes">
+                                            <LayoutDashboard className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
 
                                     <CampanaDialog
                                         campana={campana}
