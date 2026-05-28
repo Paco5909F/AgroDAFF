@@ -109,122 +109,124 @@ export function PresupuestosList({ data, clientes, servicios, insumos = [], lote
     return (
         <>
             <div className="rounded-xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader className="bg-slate-50/50">
-                        <TableRow className="hover:bg-transparent border-slate-100">
-                            <TableHead>Fecha</TableHead>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead>Total Final</TableHead>
-                            <TableHead>Hectáreas</TableHead>
-                            <TableHead>Estado</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.map((presupuesto) => (
-                            <TableRow key={presupuesto.id} className="group hover:bg-slate-50/50 transition-colors">
-                                <TableCell className="text-slate-500">
-                                    {presupuesto.fechaFormatted}
-                                </TableCell>
-                                <TableCell className="font-medium text-slate-700">
-                                    {presupuesto.cliente.razon_social}
-                                </TableCell>
-                                <TableCell className="font-medium text-slate-900">
-                                    ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                                </TableCell>
-                                <TableCell className="text-slate-600">
-                                    {Number(presupuesto.hectareas || 1)} ha
-                                    <div className="text-xs text-slate-400 mt-0.5">
-                                        ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                                    ${presupuesto.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' :
-                                            presupuesto.estado === 'APROBADO' ? 'bg-emerald-100 text-emerald-800' :
-                                                'bg-red-100 text-red-800'}`}>
-                                        {presupuesto.estado}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end items-center gap-1">
-                                        {/* Action Buttons */}
-                                        {presupuesto.estado === 'PENDIENTE' && canChangeStatus && (
-                                            <>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleStatusUpdate(presupuesto.id, 'APROBADO')}
-                                                    disabled={!!loadingMap[presupuesto.id]}
-                                                    className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
-                                                    title="Aprobar"
-                                                >
-                                                    {loadingMap[presupuesto.id] === 'APROBADO' ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <CheckCircle2 className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleStatusUpdate(presupuesto.id, 'RECHAZADO')}
-                                                    disabled={!!loadingMap[presupuesto.id]}
-                                                    className="h-8 w-8 text-red-500 hover:bg-red-50"
-                                                    title="Rechazar"
-                                                >
-                                                    {loadingMap[presupuesto.id] === 'RECHAZADO' ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                                    ) : (
-                                                        <XCircle className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                            </>
-                                        )}
-
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleDownloadPDF(presupuesto)}
-                                            className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-                                            title="Descargar PDF"
-                                        >
-                                            <FileText className="h-4 w-4" />
-                                        </Button>
-
-                                        {canEdit && (
-                                            <PresupuestoFormSheet
-                                                clientes={clientes}
-                                                servicios={servicios}
-                                                insumos={insumos}
-                                                lotes={lotes}
-                                                presupuesto={presupuesto}
-                                                trigger={
-                                                    <Button variant="outline" size="sm" className="h-8 gap-1">
-                                                        <Pencil className="h-3.5 w-3.5 text-slate-500" />
-                                                        <span className="sr-only sm:not-sr-only sm:ml-1 text-slate-600">Editar</span>
+                <div className="overflow-x-auto w-full">
+                    <Table>
+                        <TableHeader className="bg-slate-50/50">
+                            <TableRow className="hover:bg-transparent border-slate-100">
+                                <TableHead>Fecha</TableHead>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead>Total Final</TableHead>
+                                <TableHead>Hectáreas</TableHead>
+                                <TableHead>Estado</TableHead>
+                                <TableHead className="text-right">Acciones</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map((presupuesto) => (
+                                <TableRow key={presupuesto.id} className="group hover:bg-slate-50/50 transition-colors">
+                                    <TableCell className="text-slate-500">
+                                        {presupuesto.fechaFormatted}
+                                    </TableCell>
+                                    <TableCell className="font-medium text-slate-700">
+                                        {presupuesto.cliente.razon_social}
+                                    </TableCell>
+                                    <TableCell className="font-medium text-slate-900">
+                                        ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                    </TableCell>
+                                    <TableCell className="text-slate-600">
+                                        {Number(presupuesto.hectareas || 1)} ha
+                                        <div className="text-xs text-slate-400 mt-0.5">
+                                            ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+                                        ${presupuesto.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' :
+                                                presupuesto.estado === 'APROBADO' ? 'bg-emerald-100 text-emerald-800' :
+                                                    'bg-red-100 text-red-800'}`}>
+                                            {presupuesto.estado}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end items-center gap-1">
+                                            {/* Action Buttons */}
+                                            {presupuesto.estado === 'PENDIENTE' && canChangeStatus && (
+                                                <>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleStatusUpdate(presupuesto.id, 'APROBADO')}
+                                                        disabled={!!loadingMap[presupuesto.id]}
+                                                        className="h-8 w-8 text-emerald-600 hover:bg-emerald-50"
+                                                        title="Aprobar"
+                                                    >
+                                                        {loadingMap[presupuesto.id] === 'APROBADO' ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <CheckCircle2 className="h-4 w-4" />
+                                                        )}
                                                     </Button>
-                                                }
-                                            />
-                                        )}
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleStatusUpdate(presupuesto.id, 'RECHAZADO')}
+                                                        disabled={!!loadingMap[presupuesto.id]}
+                                                        className="h-8 w-8 text-red-500 hover:bg-red-50"
+                                                        title="Rechazar"
+                                                    >
+                                                        {loadingMap[presupuesto.id] === 'RECHAZADO' ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <XCircle className="h-4 w-4" />
+                                                        )}
+                                                    </Button>
+                                                </>
+                                            )}
 
-                                        {canDelete && (
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setDeleteId(presupuesto.id)}
-                                                className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                                                title="Eliminar"
+                                                onClick={() => handleDownloadPDF(presupuesto)}
+                                                className="h-8 w-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                                title="Descargar PDF"
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <FileText className="h-4 w-4" />
                                             </Button>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+
+                                            {canEdit && (
+                                                <PresupuestoFormSheet
+                                                    clientes={clientes}
+                                                    servicios={servicios}
+                                                    insumos={insumos}
+                                                    lotes={lotes}
+                                                    presupuesto={presupuesto}
+                                                    trigger={
+                                                        <Button variant="outline" size="sm" className="h-8 gap-1">
+                                                            <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                                                            <span className="sr-only sm:not-sr-only sm:ml-1 text-slate-600">Editar</span>
+                                                        </Button>
+                                                    }
+                                                />
+                                            )}
+
+                                            {canDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setDeleteId(presupuesto.id)}
+                                                    className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
