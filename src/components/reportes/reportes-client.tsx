@@ -225,62 +225,64 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
                         </Button>
                     </div>
                 </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Fecha</TableHead>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead>Servicio</TableHead>
-                            <TableHead className="text-center">Cant.</TableHead>
-                            <TableHead className="text-right">Precio</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="text-center">Estado</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {orders.length === 0 ? (
+                <div className="overflow-x-auto w-full">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8 text-slate-500">
-                                    No hay datos para mostrar. Realice una búsqueda.
-                                </TableCell>
+                                <TableHead>Fecha</TableHead>
+                                <TableHead>Cliente</TableHead>
+                                <TableHead>Servicio</TableHead>
+                                <TableHead className="text-center">Cant.</TableHead>
+                                <TableHead className="text-right">Precio</TableHead>
+                                <TableHead className="text-right">Total</TableHead>
+                                <TableHead className="text-center">Estado</TableHead>
                             </TableRow>
-                        ) : (
-                            orders.flatMap((order: any) =>
-                                order.items && order.items.length > 0 ? (
-                                    order.items.map((item: any) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell className="font-medium">
-                                                {format(new Date(order.fecha), 'dd/MM/yyyy')}
-                                            </TableCell>
-                                            <TableCell>{order.cliente.razon_social}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    <span>{item.servicio.nombre}</span>
-                                                    <span className="text-xs text-slate-400">{item.campana?.nombre || order.campana?.nombre || '-'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                {order.moneda === 'USD' ? 'US$ ' : '$ '}
-                                                {Number(item.precio_unit).toLocaleString('es-AR')}
-                                            </TableCell>
-                                            <TableCell className="text-right font-semibold">
-                                                {order.moneda === 'USD' ? 'US$ ' : '$ '}
-                                                {Number(item.total).toLocaleString('es-AR')}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {order.estado}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : null
-                            )
+                        </TableHeader>
+                        <TableBody>
+                            {orders.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={7} className="text-center py-8 text-slate-500">
+                                        No hay datos para mostrar. Realice una búsqueda.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                orders.flatMap((order: any) =>
+                                    order.items && order.items.length > 0 ? (
+                                        order.items.map((item: any) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium">
+                                                    {format(new Date(order.fecha), 'dd/MM/yyyy')}
+                                                </TableCell>
+                                                <TableCell>{order.cliente.razon_social}</TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        <span>{item.servicio.nombre}</span>
+                                                        <span className="text-xs text-slate-400">{item.campana?.nombre || order.campana?.nombre || '-'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {order.moneda === 'USD' ? 'US$ ' : '$ '}
+                                                    {Number(item.precio_unit).toLocaleString('es-AR')}
+                                                </TableCell>
+                                                <TableCell className="text-right font-semibold">
+                                                    {order.moneda === 'USD' ? 'US$ ' : '$ '}
+                                                    {Number(item.total).toLocaleString('es-AR')}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {order.estado}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : null
+                                )
 
-                        )}
-                    </TableBody>
-                </Table >
+                            )}
+                        </TableBody>
+                    </Table >
+                </div>
             </div >
         </div >
     )
