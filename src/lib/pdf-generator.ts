@@ -303,7 +303,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         
         if (servicios.length > 0) {
             tableBody.push([
-                { content: ' LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+                { content: ' LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } }
             ]);
             servicios.forEach((item: any) => {
                 tableBody.push([
@@ -318,7 +318,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         if (insumos.length > 0) {
             tableBody.push([
-                { content: ' INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [71, 85, 105] } }
+                { content: ' INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } }
             ]);
             insumos.forEach((item: any) => {
                 tableBody.push([
@@ -335,22 +335,21 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'striped',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 5,
+                cellPadding: 6,
                 textColor: getColors(branding).text[0],
+                lineColor: [226, 232, 240], // slate-200
+                lineWidth: 0.1,
             },
             headStyles: {
                 fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
-            },
-            alternateRowStyles: {
-                fillColor: [248, 250, 252] // slate-50
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold' },
@@ -522,22 +521,21 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             startY: cursorY,
             head: [['SERVICIO / PRODUCTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'TOTAL']],
             body: tableBody,
-            theme: 'striped',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 5,
+                cellPadding: 6,
                 textColor: getColors(branding).text[0],
+                lineColor: [226, 232, 240],
+                lineWidth: 0.1,
             },
             headStyles: {
                 fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
-            },
-            alternateRowStyles: {
-                fillColor: [248, 250, 252] // slate-50
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold' },
@@ -714,22 +712,21 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD REAL', 'UNIDAD', 'PRECIO CONG.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'striped',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 5,
+                cellPadding: 6,
                 textColor: getColors(branding).text[0],
+                lineColor: [226, 232, 240],
+                lineWidth: 0.1,
             },
             headStyles: {
                 fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
                 halign: 'center'
-            },
-            alternateRowStyles: {
-                fillColor: [248, 250, 252] // slate-50
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold' },
