@@ -49,4 +49,4 @@ next-env.d.ts
 .agents/
 AGENTS.md
 
-/src/generated/prisma
+/src/generated/client
