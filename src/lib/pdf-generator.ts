@@ -303,7 +303,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         
         if (servicios.length > 0) {
             tableBody.push([
-                { content: ' LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } }
+                { content: '  LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [15, 23, 42], cellPadding: { top: 8, bottom: 8, left: 4 } } }
             ]);
             servicios.forEach((item: any) => {
                 tableBody.push([
@@ -318,7 +318,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         if (insumos.length > 0) {
             tableBody.push([
-                { content: ' INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [15, 23, 42] } }
+                { content: '  INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [248, 250, 252], fontStyle: 'bold', textColor: [15, 23, 42], cellPadding: { top: 8, bottom: 8, left: 4 } } }
             ]);
             insumos.forEach((item: any) => {
                 tableBody.push([
@@ -335,21 +335,22 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
             startY: cursorY,
             head: [['CONCEPTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'grid',
+            theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 6,
-                textColor: getColors(branding).text[0],
+                cellPadding: 7,
+                textColor: [51, 65, 85], // slate-700
                 lineColor: [226, 232, 240], // slate-200
-                lineWidth: 0.1,
+                lineWidth: { bottom: 0.1 },
             },
             headStyles: {
                 fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
-                halign: 'center'
+                halign: 'center',
+                cellPadding: 8
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold' },
@@ -366,26 +367,30 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         // --- 4. TOTAL AREA ---
         cursorY += 10;
         
-        const totalBoxW = 75;
-        const totalBoxH = 18;
+        const totalBoxW = 90;
+        const totalBoxH = 22;
         const totalBoxX = pageWidth - margin - totalBoxW;
 
-        doc.setFillColor(248, 250, 252); // slate-50
-        doc.setDrawColor(226, 232, 240); // slate-200
-        doc.setLineWidth(0.5);
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "FD");
+        // Draw Subtotal background (lighter slate)
+        doc.setFillColor(248, 250, 252);
+        doc.rect(totalBoxX, cursorY, totalBoxW, 10, "F");
+        
+        // Draw Total background (primary color)
+        const primaryColor = getColors(branding).primary;
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.rect(totalBoxX, cursorY + 10, totalBoxW, 12, "F");
 
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setFont(FONTS.body, 'normal');
         doc.setTextColor(100, 116, 139); // slate-500
         const subTotalStr = `Subtotal: $ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha`;
         doc.text(subTotalStr, totalBoxX + totalBoxW - 5, cursorY + 7, { align: 'right' });
 
-        doc.setFontSize(12);
+        doc.setFontSize(11);
         doc.setFont(FONTS.header, 'bold');
-        doc.setTextColor(15, 23, 42); // slate-900
+        doc.setTextColor(255, 255, 255); // White on primary
         const totalStr = `TOTAL FINAL: $ ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
-        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 14, { align: 'right' });
+        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 18, { align: 'right' });
 
         cursorY += 25;
 
@@ -521,21 +526,22 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
             startY: cursorY,
             head: [['SERVICIO / PRODUCTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'TOTAL']],
             body: tableBody,
-            theme: 'grid',
+            theme: 'plain',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
                 fontSize: 8,
-                cellPadding: 6,
-                textColor: getColors(branding).text[0],
+                cellPadding: 7,
+                textColor: [51, 65, 85],
                 lineColor: [226, 232, 240],
-                lineWidth: 0.1,
+                lineWidth: { bottom: 0.1 },
             },
             headStyles: {
                 fillColor: getColors(branding).primary,
                 textColor: 255,
                 fontStyle: 'bold',
-                halign: 'center'
+                halign: 'center',
+                cellPadding: 8
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left', fontStyle: 'bold' },
@@ -552,18 +558,17 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         // --- 4. TOTAL AREA ---
         cursorY += 10;
         
-        const totalBoxW = 75;
+        const totalBoxW = 90;
         const totalBoxH = 12; // Shorter since no subtotal here
         const totalBoxX = pageWidth - margin - totalBoxW;
 
-        doc.setFillColor(248, 250, 252); // slate-50
-        doc.setDrawColor(226, 232, 240); // slate-200
-        doc.setLineWidth(0.5);
-        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "FD");
+        const primaryColor = getColors(branding).primary;
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
 
-        doc.setFontSize(12);
+        doc.setFontSize(11);
         doc.setFont(FONTS.header, 'bold');
-        doc.setTextColor(15, 23, 42); // slate-900
+        doc.setTextColor(255, 255, 255); // White on primary
         const totalStr = `TOTAL: $ ${Number(orden.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
         doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 8, { align: 'right' });
         
