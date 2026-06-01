@@ -128,7 +128,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
         for (const [lname, lcost] of Object.entries(output.gastoPorLote)) {
             if (lcost > avgLoteCost * 1.4 && lname !== 'Sin Lote Asignado') {
                 const diff = Math.round(((lcost / avgLoteCost) - 1) * 100);
-                output.sugerencias.push(`📊 El lote '${lname}' tiene costos de mantenimiento ${diff}% más altos que el promedio. Revisa su historial toxicológico.`);
+                output.sugerencias.push(`📊 Alerta de Costos: El lote '${lname}' presenta gastos operativos ${diff}% superiores al promedio del establecimiento. Sugerimos auditar las órdenes de trabajo recientes.`);
             }
         }
     }
@@ -137,7 +137,7 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
     if (output.gastoPorInsumo['HERBICIDA'] && output.gastoTotal > 0) {
         const herbRatio = output.gastoPorInsumo['HERBICIDA'] / output.gastoTotal;
         if (herbRatio > 0.40) {
-            output.sugerencias.push(`🧪 Estás destinando más del 40% (${(herbRatio * 100).toFixed(1)}%) de tu capital a Herbicidas. Sugerimos evaluar estrategias preventivas rotativas para abaratar costos a futuro.`);
+            output.sugerencias.push(`🧪 Concentración de Capital: Más del 40% (${(herbRatio * 100).toFixed(1)}%) de la inversión se destina a Herbicidas. Evaluar tácticas de rotación o cultivos de cobertura para optimizar márgenes.`);
         }
     }
 
@@ -145,15 +145,15 @@ export async function getCampaignAnalytics(campanaId: string | null): Promise<An
     if (output.gastoPorInsumo['SEMILLA'] && output.gastoPorInsumo['FERTILIZANTE']) {
         const fertVsSeed = output.gastoPorInsumo['FERTILIZANTE'] / output.gastoPorInsumo['SEMILLA'];
         if (fertVsSeed < 0.2) {
-             output.sugerencias.push(`🌱 Nota Inteligente: Es posible que estés sub-fertilizando en base a tu umbral de siembra (ratio menor al 20%). Validá las muestras de suelo para no perder rinde.`);
+             output.sugerencias.push(`🌱 Relación Nutricional: La inversión en fertilizantes representa menos del 20% respecto al costo de semillas. Recomendamos realizar muestreos de suelo para prevenir mermas de rinde.`);
         }
     }
 
     // Default Good Work msg
     if (output.sugerencias.length === 0 && output.gastoTotal > 0) {
-        output.sugerencias.push("✅ Tus costos se mantienen dentro de la homeostasis estadística de campanas productivas. ¡Excelente!");
+        output.sugerencias.push("✅ Balance Estable: Los costos operativos se mantienen dentro de los parámetros esperados. No se detectan anomalías estadísticas ni desviaciones presupuestarias críticas.");
     } else if (output.gastoTotal === 0) {
-        output.sugerencias.push("ℹ️ Registrá insumos o finalizá de procesar Órdenes de Trabajo para nutrir al modelo con datos financieros y obtener márgenes.");
+        output.sugerencias.push("ℹ️ Información Incompleta: Registre aplicaciones de insumos o labores para nutrir el tablero con datos financieros y obtener márgenes brutos de campaña.");
     }
 
     return output;
