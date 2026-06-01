@@ -19,6 +19,11 @@ export const PERMISSIONS = {
     MOVIMIENTOS: 'MOVIMIENTOS',
     FACTURACION: 'FACTURACION',
     USUARIOS: 'USUARIOS',
+    
+    // Enterprise Extensions
+    PROVEEDORES: 'PROVEEDORES',
+    TESORERIA: 'TESORERIA',
+    MAQUINARIA: 'MAQUINARIA',
 
     // Actions
     CREATE: 'create',
@@ -37,18 +42,22 @@ const ROLE_PERMISSIONS: Record<string, Record<string, string[]>> = {
     },
     [UserRole.ENCARGADO]: {
         [PERMISSIONS.CLIENTES]: ['*'],
+        [PERMISSIONS.PROVEEDORES]: ['*'],
+        [PERMISSIONS.MAQUINARIA]: ['*'],
         [PERMISSIONS.ORDENES]: ['*'],
         [PERMISSIONS.SILOS]: ['*'],
         [PERMISSIONS.LOTES]: ['*'],
         [PERMISSIONS.PRESUPUESTOS]: ['*'],
         [PERMISSIONS.CARTAS_PORTE]: ['*'],
         [PERMISSIONS.MOVIMIENTOS]: ['*'],
-        [PERMISSIONS.FACTURACION]: ['read'], // Can view but maybe not emit? Let's say yes for now or restrict
+        [PERMISSIONS.FACTURACION]: ['read'], 
+        [PERMISSIONS.TESORERIA]: ['read'], // Can view balances but not make payments
         [PERMISSIONS.USUARIOS]: ['read'],
         [PERMISSIONS.DASHBOARD]: ['read']
     },
     [UserRole.MAQUINISTA]: {
         [PERMISSIONS.ORDENES]: ['read', 'change_status'],
+        [PERMISSIONS.MAQUINARIA]: ['read', 'update'], // Can log hours
         [PERMISSIONS.SILOS]: ['read'],
         [PERMISSIONS.LOTES]: ['read'],
         [PERMISSIONS.CLIENTES]: ['read'],
@@ -57,6 +66,7 @@ const ROLE_PERMISSIONS: Record<string, Record<string, string[]>> = {
     [UserRole.TRANSPORTISTA]: {
         [PERMISSIONS.CARTAS_PORTE]: ['*'],
         [PERMISSIONS.MOVIMIENTOS]: ['create', 'read'],
+        [PERMISSIONS.MAQUINARIA]: ['read'], // Can view assigned trucks
         [PERMISSIONS.SILOS]: ['read'],
         [PERMISSIONS.CLIENTES]: ['read'],
         [PERMISSIONS.DASHBOARD]: ['read']

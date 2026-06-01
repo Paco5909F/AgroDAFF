@@ -1,8 +1,8 @@
 'use server'
 
 import { createClient } from "@/lib/supabase/server"
-import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { EmpresaService } from "./services/empresa.service"
 
 export async function getUserProfile() {
     const supabase = await createClient()
@@ -13,29 +13,17 @@ export async function getUserProfile() {
     }
 
     try {
-        const dbUser = await prisma.usuario.findUnique({
-            where: { id: user.id },
-            include: {
-                miembros: {
-                    include: {
-                        empresa: {
-                            select: { plan_status: true, nombre: true, id: true }
-                        }
-                    }
-                }
-            }
-        })
+        const dbUser = await EmpresaService.getUserProfileData(user.id)
 
         if (!dbUser) {
             return { success: false, error: "Usuario no encontrado en base de datos" }
         }
 
-        // --- ROLE RESOLUTION LOGIC ---
         const SUPER_ADMIN_EMAILS = ['admin@agrodaff.com']
         const isSuperAdmin = user.email && SUPER_ADMIN_EMAILS.includes(user.email)
 
-        let effectiveRole = dbUser.rol // Default fallback
-        let planStatus = 'FREE' // Default plan
+        let effectiveRole = dbUser.rol 
+        let planStatus = 'FREE' 
         let organizacionNombre = "Sin Organización"
         let organizacionId = null
 
@@ -84,13 +72,10 @@ export async function updateUserProfile(nombre: string) {
     }
 
     try {
-        await prisma.usuario.update({
-            where: { id: user.id },
-            data: { nombre }
-        })
+        await EmpresaService.updateUserProfile(user.id, nombre)
 
         revalidatePath('/profile')
-        revalidatePath('/dashboard') // Update name in navbar too
+        revalidatePath('/dashboard') 
 
         return { success: true }
     } catch (error) {
@@ -133,10 +118,7 @@ export async function updateOrganizacionName(empresaId: string, nombre: string) 
     }
 
     try {
-        await prisma.empresa.update({
-            where: { id: empresaId },
-            data: { nombre }
-        })
+        await EmpresaService.updateOrganizacionName(empresaId, nombre)
 
         revalidatePath('/profile')
         revalidatePath('/dashboard')

@@ -54,6 +54,14 @@ model Empresa {
   cartas_porte CartaPorte[]
   insumos      Insumo[]
 
+  // Fase 1: Tesorería y Proveedores
+  proveedores        Proveedor[]
+  compras_insumo     CompraInsumo[]
+  cuentas_bancarias  CuentaBancaria[]
+
+  // Fase 2: Maquinaria
+  maquinarias        Maquinaria[]
+
   // Billing Fields
   plan_status     String   @default("FREE") // FREE, PRO, CANCELLED
   subscription_id String?  // Mercado Pago Preapproval ID
@@ -214,6 +222,164 @@ model Establecimiento {
   @@index([cliente_id])
 }
 
+// ==============================================
+// FASE 1: TESORERÍA Y PROVEEDORES
+// ==============================================
+
+model Proveedor {
+  id            String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  razon_social  String
+  empresa_id    String    @db.Uuid
+  empresa       Empresa   @relation(fields: [empresa_id], references: [id])
+  cuit          String
+  condicion_iva String?
+  email         String?
+  telefono      String?
+  observaciones String?
+  created_at    DateTime  @default(now()) @db.Timestamptz
+  updated_at    DateTime  @default(now()) @db.Timestamptz
+  deleted_at    DateTime? @db.Timestamptz
+
+  compras       CompraInsumo[]
+  movimientos   MovimientoTesoreria[]
+
+  @@map("proveedores")
+  @@index([empresa_id])
+  @@unique([cuit, empresa_id])
+}
+
+model CuentaBancaria {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  empresa_id  String   @db.Uuid
+  empresa     Empresa  @relation(fields: [empresa_id], references: [id])
+  nombre      String   // ej. Banco Galicia CC, Caja Chica Efectivo
+  tipo        String   // BANCO, CAJA
+  moneda      String   @default("ARS")
+  cbu         String?
+  alias       String?
+  saldo_actual Decimal @db.Decimal(14, 2) @default(0)
+  active      Boolean  @default(true)
+  created_at  DateTime @default(now()) @db.Timestamptz
+
+  movimientos MovimientoTesoreria[]
+
+  @@map("cuentas_bancarias")
+  @@index([empresa_id])
+}
+
+model MovimientoTesoreria {
+  id                 String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  cuenta_bancaria_id String   @db.Uuid
+  cuenta             CuentaBancaria @relation(fields: [cuenta_bancaria_id], references: [id], onDelete: Restrict)
+  
+  fecha              DateTime @db.Date
+  tipo               String   // INGRESO, EGRESO
+  monto              Decimal  @db.Decimal(14, 2)
+  concepto           String   // Pago a proveedor, Cobro de factura, etc.
+  
+  proveedor_id       String?  @db.Uuid
+  proveedor          Proveedor? @relation(fields: [proveedor_id], references: [id])
+  
+  // Future linkage
+  // cliente_id      String?  @db.Uuid
+  // compra_id       String?  @db.Uuid
+  // factura_id      String?  @db.Uuid
+
+  created_at         DateTime @default(now()) @db.Timestamptz
+  created_by         String?  @db.Uuid
+
+  @@map("movimientos_tesoreria")
+  @@index([cuenta_bancaria_id])
+}
+
+model CompraInsumo {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  empresa_id   String   @db.Uuid
+  empresa      Empresa  @relation(fields: [empresa_id], references: [id])
+  proveedor_id String   @db.Uuid
+  proveedor    Proveedor @relation(fields: [proveedor_id], references: [id], onDelete: Restrict)
+  
+  fecha        DateTime @default(now()) @db.Date
+  numero_factura String?
+  total        Decimal  @db.Decimal(14, 2)
+  moneda       String   @default("USD")
+  estado_pago  String   @default("PENDIENTE") // PENDIENTE, PARCIAL, PAGADO
+  
+  created_at   DateTime @default(now()) @db.Timestamptz
+  
+  items        CompraInsumoItem[]
+
+  @@map("compras_insumo")
+  @@index([empresa_id])
+  @@index([proveedor_id])
+}
+
+model CompraInsumoItem {
+  id             String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  compra_id      String   @db.Uuid
+  compra         CompraInsumo @relation(fields: [compra_id], references: [id], onDelete: Cascade)
+  
+  insumo_id      String   @db.Uuid
+  insumo         Insumo   @relation(fields: [insumo_id], references: [id], onDelete: Restrict)
+  
+  cantidad       Decimal  @db.Decimal(12, 4)
+  precio_unitario Decimal @db.Decimal(12, 4)
+  subtotal       Decimal  @db.Decimal(14, 2)
+
+  @@map("compra_insumo_items")
+  @@index([compra_id])
+}
+
+// ==============================================
+// FASE 2: MAQUINARIA
+// ==============================================
+
+model Maquinaria {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  empresa_id  String   @db.Uuid
+  empresa     Empresa  @relation(fields: [empresa_id], references: [id])
+  nombre      String
+  tipo        String   // TRACTOR, COSECHADORA, SEMBRADORA, CAMION, OTRO
+  marca       String?
+  modelo      String?
+  patente     String?
+  horas_motor Decimal  @db.Decimal(10, 2) @default(0)
+  estado      String   @default("ACTIVA") // ACTIVA, TALLER, BAJA
+  
+  created_at  DateTime @default(now()) @db.Timestamptz
+
+  mantenimientos Mantenimiento[]
+  orden_items    OrdenItem[] // Vincular un item de trabajo a una maquinaria específica
+
+  @@map("maquinarias")
+  @@index([empresa_id])
+}
+
+model Mantenimiento {
+  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  maquinaria_id String     @db.Uuid
+  maquinaria    Maquinaria @relation(fields: [maquinaria_id], references: [id], onDelete: Cascade)
+  
+  fecha         DateTime   @db.Date
+  tipo          String     // PREVENTIVO, CORRECTIVO
+  descripcion   String
+  costo         Decimal    @db.Decimal(12, 2) @default(0)
+  moneda        String     @default("ARS")
+  horas_motor   Decimal?   @db.Decimal(10, 2) // Horas al momento del mantenimiento
+  
+  proveedor_id  String?    @db.Uuid
+  // proveedor     Proveedor? @relation(fields: [proveedor_id], references: [id]) // can link later
+  
+  created_at    DateTime   @default(now()) @db.Timestamptz
+
+  @@map("mantenimientos")
+  @@index([maquinaria_id])
+}
+
+// ==============================================
+// PRODUCCIÓN Y STOCK
+// ==============================================
+
 model Silo {
   id                 String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   nombre             String
@@ -351,6 +517,9 @@ model OrdenItem {
   campana_id    String?  @db.Uuid
   campana       Campana? @relation(fields: [campana_id], references: [id])
   
+  maquinaria_id String?  @db.Uuid
+  maquinaria    Maquinaria? @relation(fields: [maquinaria_id], references: [id])
+
   cantidad      Decimal  @db.Decimal(12, 4)
   kilometros    Decimal? @db.Decimal(12, 2)
   precio_unit   Decimal  @db.Decimal(12, 2)
@@ -535,6 +704,8 @@ model Insumo {
   
   created_at    DateTime  @default(now()) @db.Timestamptz
   active        Boolean   @default(true)
+
+  compras_items CompraInsumoItem[]
 
   @@map("insumos")
   @@index([empresa_id])

@@ -1,41 +1,16 @@
 'use server'
 
-import { prisma } from "@/lib/prisma"
 import { clienteSchema, ClienteFormValues } from "@/lib/validations/cliente"
 import { revalidatePath } from "next/cache"
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
 import { checkPlanLimits } from "@/server/billing-limits"
+import { CatalogosService } from "./services/catalogos.service"
 
 export async function getClientes(query?: string) {
     const { empresaId, rol } = await getUserContext()
     checkPermission(rol, PERMISSIONS.CLIENTES, 'read')
-    const where: any = {
-        empresa_id: empresaId,
-        deleted_at: null,
-    }
-
-    if (query) {
-        where.OR = [
-            { razon_social: { contains: query, mode: 'insensitive' } },
-            { cuit: { contains: query } },
-        ]
-    }
-
-    return await prisma.cliente.findMany({
-        where,
-        orderBy: { created_at: 'desc' },
-        include: {
-            establecimientos: {
-                where: { deleted_at: null },
-                select: {
-                    id: true,
-                    nombre: true,
-                    modalidad: true
-                }
-            }
-        }
-    })
+    return CatalogosService.getClientes(empresaId, query)
 }
 
 export async function createCliente(data: ClienteFormValues) {
@@ -48,39 +23,12 @@ export async function createCliente(data: ClienteFormValues) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CLIENTES, 'create')
 
-        // Feature Gating: Check Limits
         const limitCheck = await checkPlanLimits(empresaId, 'CLIENTE')
         if (!limitCheck.allowed) {
             return { success: false, error: limitCheck.message }
         }
-        // Create client first
-        const cliente = await prisma.cliente.create({
-            data: {
-                empresa_id: empresaId,
-                razon_social: validated.data.razon_social,
-                cuit: validated.data.cuit,
-                condicion_iva: validated.data.condicion_iva,
-                email: validated.data.email || null,
-                telefono: validated.data.telefono || null,
-                persona_contacto: validated.data.persona_contacto || null,
-                tipo_cliente: validated.data.tipo_cliente || null,
-                localidad: validated.data.localidad || null,
-                provincia: validated.data.provincia || null,
-                observaciones: validated.data.observaciones || null,
-            },
-        })
-
-        // If initial establishment provided, create it
-        if (validated.data.establecimiento_inicial?.trim()) {
-            await prisma.establecimiento.create({
-                data: {
-                    empresa_id: empresaId,
-                    nombre: validated.data.establecimiento_inicial.trim(),
-                    cliente_id: cliente.id,
-                    modalidad: validated.data.modalidad_inicial
-                }
-            })
-        }
+        
+        await CatalogosService.createCliente(empresaId, validated.data)
 
         revalidatePath('/clientes')
         return { success: true }
@@ -102,22 +50,10 @@ export async function updateCliente(id: string, data: ClienteFormValues) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CLIENTES, 'update')
 
-        // Extract helper fields that don't exist in Cliente model
         const { establecimiento_inicial, modalidad_inicial, ...dbData } = validated.data
 
-        await prisma.cliente.update({
-            where: { id, empresa_id: empresaId },
-            data: {
-                ...dbData,
-                email: dbData.email || null,
-                telefono: dbData.telefono || null,
-                persona_contacto: dbData.persona_contacto || null,
-                tipo_cliente: dbData.tipo_cliente || null,
-                localidad: dbData.localidad || null,
-                provincia: dbData.provincia || null,
-                observaciones: dbData.observaciones || null,
-            },
-        })
+        await CatalogosService.updateCliente(id, empresaId, dbData)
+        
         revalidatePath('/clientes')
         return { success: true }
     } catch (error) {
@@ -131,11 +67,8 @@ export async function deleteCliente(id: string) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.CLIENTES, 'delete')
 
-        // Soft delete
-        await prisma.cliente.update({
-            where: { id, empresa_id: empresaId },
-            data: { deleted_at: new Date() },
-        })
+        await CatalogosService.deleteCliente(id, empresaId)
+        
         revalidatePath('/clientes')
         return { success: true }
     } catch (error) {
