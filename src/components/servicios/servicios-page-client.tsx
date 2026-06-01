@@ -42,8 +42,9 @@ export default function ServiciosPage({ data = [] }: { data?: any[] }) {
     }
 
     return (
-        <div className="rounded-xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-            <Table>
+        <div className="rounded-xl border-transparent bg-transparent shadow-none md:border-slate-100 md:bg-white md:shadow-sm overflow-hidden">
+            <div className="hidden md:block overflow-x-auto w-full">
+                <Table>
                 <TableHeader className="bg-slate-50/50">
                     <TableRow className="hover:bg-transparent border-slate-100">
                         <TableHead className="text-slate-500 font-medium">Nombre</TableHead>
@@ -111,6 +112,56 @@ export default function ServiciosPage({ data = [] }: { data?: any[] }) {
                     )}
                 </TableBody>
             </Table>
+            </div>
+
+                {/* VISTA MÓVIL (TARJETAS) */}
+                <div className="block md:hidden space-y-4">
+                    {data.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 border rounded-lg">
+                            No hay labores registradas.
+                        </div>
+                    ) : (
+                        data.map((servicio) => (
+                            <div key={servicio.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                <div className="p-4 border-b border-slate-50">
+                                    <h3 className="font-semibold text-slate-800 text-lg mb-1">{servicio.nombre}</h3>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-wider">
+                                        {servicio.unidad_medida}
+                                    </span>
+                                </div>
+                                <div className="p-4 flex flex-col">
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Precio Base</span>
+                                    <div className="flex items-end gap-1">
+                                        <span className="text-2xl font-bold text-slate-900">${Number(servicio.precio_base).toLocaleString('es-AR', {minimumFractionDigits: 2})}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
+                                    {canEdit && (
+                                        <ServicioFormDialog
+                                            servicio={servicio}
+                                            trigger={
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600">
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                        />
+                                    )}
+                                    {canDelete && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setDeleteId(servicio.id)}
+                                            className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
         </div>
     )
 }
