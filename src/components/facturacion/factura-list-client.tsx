@@ -92,8 +92,8 @@ export function FacturaListClient({ data }: FacturaListClientProps) {
                     </p>
                 </div>
             ) : (
-                <div className="rounded-2xl border border-slate-200/60 bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl">
-                    <div className="overflow-x-auto w-full">
+                <div className="rounded-2xl border-transparent bg-transparent shadow-none backdrop-blur-none md:border-slate-200/60 md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:backdrop-blur-xl overflow-hidden">
+                    <div className="hidden md:block overflow-x-auto w-full">
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-slate-50/50 hover:bg-slate-50/50 border-b-slate-100">
@@ -178,6 +178,58 @@ export function FacturaListClient({ data }: FacturaListClientProps) {
                             </TableBody>
                         </Table>
                     </div>
+
+                    {/* VISTA MÓVIL (TARJETAS) */}
+                    <div className="block md:hidden space-y-4">
+                        {filteredData.map((factura) => (
+                            <div key={factura.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                <div className="p-4 border-b border-slate-50 flex justify-between items-start">
+                                    <div>
+                                        <div className="font-semibold text-slate-800">
+                                            Factura {factura.tipo_comprobante === '1' ? 'A' : factura.tipo_comprobante === '6' ? 'B' : 'C'}
+                                        </div>
+                                        <div className="text-xs text-slate-500 font-mono">
+                                            {String(factura.punto_venta).padStart(4, '0')}-{String(factura.numero).padStart(8, '0')}
+                                        </div>
+                                    </div>
+                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase font-bold border tracking-wider ${getStatusBadge(factura.estado_afip)}`}>
+                                        {getStatusIcon(factura.estado_afip)}
+                                        {factura.estado_afip}
+                                    </div>
+                                </div>
+                                
+                                <div className="p-4 flex flex-col gap-1">
+                                    <span className="text-sm font-medium text-slate-600">{factura.orden?.cliente?.razon_social || '-'}</span>
+                                    <span className="text-sm text-slate-500">CUIT: {factura.orden?.cliente?.cuit || '-'}</span>
+                                    <span className="text-3xl font-bold text-slate-900 tracking-tight mt-1">
+                                        $ {Number(factura.total).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                
+                                <div className="bg-slate-50 p-3 flex justify-between items-center border-t border-slate-100 text-sm text-slate-500">
+                                    <span>
+                                        {factura.fecha_emision ? format(new Date(factura.fecha_emision), 'dd/MM/yyyy') : '-'}
+                                    </span>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-8 gap-2 text-slate-600 hover:text-emerald-600"
+                                        onClick={() => {
+                                            if (factura.pdf_url) {
+                                                window.open(factura.pdf_url, '_blank')
+                                            } else {
+                                                alert('El PDF aún no está disponible.')
+                                            }
+                                        }}
+                                    >
+                                        <Download className="h-4 w-4" />
+                                        PDF
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
                 </div>
             )}
         </div>

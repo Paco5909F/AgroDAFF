@@ -68,8 +68,8 @@ export function ClienteListTable({ data, rol }: ClienteListTableProps) {
 
     return (
         <>
-            <div className="rounded-xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-                <div className="overflow-x-auto w-full">
+            <div className="rounded-xl border-transparent bg-transparent shadow-none md:border-slate-100 md:bg-white md:shadow-sm overflow-hidden">
+                <div className="hidden md:block overflow-x-auto w-full">
                     <Table>
                         <TableHeader className="bg-slate-50/50">
                             <TableRow className="hover:bg-transparent border-slate-100">
@@ -155,6 +155,78 @@ export function ClienteListTable({ data, rol }: ClienteListTableProps) {
                         </TableBody>
                     </Table>
                 </div>
+
+                {/* VISTA MÓVIL (TARJETAS) */}
+                <div className="block md:hidden space-y-4">
+                    {data.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                            No hay clientes registrados.
+                        </div>
+                    ) : (
+                        data.map((cliente) => (
+                            <div key={cliente.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                <div className="p-4 border-b border-slate-50">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-semibold text-slate-800 text-lg">{cliente.razon_social}</h3>
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-wider">
+                                            {cliente.condicion_iva}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-slate-600 font-medium font-mono">
+                                        CUIT: {cliente.cuit}
+                                    </div>
+                                </div>
+                                <div className="p-4 flex flex-col gap-2 bg-slate-50/30">
+                                    <div className="text-sm">
+                                        <span className="text-slate-500 block text-xs uppercase tracking-wider font-bold mb-0.5">Contacto</span>
+                                        <div className="text-slate-700">{cliente.email || 'Sin email'}</div>
+                                        <div className="text-slate-500">{cliente.telefono || 'Sin teléfono'}</div>
+                                    </div>
+                                    {cliente.establecimientos && cliente.establecimientos.length > 0 && (
+                                        <div className="mt-2">
+                                            <span className="text-slate-500 block text-xs uppercase tracking-wider font-bold mb-1">Establecimientos ({cliente.establecimientos.length})</span>
+                                            <div className="flex flex-wrap gap-1">
+                                                {cliente.establecimientos.slice(0, 3).map(e => (
+                                                    <span key={e.id} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-amber-50 text-amber-700 border border-amber-100">
+                                                        {e.nombre}
+                                                    </span>
+                                                ))}
+                                                {cliente.establecimientos.length > 3 && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-slate-50 text-slate-500">
+                                                        +{cliente.establecimientos.length - 3}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
+                                    {canEdit && (
+                                        <ClienteFormDialog
+                                            cliente={cliente}
+                                            trigger={
+                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600">
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                        />
+                                    )}
+                                    {canDelete && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                                            onClick={() => setDeleteId(cliente.id)}
+                                        >
+                                            <Trash className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
             </div>
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
