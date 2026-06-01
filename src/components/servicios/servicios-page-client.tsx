@@ -136,26 +136,33 @@ export default function ServiciosPage({ data = [] }: { data?: any[] }) {
                                     </div>
                                 </div>
                                 <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
-                                    {canEdit && (
-                                        <ServicioFormDialog
-                                            servicio={servicio}
-                                            trigger={
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600">
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                            }
-                                        />
-                                    )}
-                                    {canDelete && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setDeleteId(servicio.id)}
-                                            className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
+                                    <ServicioDialog servicio={servicio}>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50">
+                                            <Pencil className="h-4 w-4" />
                                         </Button>
-                                    )}
+                                    </ServicioDialog>
+
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>¿Eliminar Servicio?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Se "archivará" el servicio "{servicio.nombre}". No se borrará el historial de órdenes pasadas.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDelete(servicio.id)}>
+                                                    Eliminar
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </div>
                             </div>
                         ))
