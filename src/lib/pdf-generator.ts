@@ -218,191 +218,201 @@ const drawField = (doc: jsPDF, label: string, value: string, x: number, y: numbe
 export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding = DEFAULT_BRANDING) => {
     loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
-        const margin = 20;
+
+        const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
         const width = pageWidth - (margin * 2);
 
-        // --- 1. DARK EDITORIAL HEADER ---
-        doc.setFillColor(15, 23, 42); // slate-900
-        doc.rect(0, 0, pageWidth, 60, 'F');
+        let cursorY = margin;
 
-        const logoW = 30;
+        // --- 1. HEADER ROW ---
+        // Left: Logo + Company Data
+        const logoW = 25;
         const aspect = img.width && img.height ? img.width / img.height : 1;
         const logoH = logoW / aspect;
+
         if (img.complete && img.naturalHeight !== 0) {
-            try { doc.addImage(img, 'PNG', margin, 15, logoW, logoH); } catch (err) {}
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text("PRESUPUESTO", pageWidth - margin, 25, { align: 'right' });
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(203, 213, 225); // slate-300
-        doc.text(`N° ${presupuesto.id.slice(0, 8).toUpperCase()}`, pageWidth - margin, 32, { align: 'right' });
-        doc.text(`Fecha: ${format(new Date(presupuesto.fecha), 'dd/MM/yyyy')}`, pageWidth - margin, 37, { align: 'right' });
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text(branding.name, margin, 48);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184); // slate-400
-        doc.text(`${branding.address} | Tel: ${branding.phone}`, margin, 53);
-
-        // --- 2. LIGHT CLIENT BAND ---
-        doc.setFillColor(248, 250, 252); // slate-50
-        doc.rect(0, 60, pageWidth, 28, 'F');
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184); // slate-400
-        doc.text("EMITIDO PARA", margin, 70);
+        const companyX = margin + logoW + 5;
         doc.setFontSize(12);
-        doc.setTextColor(15, 23, 42); // slate-900
-        doc.text(presupuesto.cliente.razon_social, margin, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text("CUIT / DNI", margin + 80, 70);
+        doc.setFont(FONTS.body, 'normal');
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
+
+        // Right: Box with Presupuesto Data
+        const boxX = pageWidth - margin - 65;
+        const boxW = 65;
+        const boxH = 26;
+        drawBox(doc, boxX, cursorY, boxW, boxH);
+
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105); // slate-600
-        doc.text(presupuesto.cliente.cuit || "-", margin + 80, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text("PRESUPUESTO", boxX + (boxW / 2), cursorY + 6, { align: 'center' });
+        doc.text("OFICIAL", boxX + (boxW / 2), cursorY + 11, { align: 'center' });
 
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184);
-        doc.text("LOTE / HECTÁREAS", margin + 120, 70);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105);
-        doc.text(`${presupuesto.lote?.nombre || "N/A"} (${presupuesto.hectareas || 1} ha)`, margin + 120, 77);
+        doc.text(`FECHA: ${format(new Date(presupuesto.fecha), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 20);
+        doc.text(`VÁLIDO HASTA: ${presupuesto.valido_hasta ? format(new Date(presupuesto.valido_hasta), 'dd/MM/yyyy') : '-'}`, boxX + 5, cursorY + 24);
 
-        let cursorY = 95;
+        cursorY += 35; // Move down below header row
 
-        // --- 3. ZERO-GRID EDITORIAL TABLE ---
-        const tableBody: any[] = [];
+        // --- 2. DATOS DEL CLIENTE ---
+        drawSectionHeader(doc, "DATOS DEL CLIENTE", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 30);
+
+        // Left Column
+        let innerY = cursorY + 6;
+        drawField(doc, "RAZÓN SOCIAL / NOMBRE", presupuesto.cliente.razon_social, margin + 5, innerY);
+        innerY += 8;
+        drawField(doc, "CUIT", presupuesto.cliente.cuit || "-", margin + 5, innerY);
+        innerY += 8;
+        drawField(doc, "LOTE", presupuesto.lote?.nombre || "No especificado", margin + 5, innerY);
+
+        // Right Column
+        innerY = cursorY + 6;
+        const col2X = margin + (width / 2) + 20;
+        drawField(doc, "EMAIL", presupuesto.cliente.email || "-", col2X, innerY);
+        innerY += 8;
+        drawField(doc, "CONDICIÓN IVA", presupuesto.cliente.condicion_iva || "Consumidor Final", col2X, innerY);
+        innerY += 8;
+        drawField(doc, "HECTÁREAS", `${presupuesto.hectareas || 1} ha`, col2X, innerY);
+
+        cursorY += 38;
+
+        // --- 3. DETALLE DEL SERVICIO (Table) ---
+        drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+
+        // Table logic with Row Grouping
         const servicios = presupuesto.items.filter((i: any) => i.tipo === 'servicio' || !i.tipo);
         const insumos = presupuesto.items.filter((i: any) => i.tipo === 'insumo');
 
+        const tableBody: any[] = [];
+        
         if (servicios.length > 0) {
-            tableBody.push([{ content: 'SERVICIOS', colSpan: 5, styles: { fillColor: [255,255,255], fontStyle: 'bold', textColor: [15, 23, 42], fontSize: 10, cellPadding: { top: 15, bottom: 6, left: 2 } } }]);
+            tableBody.push([
+                { content: 'LABORES Y SERVICIOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59], cellPadding: { top: 5, bottom: 5, left: 2 } } }
+            ]);
             servicios.forEach((item: any) => {
                 tableBody.push([
-                    { content: item.nombre || item.servicio?.nombre || 'Servicio', styles: { fontStyle: 'bold', textColor: [71, 85, 105] } },
+                    { content: ` • ${item.nombre || item.servicio?.nombre || 'Servicio'}`, styles: { fontStyle: 'normal', textColor: [51, 65, 85] } },
                     Number(item.cantidad).toLocaleString('es-AR'),
                     item.unidad || item.servicio?.unidad_medida || 'u',
                     `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] } }
+                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
                 ]);
             });
         }
 
         if (insumos.length > 0) {
-            tableBody.push([{ content: 'INSUMOS', colSpan: 5, styles: { fillColor: [255,255,255], fontStyle: 'bold', textColor: [15, 23, 42], fontSize: 10, cellPadding: { top: 15, bottom: 6, left: 2 } } }]);
+            tableBody.push([
+                { content: 'INSUMOS Y PRODUCTOS', colSpan: 5, styles: { fillColor: [241, 245, 249], fontStyle: 'bold', textColor: [30, 41, 59], cellPadding: { top: 5, bottom: 5, left: 2 } } }
+            ]);
             insumos.forEach((item: any) => {
                 tableBody.push([
-                    { content: item.nombre || item.insumo?.nombre || 'Insumo', styles: { fontStyle: 'normal', textColor: [100, 116, 139] } },
+                    { content: ` • ${item.nombre || item.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'normal', textColor: [51, 65, 85] } },
                     Number(item.cantidad).toLocaleString('es-AR'),
                     item.unidad || item.insumo?.unidad_medida || 'u',
                     `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] } }
+                    { content: `$ ${Number(item.subtotal).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
                 ]);
             });
         }
 
         autoTable(doc, {
             startY: cursorY,
-            head: [['DESCRIPCIÓN', 'CANTIDAD', 'UNIDAD', 'PRECIO', 'IMPORTE']],
+            head: [['CONCEPTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
-                font: 'helvetica', fontSize: 9,
-                cellPadding: { top: 8, bottom: 8, left: 2, right: 2 },
-                textColor: [100, 116, 139], lineWidth: 0,
+                fontSize: 8,
+                cellPadding: 4,
+                textColor: [51, 65, 85],
+                lineColor: [203, 213, 225],
+                lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: [255, 255, 255], textColor: [148, 163, 184],
-                fontStyle: 'bold', fontSize: 8, halign: 'left',
-                lineWidth: { bottom: 0.5 }, lineColor: [226, 232, 240]
-            },
-            willDrawCell: (data: any) => {
-                if (data.section === 'body' && data.cell.colSpan !== 5) {
-                    doc.setDrawColor(241, 245, 249);
-                    doc.setLineWidth(0.1);
-                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-                }
+                fillColor: [226, 232, 240],
+                textColor: [30, 41, 59],
+                fontStyle: 'bold',
+                halign: 'center',
+                lineWidth: 0.1,
+                lineColor: [203, 213, 225],
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left' },
-                1: { cellWidth: 26, halign: 'right' },
-                2: { cellWidth: 20, halign: 'right' },
-                3: { cellWidth: 30, halign: 'right' },
+                1: { cellWidth: 25, halign: 'center' },
+                2: { cellWidth: 25, halign: 'center' },
+                3: { cellWidth: 35, halign: 'right' },
                 4: { cellWidth: 35, halign: 'right' }
             }
         });
 
         // @ts-ignore
-        cursorY = doc.lastAutoTable.finalY + 15;
+        cursorY = doc.lastAutoTable.finalY;
 
-        // --- 4. ASYMMETRICAL TOTALS ---
-        const rightAlignX = pageWidth - margin;
-        
-        doc.setDrawColor(226, 232, 240); // slate-200
-        doc.setLineWidth(0.5);
-        doc.line(rightAlignX - 90, cursorY, rightAlignX, cursorY);
+        // --- 4. TOTAL AREA ---
         cursorY += 10;
+        
+        const totalBoxW = 90;
+        const totalBoxH = 22;
+        const totalBoxX = pageWidth - margin - totalBoxW;
 
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184); // slate-400
-        doc.text(`Subtotal / ha`, rightAlignX - 45, cursorY, { align: 'right' });
-        doc.setTextColor(15, 23, 42); // slate-900
-        doc.setFont('helvetica', 'bold');
-        doc.text(`$ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, rightAlignX, cursorY, { align: 'right' });
+        // Draw Subtotal background (lighter slate)
+        doc.setFillColor(248, 250, 252);
+        doc.rect(totalBoxX, cursorY, totalBoxW, 10, "F");
         
-        cursorY += 15;
-        
-        // Massive Total
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.text(`Total a Facturar`, rightAlignX - 50, cursorY, { align: 'right' });
-        
+        // Draw Total background (primary color)
         const primaryColor = getColors(branding).primary;
-        doc.setFontSize(18); // Giant font
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text(`$ ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, rightAlignX, cursorY, { align: 'right' });
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.rect(totalBoxX, cursorY + 10, totalBoxW, 12, "F");
 
-        cursorY += 30;
+        doc.setFontSize(9);
+        doc.setFont(FONTS.body, 'normal');
+        doc.setTextColor(100, 116, 139); // slate-500
+        const subTotalStr = `Subtotal: $ ${Number(presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })} / ha`;
+        doc.text(subTotalStr, totalBoxX + totalBoxW - 5, cursorY + 7, { align: 'right' });
+
+        doc.setFontSize(11);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(255, 255, 255); // White on primary
+        const totalStr = `TOTAL FINAL: $ ${Number(presupuesto.total_final || presupuesto.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 18, { align: 'right' });
+
+        cursorY += 25;
+
+        // --- 5. OBSERVACIONES ---
+        drawSectionHeader(doc, "OBSERVACIONES", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 18); // Fixed height box for observations
 
         if (presupuesto.observaciones) {
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(148, 163, 184);
-            doc.text("TÉRMINOS Y OBSERVACIONES", margin, cursorY);
-            cursorY += 5;
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(71, 85, 105);
-            doc.text(presupuesto.observaciones, margin, cursorY, { maxWidth: width });
+            doc.setFont(FONTS.body, 'normal');
+            doc.setTextColor(0);
+            doc.text(presupuesto.observaciones, margin + 5, cursorY + 6, { maxWidth: width - 10 });
         }
 
-        // Footer Minimalist
+        // Footer
         const footerY = pageHeight - 15;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Generado por AgroDAFF ERP - ${branding.name}`, margin, footerY);
-        doc.text("Este documento es presupuestario y no tiene validez fiscal.", pageWidth - margin, footerY, { align: 'right' });
+        doc.setFontSize(6);
+        doc.setTextColor(getColors(branding).textLight[0]);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
+        doc.text("Este documento no es válido como factura. Los precios pueden variar sin previo aviso.", margin, footerY + 3);
 
         doc.save(`Presupuesto_${presupuesto.id.slice(0, 6)}.pdf`);
     });
@@ -413,91 +423,101 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
     loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
-        const margin = 20;
+        const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
         const width = pageWidth - (margin * 2);
 
-        doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, pageWidth, 60, 'F');
+        let cursorY = margin;
 
-        const logoW = 30;
+        // --- 1. HEADER ROW ---
+        // Left: Logo + Company Data
+        const logoW = 25;
         const aspect = img.width && img.height ? img.width / img.height : 1;
         const logoH = logoW / aspect;
+
         if (img.complete && img.naturalHeight !== 0) {
-            try { doc.addImage(img, 'PNG', margin, 15, logoW, logoH); } catch (err) {}
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text("ORDEN DE TRABAJO", pageWidth - margin, 25, { align: 'right' });
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(203, 213, 225);
-        doc.text(`N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, pageWidth - margin, 32, { align: 'right' });
-        doc.text(`Fecha: ${format(new Date(orden.fecha), 'dd/MM/yyyy')}`, pageWidth - margin, 37, { align: 'right' });
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text(branding.name, margin, 48);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(`${branding.address} | Tel: ${branding.phone}`, margin, 53);
-
-        doc.setFillColor(248, 250, 252);
-        doc.rect(0, 60, pageWidth, 28, 'F');
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184);
-        doc.text("EMITIDO PARA", margin, 70);
+        const companyX = margin + logoW + 5;
         doc.setFontSize(12);
-        doc.setTextColor(15, 23, 42);
-        doc.text(orden.cliente.razon_social, margin, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text("CUIT / DNI", margin + 80, 70);
+        doc.setFont(FONTS.body, 'normal');
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
+
+        // Right: Box with Order Data
+        const boxX = pageWidth - margin - 70;
+        const boxW = 70;
+        const boxH = 26;
+        drawBox(doc, boxX, cursorY, boxW, boxH);
+
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105);
-        doc.text(orden.cliente.cuit || "-", margin + 80, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text("ORDEN DE TRABAJO", boxX + (boxW / 2), cursorY + 6, { align: 'center' });
+        doc.text(`N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, boxX + (boxW / 2), cursorY + 11, { align: 'center' });
 
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184);
-        doc.text("ESTADO", margin + 140, 70);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105);
-        doc.text(orden.estado ? orden.estado.toUpperCase() : "-", margin + 140, 77);
+        doc.text(`FECHA: ${format(new Date(orden.fecha), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 20);
+        doc.text(`ESTADO: ${orden.estado ? orden.estado.toUpperCase() : "-"}`, boxX + 5, cursorY + 24);
 
-        let cursorY = 95;
+        cursorY += 35; // Move down below header row
+
+        // --- 2. DATOS DEL CLIENTE ---
+        drawSectionHeader(doc, "DATOS DEL CLIENTE", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 18);
+
+        // Left Column
+        let innerY = cursorY + 6;
+        drawField(doc, "RAZÓN SOCIAL", orden.cliente.razon_social, margin + 5, innerY);
+
+        // Right Column
+        const col2X = margin + (width / 2) + 20;
+        drawField(doc, "CUIT", orden.cliente.cuit || "-", col2X, innerY);
+        // Note: Orden only generally has Client Name/Link, but if we have CUIT in the client object included in Orden, we show it.
+
+        cursorY += 25;
+
+        // --- 3. DETALLE DEL SERVICIO (Table) ---
+        drawSectionHeader(doc, "DETALLE DEL SERVICIO", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
 
         const tableBody: any[] = [];
+
         (orden.items || []).forEach((item: any) => {
             let desc = item.servicio?.nombre || "Item";
-            if (Number(item.kilometros) > 0) desc += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
+            if (Number(item.kilometros) > 0) {
+                desc += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
+            }
 
+            // Main Service Row
             tableBody.push([
-                { content: desc, styles: { fontStyle: 'bold', textColor: [15, 23, 42] } },
-                Number(item.cantidad).toLocaleString('es-AR'),
-                item.servicio?.unidad_medida || "-",
-                `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] } }
+                { content: `▸ ${desc}`, styles: { fontStyle: 'bold', fillColor: [248, 250, 252], textColor: [15, 23, 42] } },
+                { content: Number(item.cantidad).toLocaleString('es-AR'), styles: { fillColor: [248, 250, 252] } },
+                { content: item.servicio?.unidad_medida || "-", styles: { fillColor: [248, 250, 252] } },
+                { content: `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { fillColor: [248, 250, 252] } },
+                { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', fillColor: [248, 250, 252] } }
             ]);
 
+            // Insumos Rows (Nested below service)
             if (item.insumos && item.insumos.length > 0) {
                 item.insumos.forEach((ins: any) => {
-                    const insName = `  ↳ ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha)`;
+                    const insName = `    • ${ins.insumo?.nombre} (${Number(ins.dosis_por_ha)} ${ins.insumo?.unidad_medida}/ha x ${ins.cantidad_pasadas || 1} pasadas)`;
                     tableBody.push([
-                        { content: insName, styles: { fontStyle: 'normal', textColor: [100, 116, 139] } },
-                        "-", "-", "-",
-                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'normal', textColor: [100, 116, 139] } }
+                        { content: insName, styles: { fontStyle: 'normal', textColor: [71, 85, 105] } },
+                        "-",
+                        "-",
+                        "-",
+                        { content: `$ ${Number(ins.costo_total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [71, 85, 105] } }
                     ]);
                 });
             }
@@ -505,85 +525,88 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 
         autoTable(doc, {
             startY: cursorY,
-            head: [['DESCRIPCIÓN', 'CANTIDAD', 'UNIDAD', 'PRECIO', 'IMPORTE']],
+            head: [['SERVICIO / PRODUCTO', 'CANTIDAD', 'UNIDAD', 'PRECIO UNIT.', 'TOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
-                font: 'helvetica', fontSize: 9,
-                cellPadding: { top: 8, bottom: 8, left: 2, right: 2 },
-                textColor: [100, 116, 139], lineWidth: 0,
+                fontSize: 8,
+                cellPadding: 4,
+                textColor: [51, 65, 85],
+                lineColor: [203, 213, 225],
+                lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: [255, 255, 255], textColor: [148, 163, 184],
-                fontStyle: 'bold', fontSize: 8, halign: 'left',
-                lineWidth: { bottom: 0.5 }, lineColor: [226, 232, 240]
-            },
-            willDrawCell: (data: any) => {
-                if (data.section === 'body' && data.cell.colSpan !== 5) {
-                    doc.setDrawColor(241, 245, 249);
-                    doc.setLineWidth(0.1);
-                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-                }
+                fillColor: [226, 232, 240],
+                textColor: [30, 41, 59],
+                fontStyle: 'bold',
+                halign: 'center',
+                lineWidth: 0.1,
+                lineColor: [203, 213, 225],
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left' },
-                1: { cellWidth: 26, halign: 'right' },
-                2: { cellWidth: 20, halign: 'right' },
-                3: { cellWidth: 30, halign: 'right' },
+                1: { cellWidth: 25, halign: 'center' },
+                2: { cellWidth: 25, halign: 'center' },
+                3: { cellWidth: 35, halign: 'right' },
                 4: { cellWidth: 35, halign: 'right' }
             }
         });
 
         // @ts-ignore
-        cursorY = doc.lastAutoTable.finalY + 15;
+        cursorY = doc.lastAutoTable.finalY;
 
-        const rightAlignX = pageWidth - margin;
+        // --- 4. TOTAL AREA ---
+        cursorY += 10;
         
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.5);
-        doc.line(rightAlignX - 90, cursorY, rightAlignX, cursorY);
-        cursorY += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.text(`Total Orden`, rightAlignX - 50, cursorY, { align: 'right' });
-        
+        const totalBoxW = 90;
+        const totalBoxH = 12; // Shorter since no subtotal here
+        const totalBoxX = pageWidth - margin - totalBoxW;
+
         const primaryColor = getColors(branding).primary;
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text(`$ ${Number(orden.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, rightAlignX, cursorY, { align: 'right' });
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "F");
 
-        cursorY += 30;
+        doc.setFontSize(11);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(255, 255, 255); // White on primary
+        const totalStr = `TOTAL: $ ${Number(orden.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+        doc.text(totalStr, totalBoxX + totalBoxW - 5, cursorY + 8, { align: 'right' });
+        
+        cursorY += 25;
+
+        // --- 5. OBSERVACIONES ---
+        drawSectionHeader(doc, "OBSERVACIONES", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 18);
 
         if (orden.observaciones) {
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(148, 163, 184);
-            doc.text("INSTRUCCIONES Y OBSERVACIONES", margin, cursorY);
-            cursorY += 5;
             doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(71, 85, 105);
-            doc.text(orden.observaciones, margin, cursorY, { maxWidth: width });
+            doc.setFont(FONTS.body, 'normal');
+            doc.setTextColor(0);
+            doc.text(orden.observaciones, margin + 5, cursorY + 6, { maxWidth: width - 10 });
         }
 
-        const sigY = pageHeight - 40;
-        doc.setDrawColor(226, 232, 240);
-        doc.line(margin, sigY, margin + 60, sigY);
-        doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text("Aceptación del Cliente", margin, sigY + 5);
+        // --- SIGNATURE AREA ---
+        const sigY = pageHeight - 50;
+        doc.setDrawColor(getColors(branding).border[0]);
+        // Centered signature line
+        const sigWidth = 100;
+        const sigStart = (pageWidth - sigWidth) / 2;
+        doc.line(sigStart, sigY, sigStart + sigWidth, sigY);
 
-        const footerY = pageHeight - 15;
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Generado por AgroDAFF ERP - ${branding.name}`, margin, footerY);
-        doc.text(`Impreso: ${format(new Date(), 'dd/MM/yyyy')}`, pageWidth - margin, footerY, { align: 'right' });
+        doc.setTextColor(getColors(branding).textLight[0]);
+        doc.text("FIRMA CONFORME CLIENTE / RESPONSABLE", pageWidth / 2, sigY + 5, { align: 'center' });
+
+
+        // Footer
+        const footerY = pageHeight - 15;
+        doc.setFontSize(6);
+        doc.setTextColor(getColors(branding).textLight[0]);
+        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
+        doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Orden_${orden.id ? orden.id.slice(0, 6) : "Borrador"}.pdf`);
     });
@@ -593,86 +616,85 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
     loadLogoAndRun(branding.logoUrl, (img) => {
         const doc = new jsPDF();
-        const margin = 20;
+        const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
         const width = pageWidth - (margin * 2);
 
-        doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, pageWidth, 60, 'F');
+        let cursorY = margin;
 
-        const logoW = 30;
+        // --- 1. HEADER ROW ---
+        // Left: Logo + Company Data
+        const logoW = 25;
         const aspect = img.width && img.height ? img.width / img.height : 1;
         const logoH = logoW / aspect;
+
         if (img.complete && img.naturalHeight !== 0) {
-            try { doc.addImage(img, 'PNG', margin, 15, logoW, logoH); } catch (err) {}
+            try {
+                doc.addImage(img, 'PNG', margin, cursorY, logoW, logoH);
+            } catch (err) {
+                console.warn("Could not add logo to PDF:", err);
+            }
         }
 
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text("LIQUIDACIÓN", pageWidth - margin, 25, { align: 'right' });
-
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(203, 213, 225);
-        doc.text(`N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, pageWidth - margin, 32, { align: 'right' });
-        doc.text(`Cierre: ${orden.fecha_cierre ? format(new Date(orden.fecha_cierre), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}`, pageWidth - margin, 37, { align: 'right' });
-
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text(branding.name, margin, 48);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(`${branding.address} | Tel: ${branding.phone}`, margin, 53);
-
-        doc.setFillColor(248, 250, 252);
-        doc.rect(0, 60, pageWidth, 28, 'F');
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184);
-        doc.text("LIQUIDADO A", margin, 70);
+        const companyX = margin + logoW + 5;
         doc.setFontSize(12);
-        doc.setTextColor(15, 23, 42);
-        doc.text(orden.cliente.razon_social, margin, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text(branding.name, companyX, cursorY + 6);
 
         doc.setFontSize(8);
-        doc.setTextColor(148, 163, 184);
-        doc.text("CUIT / DNI", margin + 80, 70);
+        doc.setFont(FONTS.body, 'normal');
+        doc.text(branding.address, companyX, cursorY + 11);
+        doc.text(`Tel: ${branding.phone} | Email: ${branding.email}`, companyX, cursorY + 16);
+
+        // Right: Box with Liquidacion Data
+        const boxX = pageWidth - margin - 75;
+        const boxW = 75;
+        const boxH = 26;
+        drawBox(doc, boxX, cursorY, boxW, boxH);
+
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105);
-        doc.text(orden.cliente.cuit || "-", margin + 80, 77);
+        doc.setFont(FONTS.header, 'bold');
+        doc.text("LIQUIDACIÓN DE TRABAJOS", boxX + (boxW / 2), cursorY + 6, { align: 'center' });
+        doc.text(`ORDEN N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, boxX + (boxW / 2), cursorY + 11, { align: 'center' });
 
         doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(148, 163, 184);
-        doc.text("COTIZACIÓN USD", margin + 140, 70);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(71, 85, 105);
-        doc.text(`$ ${orden.cotizacion_usd ? Number(orden.cotizacion_usd).toFixed(2) : '1.00'}`, margin + 140, 77);
+        doc.text(`FECHA CIERRE: ${orden.fecha_cierre ? format(new Date(orden.fecha_cierre), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 20);
+        doc.text(`COTIZACIÓN USD: $ ${orden.cotizacion_usd ? Number(orden.cotizacion_usd).toFixed(2) : '1.00'}`, boxX + 5, cursorY + 24);
 
-        let cursorY = 95;
+        cursorY += 35; // Move down below header row
+
+        // --- 2. DATOS DEL CLIENTE ---
+        drawSectionHeader(doc, "DATOS DEL CLIENTE", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
+        drawBox(doc, margin, cursorY, width, 18);
+
+        let innerY = cursorY + 6;
+        drawField(doc, "RAZÓN SOCIAL", orden.cliente.razon_social, margin + 5, innerY);
+        const col2X = margin + (width / 2) + 20;
+        drawField(doc, "CUIT", orden.cliente.cuit || "-", col2X, innerY);
+
+        cursorY += 25;
+
+        // --- 3. DETALLE DE LIQUIDACIÓN ---
+        drawSectionHeader(doc, "DETALLE DE LIQUIDACIÓN (CANTIDADES REALES)", cursorY, margin, pageWidth, margin);
+        cursorY += 6;
 
         const tableBody: any[] = [];
         let totalUSD = 0;
 
-        (orden.items || []).forEach((item: any) => {
+        orden.items.forEach((item: any) => {
             const qty = Number(item.cantidad_real || item.cantidad);
             const price = Number(item.precio_congelado || item.precio_unit);
             const subtotal = qty * price;
             totalUSD += subtotal;
 
             tableBody.push([
-                { content: item.servicio?.nombre || 'Servicio', styles: { fontStyle: 'bold', textColor: [15, 23, 42] } },
-                qty.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
-                item.servicio?.unidad_medida || 'u',
-                `$ ${price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                { content: `$ ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', textColor: [15, 23, 42] } }
+                { content: `▸ ${item.servicio?.nombre || 'Servicio'}`, styles: { fontStyle: 'bold', fillColor: [248, 250, 252], textColor: [15, 23, 42] } },
+                { content: qty.toLocaleString('es-AR', { minimumFractionDigits: 2 }), styles: { fillColor: [248, 250, 252] } },
+                { content: item.servicio?.unidad_medida || 'u', styles: { fillColor: [248, 250, 252] } },
+                { content: `$ ${price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { fillColor: [248, 250, 252] } },
+                { content: `$ ${subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold', fillColor: [248, 250, 252] } }
             ]);
 
             if (item.insumos && item.insumos.length > 0) {
@@ -683,11 +705,11 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
                     totalUSD += insSubtotal;
 
                     tableBody.push([
-                        { content: `  ↳ ${insumo.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'normal', textColor: [100, 116, 139] } },
+                        { content: `    • ${insumo.insumo?.nombre || 'Insumo'}`, styles: { fontStyle: 'normal', textColor: [71, 85, 105] } },
                         insQty.toLocaleString('es-AR', { minimumFractionDigits: 2 }),
                         insumo.insumo?.unidad_medida || 'u',
                         `$ ${insPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-                        { content: `$ ${insSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'normal', textColor: [100, 116, 139] } }
+                        { content: `$ ${insSubtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', textColor: [71, 85, 105] } }
                     ]);
                 });
             }
@@ -695,74 +717,70 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
 
         autoTable(doc, {
             startY: cursorY,
-            head: [['CONCEPTO REAL', 'CANT. REAL', 'UNIDAD', 'PRECIO', 'IMPORTE']],
+            head: [['CONCEPTO', 'CANTIDAD REAL', 'UNIDAD', 'PRECIO CONG.', 'SUBTOTAL']],
             body: tableBody,
-            theme: 'plain',
+            theme: 'grid',
             margin: { left: margin, right: margin },
             tableWidth: width,
             styles: {
-                font: 'helvetica', fontSize: 9,
-                cellPadding: { top: 8, bottom: 8, left: 2, right: 2 },
-                textColor: [100, 116, 139], lineWidth: 0,
+                fontSize: 8,
+                cellPadding: 4,
+                textColor: [51, 65, 85],
+                lineColor: [203, 213, 225],
+                lineWidth: 0.1,
             },
             headStyles: {
-                fillColor: [255, 255, 255], textColor: [148, 163, 184],
-                fontStyle: 'bold', fontSize: 8, halign: 'left',
-                lineWidth: { bottom: 0.5 }, lineColor: [226, 232, 240]
-            },
-            willDrawCell: (data: any) => {
-                if (data.section === 'body' && data.cell.colSpan !== 5) {
-                    doc.setDrawColor(241, 245, 249);
-                    doc.setLineWidth(0.1);
-                    doc.line(data.cell.x, data.cell.y + data.cell.height, data.cell.x + data.cell.width, data.cell.y + data.cell.height);
-                }
+                fillColor: [226, 232, 240],
+                textColor: [30, 41, 59],
+                fontStyle: 'bold',
+                halign: 'center',
+                lineWidth: 0.1,
+                lineColor: [203, 213, 225],
             },
             columnStyles: {
                 0: { cellWidth: 'auto', halign: 'left' },
-                1: { cellWidth: 26, halign: 'right' },
-                2: { cellWidth: 20, halign: 'right' },
-                3: { cellWidth: 30, halign: 'right' },
+                1: { cellWidth: 25, halign: 'center' },
+                2: { cellWidth: 20, halign: 'center' },
+                3: { cellWidth: 35, halign: 'right' },
                 4: { cellWidth: 35, halign: 'right' }
             }
         });
 
         // @ts-ignore
-        cursorY = doc.lastAutoTable.finalY + 15;
+        cursorY = doc.lastAutoTable.finalY + 10;
 
-        const rightAlignX = pageWidth - margin;
-        
+        // --- 4. TOTAL AREA ---
+        const totalBoxW = 85; // Wider for text
+        const totalBoxH = 18;
+        const totalBoxX = pageWidth - margin - totalBoxW;
+
+        doc.setFillColor(248, 250, 252);
         doc.setDrawColor(226, 232, 240);
         doc.setLineWidth(0.5);
-        doc.line(rightAlignX - 90, cursorY, rightAlignX, cursorY);
-        cursorY += 10;
+        doc.rect(totalBoxX, cursorY, totalBoxW, totalBoxH, "FD");
+
+        doc.setFontSize(10);
+        doc.setFont(FONTS.header, 'bold');
+        doc.setTextColor(15, 23, 42);
+        const finalTotalStr = `TOTAL LIQUIDACIÓN: $ ${Number(orden.total_final || totalUSD).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+        doc.text(finalTotalStr, totalBoxX + totalBoxW - 5, cursorY + 7, { align: 'right' });
         
+        doc.setFontSize(8);
+        doc.setFont(FONTS.body, 'normal');
+        doc.setTextColor(100, 116, 139);
         if (orden.cotizacion_usd && orden.cotizacion_usd > 1) {
             const totalARS = Number(orden.total_final || totalUSD) * Number(orden.cotizacion_usd);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.setTextColor(148, 163, 184);
-            doc.text(`ARS Equivalente: $ ${totalARS.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, rightAlignX, cursorY, { align: 'right' });
-            cursorY += 12;
+            doc.text(`Equivalente ARS: $ ${totalARS.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
+        } else {
+            doc.text(`Valores expresados en USD`, totalBoxX + totalBoxW - 5, cursorY + 13, { align: 'right' });
         }
 
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(15, 23, 42);
-        doc.text(`Total Liquidado`, rightAlignX - 50, cursorY, { align: 'right' });
-        
-        const primaryColor = getColors(branding).primary;
-        doc.setFontSize(18);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.text(`$ ${Number(orden.total_final || totalUSD).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, rightAlignX, cursorY, { align: 'right' });
-
+        // Footer
         const footerY = pageHeight - 15;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184);
-        doc.text(`Generado por AgroDAFF ERP - ${branding.name}`, margin, footerY);
-        doc.text("Valores sujetos a revisión final.", pageWidth - margin, footerY, { align: 'right' });
-
+        doc.setFontSize(6);
+        doc.setTextColor(getColors(branding).textLight[0]);
+        doc.text("Documento de liquidación proforma. Valores sujetos a revisión final.", margin, footerY);
+        
         doc.save(`Liquidacion_${orden.id ? orden.id.slice(0, 6) : "Orden"}.pdf`);
     });
 };
