@@ -158,8 +158,9 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                             <CardTitle>Miembros del Equipo</CardTitle>
                             <CardDescription>Usuarios activos actualmente en la empresa.</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <Table>
+                        <CardContent className="p-0 sm:p-6">
+                            <div className="hidden md:block overflow-x-auto w-full">
+                                <Table>
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Nombre</TableHead>
@@ -221,7 +222,53 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                                         </TableRow>
                                     ))}
                                 </TableBody>
-                            </Table>
+                                </Table>
+                            </div>
+                            
+                            {/* VISTA MÓVIL (TARJETAS) */}
+                            <div className="block md:hidden p-4 space-y-4 bg-slate-50">
+                                {users.map((user) => (
+                                    <div key={user.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <h3 className="font-semibold text-slate-800">{user.nombre}</h3>
+                                                <p className="text-xs text-slate-500">{user.email || 'Sin email'}</p>
+                                            </div>
+                                            <Badge variant="outline">{user.rol}</Badge>
+                                        </div>
+                                        {currentUserRole === 'ADMIN' && (
+                                            <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="outline" size="sm" className="h-8">
+                                                            <Shield className="h-3 w-3 mr-1" />
+                                                            Cambiar Rol
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuRadioGroup
+                                                            value={user.rol}
+                                                            onValueChange={(v) => handleUpdateRole(user.id, v as UserRole)}
+                                                        >
+                                                            {Object.values(UserRole)
+                                                                .filter(r => typeof r === 'string' && r === r.toUpperCase())
+                                                                .map(role => (
+                                                                    <DropdownMenuRadioItem key={role} value={role}>
+                                                                        {role}
+                                                                    </DropdownMenuRadioItem>
+                                                                ))}
+                                                        </DropdownMenuRadioGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                                <Button variant="ghost" size="sm" className="h-8 text-red-600 bg-red-50 hover:bg-red-100" onClick={() => handleRemoveUser(user.id)}>
+                                                    <UserX className="h-3 w-3 mr-1" />
+                                                    Quitar
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -233,8 +280,9 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                                 <CardTitle>Invitaciones Pendientes</CardTitle>
                                 <CardDescription>Enlaces generados que aún no han sido aceptados.</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <Table>
+                            <CardContent className="p-0 sm:p-6">
+                                <div className="hidden md:block overflow-x-auto w-full">
+                                    <Table>
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Email</TableHead>
@@ -267,7 +315,36 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                                             </TableRow>
                                         ))}
                                     </TableBody>
-                                </Table>
+                                    </Table>
+                                </div>
+                                
+                                {/* VISTA MÓVIL (TARJETAS) */}
+                                <div className="block md:hidden p-4 space-y-4 bg-slate-50">
+                                    {invitations.length === 0 && (
+                                        <div className="text-center py-4 text-muted-foreground bg-white border rounded-lg">
+                                            No hay invitaciones pendientes.
+                                        </div>
+                                    )}
+                                    {invitations.map((invite) => (
+                                        <div key={invite.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="font-medium text-slate-800 text-sm truncate pr-2">{invite.email}</span>
+                                                <Badge variant="secondary" className="shrink-0">{invite.rol}</Badge>
+                                            </div>
+                                            <p className="text-xs text-slate-500 mb-4">Expira: {new Date(invite.expires_at).toLocaleDateString('es-AR')}</p>
+                                            <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
+                                                <Button variant="outline" size="sm" className="h-8" onClick={() => copyLink(invite.token)}>
+                                                    <Copy className="h-3 w-3 mr-1" />
+                                                    Enlace
+                                                </Button>
+                                                <Button variant="ghost" size="sm" className="h-8 text-red-600 bg-red-50 hover:bg-red-100" onClick={() => handleRevokeInvite(invite.id)}>
+                                                    <Trash className="h-3 w-3 mr-1" />
+                                                    Revocar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

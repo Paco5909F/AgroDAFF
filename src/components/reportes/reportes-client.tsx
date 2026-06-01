@@ -225,7 +225,7 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
                         </Button>
                     </div>
                 </div>
-                <div className="overflow-x-auto w-full">
+                <div className="hidden md:block overflow-x-auto w-full">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -272,7 +272,9 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
                                                     {Number(item.total).toLocaleString('es-AR')}
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    {order.estado}
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                                                        {order.estado}
+                                                    </span>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -282,6 +284,52 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
                             )}
                         </TableBody>
                     </Table >
+                </div>
+
+                {/* VISTA MÓVIL (TARJETAS) */}
+                <div className="block md:hidden space-y-4 p-4 bg-slate-50">
+                    {orders.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 border rounded-lg bg-white">
+                            No hay datos para mostrar. Realice una búsqueda.
+                        </div>
+                    ) : (
+                        orders.flatMap((order: any) =>
+                            order.items && order.items.length > 0 ? (
+                                order.items.map((item: any) => (
+                                    <div key={item.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                        <div className="p-4 border-b border-slate-50 flex justify-between items-start">
+                                            <div>
+                                                <span className="text-xs text-slate-400 font-medium">{format(new Date(order.fecha), 'dd/MM/yyyy')}</span>
+                                                <h3 className="font-semibold text-slate-800 text-sm mt-1">{item.servicio.nombre}</h3>
+                                                <p className="text-xs text-slate-500">{order.cliente.razon_social}</p>
+                                            </div>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-wider">
+                                                {order.estado}
+                                            </span>
+                                        </div>
+                                        <div className="p-4 grid grid-cols-2 gap-4">
+                                            <div>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Cantidad</span>
+                                                <span className="font-medium text-slate-700">{Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Campaña</span>
+                                                <span className="font-medium text-slate-700 text-xs">{item.campana?.nombre || order.campana?.nombre || '-'}</span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Precio Unit.</span>
+                                                <span className="font-medium text-slate-700">{order.moneda === 'USD' ? 'US$ ' : '$ '}{Number(item.precio_unit).toLocaleString('es-AR')}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Total</span>
+                                                <span className="font-bold text-slate-900">{order.moneda === 'USD' ? 'US$ ' : '$ '}{Number(item.total).toLocaleString('es-AR')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : null
+                        )
+                    )}
                 </div>
             </div >
         </div >

@@ -102,8 +102,8 @@ export function LotesCampanaClient({ campana, lotesCampana, disponiblesLotes }: 
                     </p>
                 </div>
             ) : (
-                <div className="rounded-2xl border border-slate-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
-                    <div className="overflow-x-auto w-full">
+                <div className="rounded-2xl border-transparent md:border-slate-200/60 bg-transparent md:bg-white md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+                    <div className="hidden md:block overflow-x-auto w-full">
                         <Table>
                             <TableHeader className="bg-slate-50/50">
                                 <TableRow className="border-slate-100">
@@ -160,6 +160,58 @@ export function LotesCampanaClient({ campana, lotesCampana, disponiblesLotes }: 
                                 ))}
                             </TableBody>
                         </Table>
+                    </div>
+
+                    {/* VISTA MÓVIL (TARJETAS) */}
+                    <div className="block md:hidden space-y-4">
+                        {lotesCampana.map(item => (
+                            <div key={item.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
+                                <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-3">
+                                    <div className="flex gap-3">
+                                        <div className="w-10 h-10 rounded bg-emerald-100 flex items-center justify-center shrink-0">
+                                            <Sprout className="w-5 h-5 text-emerald-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-800 leading-tight">{item.lote?.nombre}</h3>
+                                            <p className="text-xs text-slate-500 mt-1">{item.lote?.establecimiento?.nombre}</p>
+                                        </div>
+                                    </div>
+                                    <span className="font-medium text-slate-700 text-sm bg-slate-50 px-2 py-1 rounded">{item.cultivo}</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Superficie</span>
+                                        <span className="font-medium text-slate-700 text-lg">{Number(item.superficie).toLocaleString('es-AR')} <span className="text-xs text-slate-500 font-normal">ha</span></span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Rinde Est.</span>
+                                        <span className="font-medium text-slate-700 text-lg">{item.rinde_estimado_qq ? Number(item.rinde_estimado_qq).toLocaleString('es-AR') : '-'} <span className="text-xs text-slate-500 font-normal">qq</span></span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
+                                    <LoteCampanaDialog 
+                                        campanaId={campana.id} 
+                                        disponiblesLotes={[]}
+                                        loteCampana={item}
+                                        trigger={
+                                            <Button variant="outline" size="sm" className="h-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                                                <Tractor className="w-3.5 h-3.5 mr-1.5" />
+                                                Editar
+                                            </Button>
+                                        }
+                                    />
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-8 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100"
+                                        onClick={() => handleDelete(item.id)}
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                        Quitar
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
