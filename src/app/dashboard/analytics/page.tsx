@@ -114,8 +114,13 @@ export default async function AnalyticsPage() {
                                 .reduce((acc: any[], labor) => {
                                     const dateStr = new Date(labor.fecha).toLocaleDateString('es-AR', { month: 'short', day: 'numeric' });
                                     const existing = acc.find(item => item.name === dateStr);
-                                    if (existing) existing.value += labor.total;
-                                    else acc.push({ name: dateStr, value: labor.total });
+                                    if (existing) {
+                                        existing[labor.lote] = (existing[labor.lote] || 0) + labor.total;
+                                    } else {
+                                        const newEntry: any = { name: dateStr };
+                                        newEntry[labor.lote] = labor.total;
+                                        acc.push(newEntry);
+                                    }
                                     return acc;
                                 }, [])
                             } 

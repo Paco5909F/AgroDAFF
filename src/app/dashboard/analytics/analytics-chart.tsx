@@ -8,7 +8,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#6366f1', '#ec4899', '#14b8a6'
 
 interface AnalyticsChartProps {
     type: 'bar' | 'pie' | 'area';
-    data: { name: string; value: number; [key: string]: any }[];
+    data: any[];
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -37,20 +37,35 @@ export const AnalyticsChart = memo(function AnalyticsChart({ type, data }: Analy
     }
 
     if (type === 'area') {
+        const dataKeys = data.length > 0 ? Object.keys(data[0]).filter(k => k !== 'name') : [];
+        
         return (
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                     <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                        </linearGradient>
+                        {dataKeys.map((key, index) => (
+                            <linearGradient key={`color-${index}`} id={`color-${index}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0}/>
+                            </linearGradient>
+                        ))}
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} dy={10} />
                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value/1000}k`} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+                    {dataKeys.map((key, index) => (
+                        <Area 
+                            key={key} 
+                            type="monotone" 
+                            dataKey={key} 
+                            stackId="1" 
+                            stroke={COLORS[index % COLORS.length]} 
+                            strokeWidth={2} 
+                            fillOpacity={1} 
+                            fill={`url(#color-${index})`} 
+                        />
+                    ))}
                 </AreaChart>
             </ResponsiveContainer>
         )
