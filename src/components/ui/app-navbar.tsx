@@ -116,7 +116,8 @@ export async function AppNavbar() {
                                     <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 py-1.5 focus-within:opacity-100 flex flex-col gap-0.5">
                                         <Link href="/campanas" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Campañas</Link>
                                         <Link href="/lotes" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg flex items-center justify-between">Lotes <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">PRO</span></Link>
-                                        <Link href="/silos" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Silos</Link>
+                                        <Link href="/silos" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Silos (Stock)</Link>
+                                        <Link href="/dashboard/insumos" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Insumos</Link>
                                     </div>
                                 </div>
 
@@ -135,17 +136,6 @@ export async function AppNavbar() {
                                     </div>
                                 </div>
 
-                                {/* Insumos */}
-                                <div className="relative group/nav">
-                                    <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-md text-slate-600 hover:bg-slate-100 hover:text-emerald-700 transition-colors">
-                                        Insumos
-                                        <svg className="w-3.5 h-3.5 transition-transform group-hover/nav:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                    </button>
-                                    <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 py-1.5 focus-within:opacity-100 flex flex-col gap-0.5">
-                                        <Link href="/dashboard/insumos" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Insumos</Link>
-                                        <Link href="/stock" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Stock</Link>
-                                    </div>
-                                </div>
 
                                 {/* Análisis */}
                                 <div className="relative group/nav">
@@ -155,6 +145,7 @@ export async function AppNavbar() {
                                     </button>
                                     <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 py-1.5 focus-within:opacity-100 flex flex-col gap-0.5">
                                         <Link href="/reportes" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Reportes</Link>
+                                        <Link href="/dashboard/analytics" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Analítica</Link>
                                     </div>
                                 </div>
 

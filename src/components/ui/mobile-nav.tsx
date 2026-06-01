@@ -8,6 +8,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 
 interface MobileNavProps {
     user: any
@@ -104,59 +110,81 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             <MobileLink href="/dashboard" icon={<LayoutDashboard className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Dashboard
                             </MobileLink>
-                            <MobileLink href="/clientes" icon={<Users className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Clientes
-                            </MobileLink>
-                            <MobileLink href="/dashboard/proveedores" icon={<BriefcaseBusiness className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Proveedores
-                            </MobileLink>
-                            <MobileLink href="/presupuestos" icon={<FileText className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Presupuestos
-                            </MobileLink>
-                            <MobileLink href="/ordenes" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Órdenes
-                            </MobileLink>
-                            <MobileLink href="/dashboard/servicios" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Labor
-                            </MobileLink>
-                            <MobileLink href="/dashboard/maquinaria" icon={<Tractor className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Maquinaria
-                            </MobileLink>
-                            <MobileLink href="/cartas-porte" icon={<Truck className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Logística
-                            </MobileLink>
-                            <MobileLink href="/campanas" icon={<Calendar className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Campañas
-                            </MobileLink>
-                            <MobileLink href="/lotes" icon={<Map className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                <div className="flex items-center gap-2">
-                                    Lotes
-                                    <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">PRO</span>
-                                </div>
-                            </MobileLink>
-                            <MobileLink href="/silos" icon={<Warehouse className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Silos (Stock)
-                            </MobileLink>
-                            <MobileLink href="/reportes" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Reportes
-                            </MobileLink>
+
+                            <Accordion type="single" collapsible className="w-full">
+                                {/* Producción */}
+                                <AccordionItem value="produccion" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <Map className="h-5 w-5 text-slate-400" />
+                                            <span className="text-base font-medium">Producción</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-1 pt-1 pl-8 pr-2 flex flex-col gap-1">
+                                        <MobileLink href="/campanas" icon={<Calendar className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Campañas</MobileLink>
+                                        <MobileLink href="/lotes" icon={<Map className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Lotes <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-2">PRO</span></MobileLink>
+                                        <MobileLink href="/silos" icon={<Warehouse className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Silos (Stock)</MobileLink>
+                                        <MobileLink href="/dashboard/insumos" icon={<Package className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Insumos</MobileLink>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Operaciones */}
+                                <AccordionItem value="operaciones" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <Tractor className="h-5 w-5 text-slate-400" />
+                                            <span className="text-base font-medium">Operaciones</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-1 pt-1 pl-8 pr-2 flex flex-col gap-1">
+                                        <MobileLink href="/ordenes" icon={<ClipboardList className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Órdenes</MobileLink>
+                                        <MobileLink href="/dashboard/servicios" icon={<ClipboardList className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Labores</MobileLink>
+                                        <MobileLink href="/dashboard/maquinaria" icon={<Tractor className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Maquinaria</MobileLink>
+                                        <MobileLink href="/cartas-porte" icon={<Truck className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Logística</MobileLink>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Administración */}
+                                <AccordionItem value="administracion" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <BriefcaseBusiness className="h-5 w-5 text-slate-400" />
+                                            <span className="text-base font-medium">Administración</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-1 pt-1 pl-8 pr-2 flex flex-col gap-1">
+                                        <MobileLink href="/clientes" icon={<Users className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Clientes</MobileLink>
+                                        <MobileLink href="/dashboard/proveedores" icon={<BriefcaseBusiness className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Proveedores</MobileLink>
+                                        <MobileLink href="/presupuestos" icon={<FileText className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Presupuestos</MobileLink>
+                                        <MobileLink href="/facturacion" icon={<FileText className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Facturación <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold ml-2">AFIP</span></MobileLink>
+                                        <MobileLink href="/dashboard/tesoreria" icon={<Wallet className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Tesorería</MobileLink>
+                                    </AccordionContent>
+                                </AccordionItem>
+
+                                {/* Análisis */}
+                                <AccordionItem value="analisis" className="border-none">
+                                    <AccordionTrigger className="hover:no-underline px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <BarChart className="h-5 w-5 text-slate-400" />
+                                            <span className="text-base font-medium">Análisis</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pb-1 pt-1 pl-8 pr-2 flex flex-col gap-1">
+                                        <MobileLink href="/reportes" icon={<BarChart className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Reportes</MobileLink>
+                                        <MobileLink href="/dashboard/analytics" icon={<BarChart className="h-4 w-4" />} onClick={() => setIsOpen(false)}>Analítica</MobileLink>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+
                             <MobileLink href="/dashboard/equipo" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Equipo
                             </MobileLink>
-                            <MobileLink href="/dashboard/insumos" icon={<Package className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Insumos
-                            </MobileLink>
-                            <MobileLink href="/dashboard/analytics" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Analítica
-                            </MobileLink>
-                            <MobileLink href="/dashboard/tesoreria" icon={<Wallet className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
-                                Tesorería
-                            </MobileLink>
+
                             {userData?.rol === 'ADMIN' && (
                                 <>
                                     <div className="h-px bg-slate-100 my-2 mx-2" />
                                     <div className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                                        Administración
+                                        Ajustes
                                     </div>
                                     <MobileLink href="/dashboard/configuracion" icon={<UserCog className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                         Configuración
