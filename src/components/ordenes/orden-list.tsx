@@ -90,8 +90,8 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
     }
 
     return (
-        <div className="rounded-xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto w-full">
+        <div className="rounded-xl border-transparent bg-transparent shadow-none md:border-slate-100 md:bg-white md:shadow-sm overflow-hidden">
+            <div className="hidden md:block overflow-x-auto w-full">
                 <Table>
                     <TableHeader className="bg-slate-50/50">
                         <TableRow className="hover:bg-transparent border-slate-100">
@@ -297,6 +297,175 @@ export function OrdenList({ ordenes, clientes, servicios, rol, branding }: Orden
                     </TableBody>
                 </Table>
             </div>
+
+            {/* VISTA MÓVIL (TARJETAS) */}
+            <div className="block md:hidden space-y-4">
+                {ordenes.map((orden) => (
+                    <div key={orden.id} className={`bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col transition-colors ${expandedRows.has(orden.id) ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-100'}`}>
+                        {/* Cabecera Clickable */}
+                        <div 
+                            className="flex items-center justify-between p-4 border-b border-slate-50 cursor-pointer"
+                            onClick={() => toggleRow(orden.id)}
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs font-bold">
+                                    {orden.items?.[0]?.servicio?.nombre?.charAt(0) || "S"}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-semibold text-slate-700">
+                                        {orden.items?.length > 1
+                                            ? `Varios (${orden.items.length})`
+                                            : orden.items?.[0]?.servicio?.nombre || "Sin servicio"}
+                                    </span>
+                                    <span className="text-xs text-slate-500">
+                                        {new Date(orden.fecha).toLocaleDateString('es-AR', { timeZone: 'UTC' })}
+                                    </span>
+                                </div>
+                            </div>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${orden.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' :
+                                orden.estado === 'COMPLETADA' ? 'bg-emerald-100 text-emerald-800' :
+                                    'bg-slate-100 text-slate-800'
+                                }`}>
+                                {orden.estado}
+                            </span>
+                        </div>
+                        
+                        {/* Cuerpo Info Principal */}
+                        <div className="p-4 flex flex-col gap-1 cursor-pointer" onClick={() => toggleRow(orden.id)}>
+                            <span className="text-sm font-medium text-slate-600">{orden.cliente.razon_social}</span>
+                            <span className="text-3xl font-bold text-slate-900 tracking-tight">
+                                ${Number(orden.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </span>
+                        </div>
+
+                        {/* Detalle Expandible */}
+                        {expandedRows.has(orden.id) && (
+                            <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+                                <h4 className="font-semibold text-slate-800 mb-3 text-sm flex items-center gap-2">
+                                    <i className="lucide-list-checks w-4 h-4 text-emerald-600"></i>
+                                    Detalle de Labores
+                                </h4>
+                                <div className="space-y-4">
+                                    {orden.items.map((item: any) => (
+                                        <div key={item.id} className="border border-slate-200 bg-white rounded-lg p-3">
+                                            <div className="flex justify-between items-center mb-2 pb-2 border-b border-slate-50">
+                                                <div className="font-medium text-slate-700 text-sm">
+                                                    {item.servicio?.nombre}
+                                                    <span className="text-slate-400 text-xs ml-1">
+                                                        ({item.cantidad} {item.servicio?.unidad_medida})
+                                                    </span>
+                                                </div>
+                                                <div className="font-semibold text-emerald-700 text-sm">
+                                                    ${Number(item.total).toLocaleString('es-AR', {minimumFractionDigits: 2})}
+                                                </div>
+                                            </div>
+
+                                            {item.insumos && item.insumos.length > 0 && (
+                                                <div className="mt-2 pl-3 border-l-2 border-amber-200">
+                                                    <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Insumos</h5>
+                                                    <div className="space-y-1">
+                                                        {item.insumos.map((ins: any) => (
+                                                            <div key={ins.id} className="flex flex-col text-xs bg-amber-50 p-2 rounded">
+                                                                <div className="flex justify-between font-medium text-slate-700">
+                                                                    <span>{ins.insumo?.nombre}</span>
+                                                                    <span className="text-amber-700">${Number(ins.costo_total).toLocaleString('es-AR')}</span>
+                                                                </div>
+                                                                <div className="flex justify-between text-slate-500 mt-1">
+                                                                    <span>{Number(ins.dosis_por_ha)} {ins.insumo?.unidad_medida}/ha x {ins.cantidad_pasadas} pas</span>
+                                                                    {canDelete && (
+                                                                        <Button 
+                                                                            variant="ghost" 
+                                                                            size="icon" 
+                                                                            className="h-5 w-5 text-slate-400 hover:text-red-600"
+                                                                            onClick={async () => {
+                                                                                if(confirm('¿Remover insumo?')) {
+                                                                                    await deleteOrdenItemInsumo(ins.id)
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <Trash2 className="h-3 w-3" />
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {canEdit && (
+                                                <div className="mt-2">
+                                                    <ActivityInsumosForm 
+                                                        ordenItemId={item.id}
+                                                        catalog={insumoCatalog}
+                                                        hectareasAplicadas={Number(item.cantidad)}
+                                                        onAddInsumoAction={addInsumoToOrdenItem}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Acciones */}
+                        <div className="bg-slate-50 p-3 flex flex-wrap justify-end gap-2 border-t border-slate-100">
+                            {orden.estado !== 'facturada' && canBill && (
+                                <>
+                                    <LiquidacionDialog
+                                        orden={orden}
+                                        trigger={
+                                            <Button variant="ghost" size="sm" className="h-8 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100" title="Generar Liquidación">
+                                                <FileText className="h-4 w-4 mr-1" /> Liquidar
+                                            </Button>
+                                        }
+                                    />
+                                    <FacturaDialog
+                                        orden={orden}
+                                        trigger={
+                                            <Button variant="ghost" size="sm" className="h-8 text-slate-500 hover:text-emerald-600 hover:bg-emerald-100" title="Facturar">
+                                                <FileText className="h-4 w-4 mr-1" /> Facturar
+                                            </Button>
+                                        }
+                                    />
+                                </>
+                            )}
+                            <PDFDownloadButton
+                                orden={orden}
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-slate-500 hover:text-emerald-600"
+                                branding={branding}
+                            />
+                            {canEdit && (
+                                <OrdenEditDialog
+                                    orden={orden}
+                                    clientes={clientes}
+                                    servicios={servicios}
+                                    trigger={
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600">
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                    }
+                                />
+                            )}
+                            {canDelete && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(orden.id)}
+                                    className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                                    title="Eliminar"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
         </div>
     )
 }

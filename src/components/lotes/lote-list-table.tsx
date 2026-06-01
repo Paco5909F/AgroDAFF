@@ -56,8 +56,8 @@ export function LoteListTable({ data, establecimientos, rol }: LoteListTableProp
     }
 
     return (
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="overflow-x-auto w-full">
+        <div className="rounded-xl border-transparent bg-transparent shadow-none md:border-slate-200 md:bg-white md:shadow-sm overflow-hidden">
+            <div className="hidden md:block overflow-x-auto w-full">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-slate-50 hover:bg-slate-50">
@@ -121,6 +121,52 @@ export function LoteListTable({ data, establecimientos, rol }: LoteListTableProp
                     </TableBody>
                 </Table>
             </div>
+
+            {/* VISTA MÓVIL (TARJETAS) */}
+            <div className="block md:hidden space-y-4">
+                {data.map((lote) => (
+                    <div key={lote.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-50">
+                            <h3 className="font-semibold text-slate-800">{lote.nombre}</h3>
+                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-medium">
+                                {Number(lote.hectareas).toLocaleString('es-AR')} ha
+                            </span>
+                        </div>
+                        <div className="p-4 flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 font-medium">Establecimiento</span>
+                                <span className="text-slate-700">{lote.establecimiento?.nombre || '-'}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 font-medium">Cliente</span>
+                                <span className="text-slate-700">{lote.establecimiento?.cliente?.razon_social || '-'}</span>
+                            </div>
+                        </div>
+                        <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
+                            <LoteFormDialog 
+                                lote={lote} 
+                                establecimientos={establecimientos}
+                                trigger={
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-500 hover:text-blue-600">
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                }
+                            />
+                            {canDelete && (
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
+                                    onClick={() => handleDelete(lote.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
         </div>
     )
 }
