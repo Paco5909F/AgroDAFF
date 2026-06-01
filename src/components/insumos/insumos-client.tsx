@@ -251,7 +251,8 @@ export function InsumosClient({ initialData }: { initialData: Insumo[] }) {
             </Dialog>            
 
 
-            <div className="rounded-md border">
+            <div className="rounded-md border-transparent md:border-slate-200">
+                <div className="hidden md:block overflow-x-auto w-full">
                 <Table>
                     <TableHeader className="bg-slate-50">
                         <TableRow>
@@ -329,6 +330,73 @@ export function InsumosClient({ initialData }: { initialData: Insumo[] }) {
                         )}
                     </TableBody>
                 </Table>
+            </div>
+
+                {/* VISTA MÓVIL (TARJETAS) */}
+                <div className="block md:hidden space-y-4">
+                    {insumos.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                            No hay insumos registrados. Agregue el primero.
+                        </div>
+                    ) : (
+                        insumos.map((insumo) => (
+                            <div key={insumo.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+                                <div className="flex items-center justify-between p-4 border-b border-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-slate-100 rounded-lg">
+                                            {getIcon(insumo.tipo)}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-slate-800 leading-none">{insumo.nombre}</h3>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{insumo.tipo}</span>
+                                                {insumo.es_global && (
+                                                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-full">Global</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-4 flex flex-col">
+                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Precio Unitario</span>
+                                    <div className="flex items-end gap-1">
+                                        <span className="text-2xl font-bold text-slate-900">{formatMoney(insumo.precio_actual, insumo.moneda)}</span>
+                                        <span className="text-sm text-slate-500 mb-1">/ {insumo.unidad_medida}</span>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
+                                    {insumo.es_global ? (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                            onClick={() => handleClone(insumo.id)}
+                                            disabled={isPending}
+                                        >
+                                            <Plus className="h-4 w-4 mr-1" />
+                                            Clonar
+                                        </Button>
+                                    ) : (
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            onClick={() => {
+                                                setSelectedInsumo(insumo)
+                                                setNewPrice(insumo.precio_actual.toString())
+                                                setIsPriceOpen(true)
+                                            }}
+                                        >
+                                            <ArrowUpRight className="h-4 w-4 mr-1" />
+                                            Act. Precio
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
             </div>
         </div>
     )
