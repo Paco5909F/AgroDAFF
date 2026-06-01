@@ -1,9 +1,9 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
+import { StockService } from './services/stock.service'
 
 export type Silo = {
     id: string
@@ -41,28 +41,9 @@ export async function getSilos() {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.SILOS, 'read')
-        const silos = await prisma.silo.findMany({
-            where: { active: true, empresa_id: empresaId },
-            orderBy: { created_at: 'desc' },
-            include: {
-                establecimiento: {
-                    select: { nombre: true }
-                },
-                campana: {
-                    select: { nombre: true }
-                }
-            }
-        })
-
-        // Serialize decimals
-        const serialized = silos.map(s => ({
-            ...s,
-            capacidad_max: Number(s.capacidad_max),
-            stock_actual: Number(s.stock_actual),
-            humedad: s.humedad ? Number(s.humedad) : null,
-        }))
-
-        return { success: true, data: serialized as unknown as Silo[] }
+        
+        const silos = await StockService.getSilos(empresaId)
+        return { success: true, data: silos as unknown as Silo[] }
     } catch (error) {
         console.error('Error fetching silos:', error)
         return { success: false, error: 'Error al obtener silos' }
@@ -73,20 +54,9 @@ export async function createSilo(data: CreateSiloInput) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.SILOS, 'create')
-        await prisma.silo.create({
-            data: {
-                empresa_id: empresaId,
-                nombre: data.nombre,
-                tipo: data.tipo,
-                capacidad_max: data.capacidad_max,
-                stock_actual: data.stock_actual,
-                humedad: data.humedad,
-                grano: data.grano,
-                estado: data.estado,
-                establecimiento_id: data.establecimiento_id,
-                campana_id: data.campana_id || null
-            }
-        })
+        
+        await StockService.createSilo(empresaId, data)
+        
         revalidatePath('/silos')
         revalidatePath('/dashboard')
         return { success: true }
@@ -100,11 +70,9 @@ export async function deleteSilo(id: string) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.SILOS, 'delete')
-        // Soft delete
-        await prisma.silo.update({
-            where: { id, empresa_id: empresaId },
-            data: { active: false }
-        })
+        
+        await StockService.deleteSilo(id, empresaId)
+        
         revalidatePath('/silos')
         return { success: true }
     } catch (error) {
@@ -117,20 +85,9 @@ export async function updateSilo(id: string, data: CreateSiloInput) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.SILOS, 'update')
-        await prisma.silo.update({
-            where: { id, empresa_id: empresaId },
-            data: {
-                nombre: data.nombre,
-                tipo: data.tipo,
-                capacidad_max: data.capacidad_max,
-                stock_actual: data.stock_actual,
-                humedad: data.humedad,
-                grano: data.grano,
-                estado: data.estado,
-                establecimiento_id: data.establecimiento_id,
-                campana_id: data.campana_id || null
-            }
-        })
+        
+        await StockService.updateSilo(id, empresaId, data)
+        
         revalidatePath('/silos')
         revalidatePath('/dashboard')
         return { success: true }

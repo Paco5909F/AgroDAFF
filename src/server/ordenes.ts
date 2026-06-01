@@ -1,69 +1,30 @@
 'use server'
 
-import { prisma } from "@/lib/prisma"
 import { ordenSchema, OrdenFormValues } from "@/lib/validations/orden"
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { checkPlanLimits } from "@/server/billing-limits"
 import { getUserContext } from "@/server/context"
 import { checkPermission, PERMISSIONS } from "@/lib/permissions"
+import { OrdenesService } from "./services/ordenes.service"
 
 export async function getOrdenes(page: number = 1, limit: number = 10, query?: string) {
     try {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.ORDENES, 'read')
-        const whereClause: any = { empresa_id: empresaId }
-
-        if (query) {
-            whereClause.OR = [
-                { cliente: { razon_social: { contains: query, mode: 'insensitive' as const } } },
-                // Recursive search in items unfortunately not easily supported in single query for top-level OR, 
-                // but we can try filtering where ANY item matches
-                { items: { some: { servicio: { nombre: { contains: query, mode: 'insensitive' as const } } } } }
-            ]
-        }
-
-        const [total, ordenes] = await prisma.$transaction([
-            prisma.ordenTrabajo.count({ where: whereClause }),
-            prisma.ordenTrabajo.findMany({
-                where: whereClause,
-                take: limit,
-                skip: (page - 1) * limit,
-                orderBy: { created_at: 'desc' },
-                include: {
-                    cliente: {
-                        select: { razon_social: true, cuit: true }
-                    },
-                    items: {
-                        include: {
-                            servicio: {
-                                select: { nombre: true, unidad_medida: true }
-                            },
-                            insumos: {
-                                include: {
-                                    insumo: {
-                                        select: { nombre: true, unidad_medida: true, tipo: true }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            })
-        ])
-
-        const totalPages = Math.ceil(total / limit)
+        
+        const result = await OrdenesService.getOrdenes(empresaId, page, limit, query)
 
         return {
             success: true,
-            data: ordenes, // Frontend items handling is already updated
+            data: result.ordenes,
             meta: {
-                total,
-                page,
-                limit,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
+                total: result.total,
+                page: result.page,
+                limit: result.limit,
+                totalPages: result.totalPages,
+                hasNextPage: result.hasNextPage,
+                hasPrevPage: result.hasPrevPage
             }
         }
     } catch (error) {
@@ -86,44 +47,13 @@ export async function createOrden(data: OrdenFormValues) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.ORDENES, 'create')
 
-        // Feature Gating: Check Limits
         const limitCheck = await checkPlanLimits(empresaId, 'ORDEN')
         if (!limitCheck.allowed) {
             return { success: false, error: limitCheck.message }
         }
 
-        // Auto-assign active campaign if available, using the first found active one
-        const activeCampana = await prisma.campana.findFirst({
-            where: {
-                activa: true,
-                empresa_id: empresaId
-            }
-        })
-
-        await prisma.ordenTrabajo.create({
-            data: {
-                fecha: validated.data.fecha,
-                observaciones: validated.data.observaciones,
-                moneda: validated.data.moneda,
-                total: validated.data.total,
-                cliente_id: validated.data.cliente_id,
-                empresa_id: empresaId,
-                created_by: user?.id,
-
-                items: {
-                    create: validated.data.items.map(item => ({
-                        servicio_id: item.servicio_id,
-                        cantidad: item.cantidad,
-                        precio_unit: item.precio_unit,
-                        total: item.total,
-                        kilometros: item.kilometros,
-                        observaciones: item.observaciones,
-                        lote_id: item.lote_id || undefined,
-                        campana_id: item.campana_id || activeCampana?.id || undefined
-                    }))
-                }
-            },
-        })
+        await OrdenesService.createOrden(empresaId, user?.id, validated.data)
+        
         revalidatePath('/ordenes')
         return { success: true }
     } catch (error) {
@@ -137,37 +67,7 @@ export async function updateOrden(id: string, data: OrdenFormValues) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.ORDENES, 'update')
 
-        // Use transaction to delete old items and create new ones
-        await prisma.$transaction(async (tx) => {
-            // 1. Delete existing items
-            await tx.ordenItem.deleteMany({
-                where: { orden_id: id }
-            })
-
-            // 2. Update parent fields
-            await tx.ordenTrabajo.update({
-                where: { id, empresa_id: empresaId },
-                data: {
-                    fecha: new Date(data.fecha),
-                    cliente_id: data.cliente_id,
-                    observaciones: data.observaciones,
-                    moneda: data.moneda,
-                    total: data.total,
-                    items: {
-                        create: data.items.map(item => ({
-                            servicio_id: item.servicio_id,
-                            cantidad: item.cantidad,
-                            precio_unit: item.precio_unit,
-                            kilometros: item.kilometros,
-                            total: item.total,
-                            observaciones: item.observaciones,
-                            lote_id: item.lote_id || undefined,
-                            campana_id: item.campana_id || undefined
-                        }))
-                    }
-                }
-            })
-        })
+        await OrdenesService.updateOrden(id, empresaId, data)
 
         revalidatePath('/ordenes')
         revalidatePath('/dashboard')
@@ -183,26 +83,29 @@ export async function deleteOrden(id: string) {
         const { empresaId, rol } = await getUserContext()
         checkPermission(rol, PERMISSIONS.ORDENES, 'delete')
 
-        // Check if order has a factura
-        const existingFactura = await prisma.factura.findUnique({
-            where: { orden_trabajo_id: id }
-        })
-
-        if (existingFactura) {
-            // TESTING OVERRIDE: Allow delete by removing the invoice first.
-            await prisma.factura.delete({
-                where: { id: existingFactura.id }
-            })
-        }
-
-        await prisma.ordenTrabajo.delete({
-            where: { id, empresa_id: empresaId }
-        })
+        await OrdenesService.deleteOrden(id, empresaId)
+        
         revalidatePath('/ordenes')
         revalidatePath('/dashboard')
         return { success: true }
     } catch (error) {
         console.error("Error deleting orden:", error)
         return { success: false, error: "Error al eliminar la orden" }
+    }
+}
+
+export async function completeOrden(id: string, cotizacionUsd: number) {
+    try {
+        const { empresaId, rol } = await getUserContext()
+        checkPermission(rol, PERMISSIONS.ORDENES, 'update')
+
+        await OrdenesService.completeOrden(id, empresaId, cotizacionUsd)
+
+        revalidatePath('/ordenes')
+        revalidatePath('/dashboard')
+        return { success: true }
+    } catch (error: any) {
+        console.error("Error completing orden:", error)
+        return { success: false, error: error.message || "Error al completar la orden" }
     }
 }

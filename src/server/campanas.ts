@@ -1,8 +1,8 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { CampanaService } from '@/server/services/campana.service'
+import { getCompanyId } from '@/server/context'
 
 export type Campana = {
     id: string
@@ -15,29 +15,17 @@ export type Campana = {
 
 export type CreateCampanaInput = {
     nombre: string
-    fecha_inicio: string | Date // String from form, Date for DB
+    fecha_inicio: string | Date
     fecha_fin: string | Date
     activa?: boolean
     tipo?: string
     ciclo?: string
 }
 
-import { getCompanyId } from '@/server/context'
-
 export async function getCampanas() {
     try {
         const empresaId = await getCompanyId()
-        const campanas = await prisma.campana.findMany({
-            where: {
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null }
-                ]
-            },
-            orderBy: {
-                fecha_inicio: 'desc'
-            }
-        })
+        const campanas = await CampanaService.findAll(empresaId)
         return { success: true, data: campanas }
     } catch (error) {
         console.error('Error fetching campanas:', error)
@@ -48,15 +36,7 @@ export async function getCampanas() {
 export async function getCampanaById(id: string) {
     try {
         const empresaId = await getCompanyId()
-        const campana = await prisma.campana.findFirst({
-            where: {
-                id,
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null }
-                ]
-            }
-        })
+        const campana = await CampanaService.findById(id, empresaId)
         if (!campana) return { success: false, error: 'No encontrado' }
         return { success: true, data: campana }
     } catch (error) {
@@ -67,15 +47,7 @@ export async function getCampanaById(id: string) {
 export async function getCampanaActiva() {
     try {
         const empresaId = await getCompanyId()
-        const campana = await prisma.campana.findFirst({
-            where: {
-                activa: true,
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null }
-                ]
-            }
-        })
+        const campana = await CampanaService.findActive(empresaId)
         return { success: true, data: campana }
     } catch (error) {
         console.error('Error fetching active campana:', error)
@@ -87,30 +59,14 @@ export async function createCampana(data: CreateCampanaInput) {
     try {
         const empresaId = await getCompanyId()
 
-        // If this one is set to active, deactivate others for this company
-        if (data.activa) {
-            await prisma.campana.updateMany({
-                where: {
-                    activa: true,
-                    OR: [
-                        { empresa_id: empresaId },
-                        { empresa_id: null }
-                    ]
-                },
-                data: { activa: false }
-            })
-        }
-
-        const campana = await prisma.campana.create({
-            data: {
-                nombre: data.nombre,
-                fecha_inicio: new Date(data.fecha_inicio),
-                fecha_fin: new Date(data.fecha_fin),
-                activa: data.activa || false,
-                tipo: data.tipo || 'GENERAL',
-                ciclo: data.ciclo,
-                empresa_id: empresaId
-            }
+        const campana = await CampanaService.create({
+            nombre: data.nombre,
+            fecha_inicio: new Date(data.fecha_inicio),
+            fecha_fin: new Date(data.fecha_fin),
+            activa: data.activa || false,
+            tipo: data.tipo || 'GENERAL',
+            ciclo: data.ciclo,
+            empresa_id: empresaId
         })
 
         revalidatePath('/campanas')
@@ -126,32 +82,9 @@ export async function createCampana(data: CreateCampanaInput) {
 export async function toggleCampanaActiva(id: string) {
     try {
         const empresaId = await getCompanyId()
+        const success = await CampanaService.setAsActive(id, empresaId)
 
-        // Deactivate all for this company (or legacy)
-        await prisma.campana.updateMany({
-            where: {
-                activa: true,
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null }
-                ]
-            },
-            data: { activa: false }
-        })
-
-        // Activate specific one using updateMany for multi-tenant safety
-        const result = await prisma.campana.updateMany({
-            where: { 
-                id,
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null }
-                ]
-            },
-            data: { activa: true }
-        })
-
-        if (result.count === 0) return { success: false, error: 'Campaña no encontrada o sin autorización' }
+        if (!success) return { success: false, error: 'Campaña no encontrada o sin autorización' }
 
         revalidatePath('/campanas')
         revalidatePath('/dashboard')
@@ -167,40 +100,16 @@ export async function updateCampana(id: string, data: CreateCampanaInput) {
     try {
         const empresaId = await getCompanyId()
 
-        // If updating to active, deactivate others
-        if (data.activa) {
-            await prisma.campana.updateMany({
-                where: {
-                    activa: true,
-                    id: { not: id },
-                    OR: [
-                        { empresa_id: empresaId },
-                        { empresa_id: null }
-                    ]
-                },
-                data: { activa: false }
-            })
-        }
-
-        const result = await prisma.campana.updateMany({
-            where: { 
-                id,
-                OR: [
-                    { empresa_id: empresaId },
-                    { empresa_id: null } // Allow updating legacy if necessary, though ideally we shouldn't mutate nulls here. Kept for compatibility.
-                ]
-            },
-            data: {
-                nombre: data.nombre,
-                fecha_inicio: new Date(data.fecha_inicio),
-                fecha_fin: new Date(data.fecha_fin),
-                activa: data.activa || false,
-                tipo: data.tipo || 'GENERAL',
-                ciclo: data.ciclo
-            }
+        const success = await CampanaService.update(id, empresaId, {
+            nombre: data.nombre,
+            fecha_inicio: new Date(data.fecha_inicio),
+            fecha_fin: new Date(data.fecha_fin),
+            activa: data.activa || false,
+            tipo: data.tipo || 'GENERAL',
+            ciclo: data.ciclo
         })
         
-        if (result.count === 0) return { success: false, error: 'Campaña no autorizada' }
+        if (!success) return { success: false, error: 'Campaña no autorizada' }
 
         revalidatePath('/campanas')
         revalidatePath('/dashboard')
@@ -215,16 +124,9 @@ export async function updateCampana(id: string, data: CreateCampanaInput) {
 export async function deleteCampana(id: string) {
     try {
         const empresaId = await getCompanyId()
+        const success = await CampanaService.delete(id, empresaId)
 
-        // Use deleteMany to enforce multi-tenant isolation on non-unique fields alongside ID
-        const result = await prisma.campana.deleteMany({
-            where: { 
-                id,
-                empresa_id: empresaId
-            }
-        })
-
-        if (result.count === 0) {
+        if (!success) {
             return { success: false, error: 'Campaña no encontrada o sin autorización' }
         }
 

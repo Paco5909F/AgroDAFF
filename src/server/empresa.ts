@@ -1,9 +1,9 @@
 'use server'
 
-import { prisma } from "@/lib/prisma"
 import { getUserContext } from "@/server/context"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { EmpresaService } from "./services/empresa.service"
 
 const updateEmpresaSchema = z.object({
     nombre: z.string().min(1, "El nombre es requerido"),
@@ -18,27 +18,16 @@ export async function updateEmpresaProfile(data: z.infer<typeof updateEmpresaSch
     try {
         const context = await getUserContext()
 
-        // Security Check: Only ADMIN can update company profile
         if (context.rol !== 'ADMIN') {
             return { success: false, error: "No tienes permisos para editar la configuración de la empresa" }
         }
 
         const validData = updateEmpresaSchema.parse(data)
 
-        await prisma.empresa.update({
-            where: { id: context.empresaId },
-            data: {
-                nombre: validData.nombre,
-                cuit: validData.cuit,
-                direccion: validData.direccion,
-                telefono: validData.telefono || null,
-                email: validData.email || null,
-                logo_url: validData.logo_url || null
-            }
-        })
+        await EmpresaService.updateEmpresaProfile(context.empresaId, validData)
 
         revalidatePath('/dashboard/configuracion')
-        revalidatePath('/reportes') // To update PDF branding
+        revalidatePath('/reportes')
 
         return { success: true }
     } catch (error) {
@@ -72,15 +61,7 @@ export async function updateEmpresaAfip(data: any) {
             afip_production_mode: data.afip_production_mode === true
         })
 
-        await prisma.empresa.update({
-            where: { id: context.empresaId },
-            data: {
-                afip_cuit: validData.afip_cuit,
-                condicion_iva: validData.condicion_iva,
-                afip_punto_venta_default: validData.afip_punto_venta_default,
-                afip_production_mode: validData.afip_production_mode
-            }
-        })
+        await EmpresaService.updateEmpresaAfip(context.empresaId, validData)
 
         revalidatePath('/dashboard/configuracion')
         return { success: true }

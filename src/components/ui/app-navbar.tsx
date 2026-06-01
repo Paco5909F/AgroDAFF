@@ -102,6 +102,7 @@ export async function AppNavbar() {
                                     <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 py-1.5 focus-within:opacity-100 flex flex-col gap-0.5">
                                         <Link href="/ordenes" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Órdenes</Link>
                                         <Link href="/dashboard/servicios" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Labores</Link>
+                                        <Link href="/dashboard/maquinaria" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Maquinaria</Link>
                                         <Link href="/cartas-porte" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Logística</Link>
                                     </div>
                                 </div>
@@ -127,8 +128,10 @@ export async function AppNavbar() {
                                     </button>
                                     <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover/nav:opacity-100 group-hover/nav:visible transition-all duration-200 z-50 py-1.5 focus-within:opacity-100 flex flex-col gap-0.5">
                                         <Link href="/clientes" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Clientes</Link>
+                                        <Link href="/dashboard/proveedores" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Proveedores</Link>
                                         <Link href="/presupuestos" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Presupuestos</Link>
                                         <Link href="/facturacion" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg flex items-center justify-between">Facturación <span className="bg-blue-100 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-bold">AFIP</span></Link>
+                                        <Link href="/dashboard/tesoreria" className="px-4 py-2 text-sm text-slate-700 font-medium hover:bg-emerald-50 hover:text-emerald-700 mx-1.5 rounded-lg">Tesorería</Link>
                                     </div>
                                 </div>
 

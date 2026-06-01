@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package, Map } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Users, FileText, ClipboardList, Truck, LogOut, Calendar, Warehouse, BarChart, UserCog, User, CreditCard, Package, Map, Tractor, BriefcaseBusiness, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NavLink } from '@/components/ui/nav-link'
 import { createClient } from '@/lib/supabase/client'
@@ -107,6 +107,9 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             <MobileLink href="/clientes" icon={<Users className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Clientes
                             </MobileLink>
+                            <MobileLink href="/dashboard/proveedores" icon={<BriefcaseBusiness className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Proveedores
+                            </MobileLink>
                             <MobileLink href="/presupuestos" icon={<FileText className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Presupuestos
                             </MobileLink>
@@ -115,6 +118,9 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             </MobileLink>
                             <MobileLink href="/dashboard/servicios" icon={<ClipboardList className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Labor
+                            </MobileLink>
+                            <MobileLink href="/dashboard/maquinaria" icon={<Tractor className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Maquinaria
                             </MobileLink>
                             <MobileLink href="/cartas-porte" icon={<Truck className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Logística
@@ -142,6 +148,9 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
                             </MobileLink>
                             <MobileLink href="/dashboard/analytics" icon={<BarChart className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
                                 Analítica
+                            </MobileLink>
+                            <MobileLink href="/dashboard/tesoreria" icon={<Wallet className="h-5 w-5" />} onClick={() => setIsOpen(false)}>
+                                Tesorería
                             </MobileLink>
                             {userData?.rol === 'ADMIN' && (
                                 <>
