@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { EmpresaService } from "./services/empresa.service"
+import { getUserContext } from "./context"
 
 export async function getUserProfile() {
     const supabase = await createClient()
@@ -109,15 +110,15 @@ export async function updateUserPassword(password: string) {
     }
 }
 
-export async function updateOrganizacionName(empresaId: string, nombre: string) {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: "No autenticado" }
-    }
-
+export async function updateOrganizacionName(empresaId_param: string, nombre: string) {
     try {
+        const { empresaId, rol } = await getUserContext()
+
+        if (rol !== 'ADMIN') {
+            return { success: false, error: "Permisos insuficientes" }
+        }
+
+        // Use context's verified empresaId to prevent IDOR
         await EmpresaService.updateOrganizacionName(empresaId, nombre)
 
         revalidatePath('/profile')
