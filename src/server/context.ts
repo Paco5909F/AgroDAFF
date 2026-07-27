@@ -58,16 +58,9 @@ export async function getUserContextSafe(): Promise<UserContext | null> {
 
     if (!targetEmpresaId && dbUser.miembros.length > 0) {
         targetEmpresaId = dbUser.miembros[0].empresa_id
-        // We probably shouldn't mutate state (update) in a 'get' call if it's supposed to be side-effect free, 
-        // but the original logic did it. Let's keep it for consistency or move it.
-        // For "Safe" context, maybe we verify but don't force update? 
-        // Let's stick to the original behavior: auto-healing is useful.
-        try {
-            await prisma.usuario.update({
-                where: { id: user.id },
-                data: { active_empresa_id: targetEmpresaId }
-            })
-        } catch (e) { console.error("Auto-heal failed", e) }
+        // We DO NOT mutate state in a GET call for security and concurrency reasons.
+        // The active_empresa_id will temporarily be resolved in memory.
+        // Auto-heal logic should be performed explicitly via a server action when changing companies.
     }
 
     if (!targetEmpresaId && dbUser.empresa_id) {

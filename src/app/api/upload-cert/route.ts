@@ -4,7 +4,7 @@ import { getUserContextSafe } from '@/server/context'
 import { prisma } from '@/lib/prisma'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 export async function POST(req: Request) {
@@ -20,6 +20,16 @@ export async function POST(req: Request) {
 
         if (!file || !type || !['crt', 'key'].includes(type)) {
             return NextResponse.json({ error: 'Falta archivo o tipo inválido' }, { status: 400 })
+        }
+
+        const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB limit
+        if (file.size > MAX_FILE_SIZE) {
+            return NextResponse.json({ error: 'El archivo excede el tamaño máximo permitido (1MB)' }, { status: 413 })
+        }
+
+        if (!supabaseKey) {
+            console.error('Missing SUPABASE_SERVICE_ROLE_KEY')
+            return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
         }
 
         // Primero verificamos si el bucket existe, y si no, lo intentamos crear
