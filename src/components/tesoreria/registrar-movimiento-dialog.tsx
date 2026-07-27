@@ -87,7 +87,7 @@ export function RegistrarMovimientoDialog({ tipo, cuentas, proveedores }: Regist
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className={isEgreso ? "bg-amber-600 hover:bg-amber-700" : "bg-emerald-600 hover:bg-emerald-700"}>
+                <Button className={isEgreso ? "bg-amber-600 hover:bg-amber-700 w-full sm:w-auto" : "bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"}>
                     {isEgreso ? <ArrowUpRight className="mr-2 h-4 w-4" /> : <ArrowDownRight className="mr-2 h-4 w-4" />}
                     {isEgreso ? 'Registrar Pago' : 'Registrar Cobro'}
                 </Button>

@@ -34,7 +34,7 @@ export default async function TesoreriaPage() {
                         Control de caja, bancos y flujo de fondos de la empresa.
                     </p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     {canCreate && (
                         <>
                             <NuevaCuentaDialog />

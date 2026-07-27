@@ -25,6 +25,11 @@ interface LotesCampanaClientProps {
 
 export function LotesCampanaClient({ campana, lotesCampana, disponiblesLotes }: LotesCampanaClientProps) {
     const router = useRouter()
+    const [mobilePage, setMobilePage] = useState(1)
+    
+    const ITEMS_PER_PAGE = 8
+    const totalPages = Math.ceil(lotesCampana.length / ITEMS_PER_PAGE)
+    const paginatedLotes = lotesCampana.slice((mobilePage - 1) * ITEMS_PER_PAGE, mobilePage * ITEMS_PER_PAGE)
     
     // KPIs
     const totalHa = lotesCampana.reduce((acc, l) => acc + Number(l.superficie), 0)
@@ -162,56 +167,85 @@ export function LotesCampanaClient({ campana, lotesCampana, disponiblesLotes }: 
                         </Table>
                     </div>
 
-                    {/* VISTA MÓVIL (TARJETAS) */}
-                    <div className="block md:hidden space-y-4">
-                        {lotesCampana.map(item => (
-                            <div key={item.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
-                                <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-3">
-                                    <div className="flex gap-3">
-                                        <div className="w-10 h-10 rounded bg-emerald-100 flex items-center justify-center shrink-0">
-                                            <Sprout className="w-5 h-5 text-emerald-600" />
+                    {/* VISTA MÓVIL (LIST ROWS) */}
+                    <div className="block md:hidden">
+                        <div className="bg-white border-t border-slate-200 flex flex-col">
+                            {paginatedLotes.map((item, index) => (
+                                <div key={item.id} className={`p-3 flex items-start gap-3 ${index !== paginatedLotes.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                                        <Sprout className="w-4 h-4 text-emerald-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-start mb-0.5">
+                                            <h3 className="font-bold text-slate-800 text-sm truncate pr-2">{item.lote?.nombre}</h3>
+                                            <span className="font-bold text-slate-700 text-[9px] bg-slate-100 px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0">{item.cultivo}</span>
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-800 leading-tight">{item.lote?.nombre}</h3>
-                                            <p className="text-xs text-slate-500 mt-1">{item.lote?.establecimiento?.nombre}</p>
+                                        <p className="text-[11px] text-slate-500 mb-1">{item.lote?.establecimiento?.nombre}</p>
+                                        
+                                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                                            <div className="flex items-center gap-1">
+                                                <span className="font-medium text-slate-700">{Number(item.superficie).toLocaleString('es-AR')}</span>
+                                                <span className="text-[10px]">ha</span>
+                                            </div>
+                                            <span>•</span>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[10px] text-slate-400">Rinde Est:</span>
+                                                <span className="font-medium text-slate-700">{item.rinde_estimado_qq ? Number(item.rinde_estimado_qq).toLocaleString('es-AR') : '-'}</span>
+                                                <span className="text-[10px]">qq</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <span className="font-medium text-slate-700 text-sm bg-slate-50 px-2 py-1 rounded">{item.cultivo}</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                    <div>
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Superficie</span>
-                                        <span className="font-medium text-slate-700 text-lg">{Number(item.superficie).toLocaleString('es-AR')} <span className="text-xs text-slate-500 font-normal">ha</span></span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Rinde Est.</span>
-                                        <span className="font-medium text-slate-700 text-lg">{item.rinde_estimado_qq ? Number(item.rinde_estimado_qq).toLocaleString('es-AR') : '-'} <span className="text-xs text-slate-500 font-normal">qq</span></span>
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
-                                    <LoteCampanaDialog 
-                                        campanaId={campana.id} 
-                                        disponiblesLotes={[]}
-                                        loteCampana={item}
-                                        trigger={
-                                            <Button variant="outline" size="sm" className="h-8 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                                                <Tractor className="w-3.5 h-3.5 mr-1.5" />
-                                                Editar
+                                        
+                                        <div className="flex justify-end gap-2 mt-2">
+                                            <LoteCampanaDialog 
+                                                campanaId={campana.id} 
+                                                disponiblesLotes={[]}
+                                                loteCampana={item}
+                                                trigger={
+                                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-full">
+                                                        <Tractor className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                }
+                                            />
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full"
+                                                onClick={() => handleDelete(item.id)}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
                                             </Button>
-                                        }
-                                    />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Mobile Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between p-3 border-t border-slate-100 bg-slate-50/50">
                                     <Button 
-                                        variant="ghost" 
+                                        variant="outline" 
                                         size="sm" 
-                                        className="h-8 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100"
-                                        onClick={() => handleDelete(item.id)}
+                                        onClick={() => setMobilePage(p => Math.max(1, p - 1))}
+                                        disabled={mobilePage === 1}
+                                        className="h-8 text-xs bg-white"
                                     >
-                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                                        Quitar
+                                        Anterior
+                                    </Button>
+                                    <span className="text-xs text-slate-500 font-medium">
+                                        {mobilePage} / {totalPages}
+                                    </span>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setMobilePage(p => Math.min(totalPages, p + 1))}
+                                        disabled={mobilePage === totalPages}
+                                        className="h-8 text-xs bg-white"
+                                    >
+                                        Siguiente
                                     </Button>
                                 </div>
-                            </div>
-                        ))}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

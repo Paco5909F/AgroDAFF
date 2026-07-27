@@ -29,6 +29,14 @@ interface ReportesClientProps {
 export function ReportesClient({ clientes, campanas, empresa }: ReportesClientProps) {
     const [isPending, startTransition] = useTransition()
     const [orders, setOrders] = useState<any[]>([])
+    const [mobilePage, setMobilePage] = useState(1)
+
+    const allItems = orders.flatMap(order => 
+        (order.items || []).map((item: any) => ({...item, order}))
+    );
+    const ITEMS_PER_PAGE = 8
+    const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE)
+    const paginatedItems = allItems.slice((mobilePage - 1) * ITEMS_PER_PAGE, mobilePage * ITEMS_PER_PAGE)
 
     // Default filters: Current month
     const [filters, setFilters] = useState({
@@ -286,49 +294,72 @@ export function ReportesClient({ clientes, campanas, empresa }: ReportesClientPr
                     </Table >
                 </div>
 
-                {/* VISTA MÓVIL (TARJETAS) */}
-                <div className="block md:hidden space-y-4 p-4 bg-slate-50">
-                    {orders.length === 0 ? (
-                        <div className="text-center py-8 text-slate-500 border rounded-lg bg-white">
+                {/* VISTA MÓVIL (LIST ROWS) */}
+                <div className="block md:hidden">
+                    {allItems.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 border rounded-xl bg-white m-3">
                             No hay datos para mostrar. Realice una búsqueda.
                         </div>
                     ) : (
-                        orders.flatMap((order: any) =>
-                            order.items && order.items.length > 0 ? (
-                                order.items.map((item: any) => (
-                                    <div key={item.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-                                        <div className="p-4 border-b border-slate-50 flex justify-between items-start">
-                                            <div>
-                                                <span className="text-xs text-slate-400 font-medium">{format(new Date(order.fecha), 'dd/MM/yyyy')}</span>
-                                                <h3 className="font-semibold text-slate-800 text-sm mt-1">{item.servicio.nombre}</h3>
-                                                <p className="text-xs text-slate-500">{order.cliente.razon_social}</p>
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col m-3">
+                            {paginatedItems.map((item: any, index) => (
+                                <div key={item.id} className={`p-3 flex flex-col gap-2 ${index !== paginatedItems.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 min-w-0 pr-2">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-[10px] text-slate-400 font-medium shrink-0">{format(new Date(item.order.fecha), 'dd/MM/yy')}</span>
+                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-slate-100 text-slate-600 shrink-0">
+                                                    {item.order.estado}
+                                                </span>
                                             </div>
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 uppercase tracking-wider">
-                                                {order.estado}
+                                            <h3 className="font-bold text-slate-800 text-sm truncate">{item.servicio.nombre}</h3>
+                                            <p className="text-[11px] text-slate-500 truncate">{item.order.cliente.razon_social}</p>
+                                        </div>
+                                        <div className="text-right shrink-0 flex flex-col items-end">
+                                            <span className="font-bold text-slate-900 text-sm">
+                                                {item.order.moneda === 'USD' ? 'US$ ' : '$ '}{Number(item.total).toLocaleString('es-AR')}
+                                            </span>
+                                            <span className="text-[10px] text-slate-500 mt-1">
+                                                {Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}
                                             </span>
                                         </div>
-                                        <div className="p-4 grid grid-cols-2 gap-4">
-                                            <div>
-                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Cantidad</span>
-                                                <span className="font-medium text-slate-700">{Number(item.cantidad).toLocaleString('es-AR')} {item.servicio.unidad_medida}</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Campaña</span>
-                                                <span className="font-medium text-slate-700 text-xs">{item.campana?.nombre || order.campana?.nombre || '-'}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Precio Unit.</span>
-                                                <span className="font-medium text-slate-700">{order.moneda === 'USD' ? 'US$ ' : '$ '}{Number(item.precio_unit).toLocaleString('es-AR')}</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">Total</span>
-                                                <span className="font-bold text-slate-900">{order.moneda === 'USD' ? 'US$ ' : '$ '}{Number(item.total).toLocaleString('es-AR')}</span>
-                                            </div>
-                                        </div>
                                     </div>
-                                ))
-                            ) : null
-                        )
+                                    {(item.campana?.nombre || item.order.campana?.nombre) && (
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400">Campaña:</span>
+                                            <span className="text-xs text-slate-600 truncate">{item.campana?.nombre || item.order.campana?.nombre}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            
+                            {/* Mobile Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between p-3 border-t border-slate-100 bg-slate-50/50">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setMobilePage(p => Math.max(1, p - 1))}
+                                        disabled={mobilePage === 1}
+                                        className="h-8 text-xs bg-white"
+                                    >
+                                        Anterior
+                                    </Button>
+                                    <span className="text-xs text-slate-500 font-medium">
+                                        {mobilePage} / {totalPages}
+                                    </span>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setMobilePage(p => Math.min(totalPages, p + 1))}
+                                        disabled={mobilePage === totalPages}
+                                        className="h-8 text-xs bg-white"
+                                    >
+                                        Siguiente
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             </div >

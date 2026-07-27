@@ -11,7 +11,7 @@ export default async function CampanasPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-light text-slate-800 tracking-tight flex items-center gap-3">
                         <Sprout className="h-8 w-8 text-slate-400" />
@@ -21,7 +21,7 @@ export default async function CampanasPage() {
                 </div>
                 <CampanaDialog
                     trigger={
-                        <Button className="bg-emerald-600 hover:bg-emerald-700">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
                             <Plus className="w-4 h-4 mr-2" />
                             Nueva Campaña
                         </Button>

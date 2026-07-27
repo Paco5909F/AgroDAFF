@@ -45,6 +45,11 @@ const getIcon = (tipo: string) => {
 export function InsumosClient({ initialData }: { initialData: Insumo[] }) {
     const [insumos, setInsumos] = useState<Insumo[]>(initialData)
     const [isPending, startTransition] = useTransition()
+    const [mobilePage, setMobilePage] = useState(1)
+    
+    const ITEMS_PER_PAGE = 8
+    const totalPages = Math.ceil(insumos.length / ITEMS_PER_PAGE)
+    const paginatedInsumos = insumos.slice((mobilePage - 1) * ITEMS_PER_PAGE, mobilePage * ITEMS_PER_PAGE)
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [isPriceOpen, setIsPriceOpen] = useState(false)
     const [selectedInsumo, setSelectedInsumo] = useState<Insumo | null>(null)
@@ -129,13 +134,13 @@ export function InsumosClient({ initialData }: { initialData: Insumo[] }) {
 
     return (
         <div className="p-4 md:p-6 space-y-6">
-            <div className="flex justify-between items-center mb-4">
-                <Input placeholder="Buscar insumo..." className="max-w-xs" />
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-4">
+                <Input placeholder="Buscar insumo..." className="w-full sm:max-w-xs" />
                 
                 {/* CREATE DIALOG */}
                 <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                     <DialogTrigger asChild>
-                        <Button className="bg-emerald-600 hover:bg-emerald-700">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Nuevo Insumo
                         </Button>
                     </DialogTrigger>
@@ -332,68 +337,95 @@ export function InsumosClient({ initialData }: { initialData: Insumo[] }) {
                 </Table>
             </div>
 
-                {/* VISTA MÓVIL (TARJETAS) */}
-                <div className="block md:hidden space-y-4">
+                {/* VISTA MÓVIL (LIST ROWS) */}
+                <div className="block md:hidden">
                     {insumos.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                        <div className="text-center py-8 text-muted-foreground border rounded-xl bg-white">
                             No hay insumos registrados. Agregue el primero.
                         </div>
                     ) : (
-                        insumos.map((insumo) => (
-                            <div key={insumo.id} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-                                <div className="flex items-center justify-between p-4 border-b border-slate-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-slate-100 rounded-lg">
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+                            {paginatedInsumos.map((insumo, index) => (
+                                <div key={insumo.id} className={`p-3 flex flex-col gap-2 ${index !== paginatedInsumos.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-slate-50 rounded-lg text-slate-500 shrink-0 mt-0.5">
                                             {getIcon(insumo.tipo)}
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold text-slate-800 leading-none">{insumo.nombre}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">{insumo.tipo}</span>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+                                                <h3 className="font-bold text-slate-800 text-sm truncate">{insumo.nombre}</h3>
                                                 {insumo.es_global && (
-                                                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded-full">Global</span>
+                                                    <span className="text-[9px] bg-blue-50 text-blue-700 border border-blue-100 px-1 py-0.5 rounded uppercase tracking-wide font-bold shrink-0">
+                                                        Global
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                                                <span className="uppercase font-semibold tracking-wider text-[10px]">{insumo.tipo}</span>
+                                                <span>•</span>
+                                                <span>{insumo.unidad_medida}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right shrink-0 flex flex-col items-end">
+                                            <span className="font-bold text-slate-900 text-sm">{formatMoney(insumo.precio_actual, insumo.moneda)}</span>
+                                            <div className="mt-1">
+                                                {insumo.es_global ? (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-6 w-6 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-full"
+                                                        onClick={() => handleClone(insumo.id)}
+                                                        disabled={isPending}
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                    </Button>
+                                                ) : (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        className="h-6 w-6 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full"
+                                                        onClick={() => {
+                                                            setSelectedInsumo(insumo)
+                                                            setNewPrice(insumo.precio_actual.toString())
+                                                            setIsPriceOpen(true)
+                                                        }}
+                                                    >
+                                                        <ArrowUpRight className="h-4 w-4" />
+                                                    </Button>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-4 flex flex-col">
-                                    <span className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-1">Precio Unitario</span>
-                                    <div className="flex items-end gap-1">
-                                        <span className="text-2xl font-bold text-slate-900">{formatMoney(insumo.precio_actual, insumo.moneda)}</span>
-                                        <span className="text-sm text-slate-500 mb-1">/ {insumo.unidad_medida}</span>
-                                    </div>
+                            ))}
+                            
+                            {/* Mobile Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between p-3 border-t border-slate-100 bg-slate-50/50">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setMobilePage(p => Math.max(1, p - 1))}
+                                        disabled={mobilePage === 1}
+                                        className="h-8 text-xs bg-white"
+                                    >
+                                        Anterior
+                                    </Button>
+                                    <span className="text-xs text-slate-500 font-medium">
+                                        {mobilePage} / {totalPages}
+                                    </span>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={() => setMobilePage(p => Math.min(totalPages, p + 1))}
+                                        disabled={mobilePage === totalPages}
+                                        className="h-8 text-xs bg-white"
+                                    >
+                                        Siguiente
+                                    </Button>
                                 </div>
-                                <div className="bg-slate-50 p-3 flex justify-end gap-2 border-t border-slate-100">
-                                    {insumo.es_global ? (
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            className="h-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                            onClick={() => handleClone(insumo.id)}
-                                            disabled={isPending}
-                                        >
-                                            <Plus className="h-4 w-4 mr-1" />
-                                            Clonar
-                                        </Button>
-                                    ) : (
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            className="h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                            onClick={() => {
-                                                setSelectedInsumo(insumo)
-                                                setNewPrice(insumo.precio_actual.toString())
-                                                setIsPriceOpen(true)
-                                            }}
-                                        >
-                                            <ArrowUpRight className="h-4 w-4 mr-1" />
-                                            Act. Precio
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        ))
+                            )}
+                        </div>
                     )}
                 </div>
 

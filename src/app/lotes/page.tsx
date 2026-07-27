@@ -41,11 +41,11 @@ export default async function LotesPage({
                         Gestione los lotes productivos y campos de sus clientes.
                     </p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <SearchInput placeholder="Buscar lotes..." />
                     {canCreate && <LoteFormDialog establecimientos={establecimientos} />}
                 </div>
-            </div >
+            </div>
 
             <Suspense fallback={<div className="p-8 text-center text-slate-500">Cargando lotes...</div>}>
                 <LoteListTable data={lotes} establecimientos={establecimientos} rol={rol} />

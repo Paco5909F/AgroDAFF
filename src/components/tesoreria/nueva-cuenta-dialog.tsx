@@ -64,7 +64,7 @@ export function NuevaCuentaDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="text-slate-600">
+                <Button variant="outline" className="text-slate-600 w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" /> Nueva Cuenta
                 </Button>
             </DialogTrigger>

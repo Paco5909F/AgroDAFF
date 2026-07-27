@@ -117,7 +117,7 @@ export function ClienteFormDialog({ cliente, trigger }: ClienteFormDialogProps) 
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button>
+                    <Button className="w-full sm:w-auto">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Cliente
                     </Button>

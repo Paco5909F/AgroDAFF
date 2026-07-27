@@ -75,7 +75,7 @@ export function LoteFormDialog({ lote, establecimientos, trigger }: LoteFormDial
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger || (
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Lote
                     </Button>

@@ -4,14 +4,20 @@ import { useState, useRef, useEffect } from 'react'
 import { Bot, Send, X, MessageSquare, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { usePathname } from 'next/navigation'
 
 export function AIAssistantWidget() {
+    const pathname = usePathname()
+    const isPublicRoute = pathname?.startsWith('/login') || pathname?.startsWith('/auth') || pathname?.startsWith('/onboarding') || pathname === '/'
+
     const [isOpen, setIsOpen] = useState(false)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([
         { role: 'ai', content: '¡Hola! Soy la IA de AgroDAFF. Consultame por tus costos, sugerencias o análisis de campaña actual.' }
     ])
+
+    if (isPublicRoute) return null
 
     const messagesEndRef = useRef<HTMLDivElement>(null)
 

@@ -32,11 +32,11 @@ export default async function ClientesPage({
                         Gestione su cartera de clientes.
                     </p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <SearchInput placeholder="Buscar clientes..." />
                     {canCreate && <ClienteFormDialog />}
                 </div>
-            </div >
+            </div>
 
             <Suspense fallback={<div>Cargando clientes...</div>}>
                 <ClienteListTable data={clientes} rol={rol} />

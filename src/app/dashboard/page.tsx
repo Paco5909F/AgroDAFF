@@ -91,7 +91,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                             <LayoutDashboard className="h-7 w-7 text-emerald-600" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">
                                 Hola, <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500">{userName}</span>
                             </h1>
                             <p className="text-slate-500 font-medium mt-1 text-sm flex items-center gap-2">

@@ -38,6 +38,15 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
     const [invitations, setInvitations] = useState(initialInvitations)
     const [inviteCode, setInviteCode] = useState(initialInviteCode)
     const [isGenerating, setIsGenerating] = useState(false)
+    const [mobileUsersPage, setMobileUsersPage] = useState(1)
+    const [mobileInvitesPage, setMobileInvitesPage] = useState(1)
+
+    const ITEMS_PER_PAGE = 8
+    const totalUsersPages = Math.ceil(users.length / ITEMS_PER_PAGE)
+    const paginatedUsers = users.slice((mobileUsersPage - 1) * ITEMS_PER_PAGE, mobileUsersPage * ITEMS_PER_PAGE)
+    
+    const totalInvitesPages = Math.ceil(invitations.length / ITEMS_PER_PAGE)
+    const paginatedInvites = invitations.slice((mobileInvitesPage - 1) * ITEMS_PER_PAGE, mobileInvitesPage * ITEMS_PER_PAGE)
 
     const handleRemoveUser = async (id: string) => {
         if (!confirm("¿Estás seguro de eliminar este usuario del equipo?")) return
@@ -225,49 +234,76 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                                 </Table>
                             </div>
                             
-                            {/* VISTA MÓVIL (TARJETAS) */}
-                            <div className="block md:hidden p-4 space-y-4 bg-slate-50">
-                                {users.map((user) => (
-                                    <div key={user.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h3 className="font-semibold text-slate-800">{user.nombre}</h3>
-                                                <p className="text-xs text-slate-500">{user.email || 'Sin email'}</p>
+                            {/* VISTA MÓVIL (LIST ROWS) */}
+                            <div className="block md:hidden">
+                                <div className="bg-white border-t border-slate-200 flex flex-col">
+                                    {paginatedUsers.map((user, index) => (
+                                        <div key={user.id} className={`p-3 flex items-center justify-between gap-3 ${index !== paginatedUsers.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                            <div className="flex-1 min-w-0 flex flex-col">
+                                                <h3 className="font-bold text-slate-800 text-sm truncate">{user.nombre}</h3>
+                                                <p className="text-[11px] text-slate-500 truncate mt-0.5">{user.email || 'Sin email'}</p>
                                             </div>
-                                            <Badge variant="outline">{user.rol}</Badge>
-                                        </div>
-                                        {currentUserRole === 'ADMIN' && (
-                                            <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="sm" className="h-8">
-                                                            <Shield className="h-3 w-3 mr-1" />
-                                                            Cambiar Rol
+                                            <div className="flex flex-col items-end shrink-0 gap-2">
+                                                <Badge variant="outline" className="text-[9px] px-1.5 py-0.5 h-auto uppercase">{user.rol}</Badge>
+                                                {currentUserRole === 'ADMIN' && (
+                                                    <div className="flex gap-2">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-500 hover:text-slate-800 rounded-full">
+                                                                    <Shield className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuRadioGroup
+                                                                    value={user.rol}
+                                                                    onValueChange={(v) => handleUpdateRole(user.id, v as UserRole)}
+                                                                >
+                                                                    {Object.values(UserRole)
+                                                                        .filter(r => typeof r === 'string' && r === r.toUpperCase())
+                                                                        .map(role => (
+                                                                            <DropdownMenuRadioItem key={role} value={role}>
+                                                                                {role}
+                                                                            </DropdownMenuRadioItem>
+                                                                        ))}
+                                                                </DropdownMenuRadioGroup>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full" onClick={() => handleRemoveUser(user.id)}>
+                                                            <UserX className="h-3.5 w-3.5" />
                                                         </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuRadioGroup
-                                                            value={user.rol}
-                                                            onValueChange={(v) => handleUpdateRole(user.id, v as UserRole)}
-                                                        >
-                                                            {Object.values(UserRole)
-                                                                .filter(r => typeof r === 'string' && r === r.toUpperCase())
-                                                                .map(role => (
-                                                                    <DropdownMenuRadioItem key={role} value={role}>
-                                                                        {role}
-                                                                    </DropdownMenuRadioItem>
-                                                                ))}
-                                                        </DropdownMenuRadioGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                                <Button variant="ghost" size="sm" className="h-8 text-red-600 bg-red-50 hover:bg-red-100" onClick={() => handleRemoveUser(user.id)}>
-                                                    <UserX className="h-3 w-3 mr-1" />
-                                                    Quitar
-                                                </Button>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                ))}
+                                        </div>
+                                    ))}
+                                    
+                                    {/* Mobile Pagination Controls */}
+                                    {totalUsersPages > 1 && (
+                                        <div className="flex items-center justify-between p-3 border-t border-slate-100 bg-slate-50/50">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => setMobileUsersPage(p => Math.max(1, p - 1))}
+                                                disabled={mobileUsersPage === 1}
+                                                className="h-8 text-xs bg-white"
+                                            >
+                                                Anterior
+                                            </Button>
+                                            <span className="text-xs text-slate-500 font-medium">
+                                                {mobileUsersPage} / {totalUsersPages}
+                                            </span>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => setMobileUsersPage(p => Math.min(totalUsersPages, p + 1))}
+                                                disabled={mobileUsersPage === totalUsersPages}
+                                                className="h-8 text-xs bg-white"
+                                            >
+                                                Siguiente
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -318,32 +354,64 @@ export function TeamManagementClient({ initialUsers, initialInvitations, initial
                                     </Table>
                                 </div>
                                 
-                                {/* VISTA MÓVIL (TARJETAS) */}
-                                <div className="block md:hidden p-4 space-y-4 bg-slate-50">
-                                    {invitations.length === 0 && (
-                                        <div className="text-center py-4 text-muted-foreground bg-white border rounded-lg">
-                                            No hay invitaciones pendientes.
-                                        </div>
-                                    )}
-                                    {invitations.map((invite) => (
-                                        <div key={invite.id} className="bg-white rounded-xl border border-slate-100 p-4 flex flex-col shadow-sm">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="font-medium text-slate-800 text-sm truncate pr-2">{invite.email}</span>
-                                                <Badge variant="secondary" className="shrink-0">{invite.rol}</Badge>
+                                {/* VISTA MÓVIL (LIST ROWS) */}
+                                <div className="block md:hidden">
+                                    <div className="bg-white border-t border-slate-200 flex flex-col">
+                                        {invitations.length === 0 && (
+                                            <div className="text-center py-8 text-muted-foreground bg-white text-sm">
+                                                No hay invitaciones pendientes.
                                             </div>
-                                            <p className="text-xs text-slate-500 mb-4">Expira: {new Date(invite.expires_at).toLocaleDateString('es-AR')}</p>
-                                            <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
-                                                <Button variant="outline" size="sm" className="h-8" onClick={() => copyLink(invite.token)}>
-                                                    <Copy className="h-3 w-3 mr-1" />
-                                                    Enlace
+                                        )}
+                                        {paginatedInvites.map((invite, index) => (
+                                            <div key={invite.id} className={`p-3 flex items-center justify-between gap-3 ${index !== paginatedInvites.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                                                <div className="flex-1 min-w-0 flex flex-col">
+                                                    <span className="font-bold text-slate-800 text-sm truncate">{invite.email}</span>
+                                                    <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Expira:</span>
+                                                        <span className="font-medium text-[10px]">{new Date(invite.expires_at).toLocaleDateString('es-AR')}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end shrink-0 gap-2">
+                                                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0.5 h-auto uppercase">{invite.rol}</Badge>
+                                                    <div className="flex gap-2">
+                                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-500 hover:text-slate-800 rounded-full" onClick={() => copyLink(invite.token)}>
+                                                            <Copy className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full" onClick={() => handleRevokeInvite(invite.id)}>
+                                                            <Trash className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        
+                                        {/* Mobile Pagination Controls */}
+                                        {totalInvitesPages > 1 && (
+                                            <div className="flex items-center justify-between p-3 border-t border-slate-100 bg-slate-50/50">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setMobileInvitesPage(p => Math.max(1, p - 1))}
+                                                    disabled={mobileInvitesPage === 1}
+                                                    className="h-8 text-xs bg-white"
+                                                >
+                                                    Anterior
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-8 text-red-600 bg-red-50 hover:bg-red-100" onClick={() => handleRevokeInvite(invite.id)}>
-                                                    <Trash className="h-3 w-3 mr-1" />
-                                                    Revocar
+                                                <span className="text-xs text-slate-500 font-medium">
+                                                    {mobileInvitesPage} / {totalInvitesPages}
+                                                </span>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setMobileInvitesPage(p => Math.min(totalInvitesPages, p + 1))}
+                                                    disabled={mobileInvitesPage === totalInvitesPages}
+                                                    className="h-8 text-xs bg-white"
+                                                >
+                                                    Siguiente
                                                 </Button>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

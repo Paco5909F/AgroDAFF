@@ -28,7 +28,7 @@ export default async function DashboardServiciosPage({
                         Administración de servicios y costos base.
                     </p>
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <div className="relative w-full md:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <form action="" className="w-full">
@@ -41,7 +41,7 @@ export default async function DashboardServiciosPage({
                         </form>
                     </div>
                     <ServicioDialog>
-                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-100 transition-all hover:scale-105">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg shadow-emerald-100 transition-all hover:scale-105 w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Nuevo
                         </Button>
                     </ServicioDialog>
