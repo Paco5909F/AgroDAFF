@@ -5,8 +5,8 @@ import { updateSession } from '@/lib/supabase/middleware'
 // this resets frequently. Consider @upstash/ratelimit for production.
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>()
 const RATE_LIMIT_WINDOW_MS = 60000 // 1 minute
-const MAX_REQUESTS_PER_WINDOW = 100 // 100 req per IP per minute
-const MAX_AUTH_REQUESTS = 10 // Stricter limit for login
+const MAX_REQUESTS_PER_WINDOW = 300 // 300 req per IP per minute
+const MAX_AUTH_REQUESTS = 50 // Stricter limit for login
 
 function checkRateLimit(ip: string, isAuthRoute: boolean): boolean {
     const now = Date.now()
