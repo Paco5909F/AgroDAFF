@@ -58,7 +58,7 @@ export function SetupWizard({ initialData }: { initialData: any }) {
             const result = await saveOnboardingStep(formData)
             if (result.success) {
                 toast.success('Perfil completado exitosamente')
-                router.push('/')
+                window.location.href = '/'
             } else {
                 toast.error(result.error as string)
             }
