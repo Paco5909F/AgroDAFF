@@ -104,9 +104,23 @@ export async function POST(req: Request) {
                 responseMessage = `El lote donde más invertiste es **'${maxLote}'** con un acumulado de $${maxCost}.`;
             }
         }
+        // Intent: INSUMOS ESPECIFICOS
+        else if (prompt.includes("semilla") || prompt.includes("fertilizante")) {
+            const seed = stats.gastoPorInsumo['SEMILLA'] || 0;
+            const fert = stats.gastoPorInsumo['FERTILIZANTE'] || 0;
+            responseMessage = `Inversión actual:\n🌱 Semillas: $${seed}\n🧬 Fertilizantes: $${fert}`;
+        }
+        // Intent: AGENDAR ORDEN DE TRABAJO
+        else if (prompt.includes("orden") || (prompt.includes("agenda") && !prompt.includes("lote")) || prompt.includes("labor")) {
+            responseMessage = "📝 Para agendar una orden de trabajo (siembra, aplicación, cosecha), por favor dirígete a la sección **'Órdenes'** en el menú principal. Todavía no puedo agendarlas automáticamente porque requieren que selecciones contratistas e insumos precisos.";
+        }
         // Intent: SALUDO
         else if (prompt.includes("hola") || prompt.includes("saludo")) {
              responseMessage = "¡Hola! Soy AgroDAFF Assistant, tu experto en gestión. Puedes decirme cosas como: \n\n- *'¿Cómo viene el rendimiento?'*\n- *'Crea un lote llamado Sur de 100 hectáreas'* \n- *'¿Cuánto llevo gastado?'*";
+        }
+        // FALLBACK
+        else {
+             responseMessage = "Interesante pregunta. Aún estoy aprendiendo, ¿podrías reformularlo usando palabras como 'gastos', 'rendimiento', o pedirme 'crea un lote Sur de 50 has' explícitamente?";
         }
 
         return NextResponse.json({ 
