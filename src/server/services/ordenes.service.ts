@@ -80,7 +80,18 @@ export class OrdenesService {
                         kilometros: item.kilometros,
                         observaciones: item.observaciones,
                         lote_id: item.lote_id || undefined,
-                        campana_id: item.campana_id || activeCampana?.id || undefined
+                        campana_id: item.campana_id || activeCampana?.id || undefined,
+                        
+                        // Campos de Albor Campo
+                        es_tercerizado: item.es_tercerizado || false,
+                        proveedor_id: item.proveedor_id || undefined,
+                        costo_tercerizado: item.costo_tercerizado || undefined,
+                        
+                        receta_agronomica_nro: item.receta_agronomica_nro || undefined,
+                        temperatura_c: item.temperatura_c || undefined,
+                        humedad_pct: item.humedad_pct || undefined,
+                        viento_vel_kmh: item.viento_vel_kmh || undefined,
+                        viento_direccion: item.viento_direccion || undefined
                     }))
                 }
             }
@@ -107,7 +118,18 @@ export class OrdenesService {
                             total: item.total,
                             observaciones: item.observaciones,
                             lote_id: item.lote_id || undefined,
-                            campana_id: item.campana_id || undefined
+                            campana_id: item.campana_id || undefined,
+                            
+                            // Campos de Albor Campo
+                            es_tercerizado: item.es_tercerizado || false,
+                            proveedor_id: item.proveedor_id || undefined,
+                            costo_tercerizado: item.costo_tercerizado || undefined,
+                            
+                            receta_agronomica_nro: item.receta_agronomica_nro || undefined,
+                            temperatura_c: item.temperatura_c || undefined,
+                            humedad_pct: item.humedad_pct || undefined,
+                            viento_vel_kmh: item.viento_vel_kmh || undefined,
+                            viento_direccion: item.viento_direccion || undefined
                         }))
                     }
                 }

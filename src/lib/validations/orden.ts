@@ -11,6 +11,18 @@ export const ordenItemSchema = z.object({
     tipo_cambio: z.coerce.number().optional(),
     total: z.coerce.number(),
     observaciones: z.string().optional(),
+    
+    // Contratistas
+    es_tercerizado: z.boolean().optional().default(false),
+    proveedor_id: z.string().uuid().optional().or(z.literal('')),
+    costo_tercerizado: z.coerce.number().optional(),
+
+    // Clima y Legal
+    receta_agronomica_nro: z.string().optional(),
+    temperatura_c: z.coerce.number().optional(),
+    humedad_pct: z.coerce.number().optional(),
+    viento_vel_kmh: z.coerce.number().optional(),
+    viento_direccion: z.string().optional()
 })
 
 // Main Orden Schema

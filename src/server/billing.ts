@@ -3,6 +3,7 @@
 import { preapproval } from "@/lib/mercadopago"
 import { getUserContext } from "./context"
 import { createClient } from "@/lib/supabase/server"
+import { prisma } from "@/lib/prisma"
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -33,6 +34,16 @@ export async function createSubscription() {
         if (!subscription || !subscription.init_point) {
             throw new Error("Failed to generate subscription link")
         }
+
+        // Feature: Guardar el ID de suscripción de inmediato en estado pendiente
+        // Esto evita depender 100% del external_reference en el webhook
+        await prisma.empresa.update({
+            where: { id: empresaId },
+            data: {
+                subscription_id: subscription.id,
+                plan_status: 'PENDING'
+            }
+        })
 
         return { success: true, init_point: subscription.init_point }
 

@@ -57,11 +57,19 @@ export async function POST(req: Request) {
             }
 
             const status = subscriptionInfo.status // pending, authorized, paused, cancelled
-            const empresaId = subscriptionInfo.external_reference // We set this on createSubscription
+            let empresaId = subscriptionInfo.external_reference // We set this on createSubscription
 
             if (!empresaId) {
-                console.error("Missing external_reference on subscription", subscriptionInfo.id)
-                return NextResponse.json({ success: true }, { status: 200 })
+                console.warn("Missing external_reference on subscription", subscriptionInfo.id, "- attempting lookup by subscription_id")
+                const match = await prisma.empresa.findFirst({
+                    where: { subscription_id: subscriptionInfo.id }
+                })
+                if (match) {
+                    empresaId = match.id
+                } else {
+                    console.error("Could not link subscription to any empresa", subscriptionInfo.id)
+                    return NextResponse.json({ success: true }, { status: 200 })
+                }
             }
 
             // Map MP status to our DB plan_status
