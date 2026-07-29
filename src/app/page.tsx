@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { LayoutDashboard, UserCircle2, Wrench, Mail, ArrowRight, Wheat, Tractor, BarChart3, FileSpreadsheet, ShieldCheck, Truck, Brain } from "lucide-react"
@@ -21,8 +22,7 @@ export default async function LandingPage() {
       {/* HERO SECTION */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/bg-v2.png" alt="Campo Background" className="w-full h-full object-cover opacity-60" />
+          <Image src="/images/bg-v2.png" alt="Campo Background" fill priority className="object-cover opacity-60" sizes="100vw" />
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/40 to-white"></div>
         </div>
 

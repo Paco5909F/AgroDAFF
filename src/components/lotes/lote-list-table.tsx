@@ -20,7 +20,17 @@ import { MoreHorizontal, Pencil, Trash2, Map } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteLote } from '@/server/lotes'
 import { LoteFormDialog } from './lote-form-dialog'
-
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Loader2 } from 'lucide-react'
 interface LoteListTableProps {
     data: any[]
     establecimientos: any[]
@@ -29,15 +39,19 @@ interface LoteListTableProps {
 
 export function LoteListTable({ data, establecimientos, rol }: LoteListTableProps) {
     const canDelete = rol === 'ADMIN'
+    const [loteToDelete, setLoteToDelete] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const handleDelete = async (id: string) => {
-        if (!confirm('¿Está seguro de eliminar este lote?')) return
+        setIsDeleting(true)
         const result = await deleteLote(id)
         if (result.success) {
             toast.success('Lote eliminado')
+            setLoteToDelete(null)
         } else {
             toast.error(result.error as string)
         }
+        setIsDeleting(false)
     }
 
     if (data.length === 0) {
@@ -106,10 +120,13 @@ export function LoteListTable({ data, establecimientos, rol }: LoteListTableProp
                                             />
                                             {canDelete && (
                                                 <DropdownMenuItem
-                                                    onClick={() => handleDelete(lote.id)}
+                                                    onSelect={(e) => {
+                                                        e.preventDefault()
+                                                        setLoteToDelete(lote.id)
+                                                    }}
                                                     className="text-red-600 focus:text-red-600 focus:bg-red-50"
                                                 >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
                                                     Eliminar
                                                 </DropdownMenuItem>
                                             )}
@@ -157,9 +174,9 @@ export function LoteListTable({ data, establecimientos, rol }: LoteListTableProp
                                     variant="ghost" 
                                     size="sm" 
                                     className="h-8 w-8 p-0 text-slate-500 hover:text-red-600"
-                                    onClick={() => handleDelete(lote.id)}
+                                    onClick={() => setLoteToDelete(lote.id)}
                                 >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                                 </Button>
                             )}
                         </div>
@@ -167,6 +184,36 @@ export function LoteListTable({ data, establecimientos, rol }: LoteListTableProp
                 ))}
             </div>
 
+            <AlertDialog open={!!loteToDelete} onOpenChange={(open) => !open && !isDeleting && setLoteToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Está seguro de eliminar este lote?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Los datos históricos y presupuestos asociados a este lote podrían verse afectados o eliminados de forma permanente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={(e) => {
+                                e.preventDefault()
+                                if (loteToDelete) handleDelete(loteToDelete)
+                            }}
+                            disabled={isDeleting}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Eliminando...
+                                </>
+                            ) : (
+                                'Sí, eliminar lote'
+                            )}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

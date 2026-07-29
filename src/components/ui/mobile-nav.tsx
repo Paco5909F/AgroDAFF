@@ -30,13 +30,22 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
     const supabase = createClient()
 
     useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                setIsOpen(false)
+            }
+        }
+
         if (isOpen) {
             document.body.style.overflow = 'hidden'
+            document.addEventListener('keydown', handleKeyDown)
         } else {
             document.body.style.overflow = 'unset'
+            document.removeEventListener('keydown', handleKeyDown)
         }
         return () => {
             document.body.style.overflow = 'unset'
+            document.removeEventListener('keydown', handleKeyDown)
         }
     }, [isOpen])
 
@@ -59,7 +68,7 @@ export function MobileNav({ user, userData, companies = [], currentCompanyId }: 
 
     return (
         <div className="lg:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)} className="text-slate-600">
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(true)} className="text-slate-600" aria-label="Abrir menú">
                 <Menu className="h-6 w-6" />
             </Button>
 
