@@ -54,10 +54,10 @@ export default async function PricingPage() {
                             $0 <span className="text-lg text-slate-500 font-normal">/mes</span>
                         </div>
                         <ul className="space-y-4 mb-8">
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Hasta 2 Usuarios</span></li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Hasta 5 Lotes Acumulados</span></li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Límite de 5 Órdenes de Trabajo</span></li>
-                            <li className="flex items-center gap-3"><X className="w-5 h-5 text-slate-300"/> <span className="text-slate-500">Soporte Prioritario</span></li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>1 Usuario Administrativo</span></li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Hasta 5 Lotes (1 Establecimiento)</span></li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Hasta 10 Órdenes de Trabajo</span></li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-emerald-500"/> <span>Soporte Básico por Email</span></li>
                         </ul>
                         <button disabled className="w-full py-3 rounded-lg font-semibold bg-slate-100 text-slate-400">
                             {empresa?.plan_status === 'FREE' ? 'Plan Activo' : 'Incluido'}
