@@ -1,0 +1,32 @@
+AgroDAFF - Paleta de Colores Oficial
+
+# COLORES PRINCIPALES
+
+Verde Principal (Brand Color)
+- HEX: #10B981
+- Uso: Botones primarios, isotipo principal, badges de estado positivo, fondos destacados.
+- Significado: Crecimiento, naturaleza, éxito agrícola y sostenibilidad.
+
+Azul Oscuro (Fondo/Texto Principal)
+- HEX: #0F172A
+- Uso: Fondos de la aplicación, barra de navegación superior (navbar), textos primarios en modo claro.
+- Significado: Tecnología, profundidad, confianza, sistema corporativo.
+
+Blanco (Neutro Claro)
+- HEX: #FFFFFF
+- Uso: Textos en botones primarios, fondos de tarjetas, contenedor principal del dashboard.
+- Significado: Limpieza, minimalismo, espacio negativo.
+
+# COLORES SECUNDARIOS (Estados y UI)
+
+Gris Pizarra (Slate 500)
+- HEX: #64748b
+- Uso: Textos secundarios, descripciones, bordes deshabilitados.
+
+Rojo Destructivo
+- HEX: #EF4444
+- Uso: Borrar órdenes, alertas de error, advertencias de sistema.
+
+Amarillo Alerta
+- HEX: #F59E0B
+- Uso: Estados pendientes, presupuestos en revisión.
