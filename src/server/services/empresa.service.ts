@@ -63,7 +63,7 @@ export class EmpresaService {
                 miembros: {
                     include: {
                         empresa: {
-                            select: { plan_status: true, nombre: true, id: true }
+                            select: { plan_status: true, nombre: true, id: true, is_lifetime: true }
                         }
                     }
                 }

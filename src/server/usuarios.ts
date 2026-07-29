@@ -35,7 +35,9 @@ export async function getUserProfile() {
             const activeMembership = dbUser.miembros.find(m => m.empresa_id === dbUser.active_empresa_id)
             if (activeMembership) {
                 effectiveRole = activeMembership.rol
-                if (activeMembership.empresa?.plan_status) {
+                if (activeMembership.empresa?.is_lifetime) {
+                    planStatus = 'LIFETIME'
+                } else if (activeMembership.empresa?.plan_status) {
                     planStatus = activeMembership.empresa.plan_status
                 }
                 if (activeMembership.empresa?.nombre) {
