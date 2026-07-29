@@ -17,7 +17,7 @@ export default function ContactoPage() {
                         <div className="flex items-center gap-3 group">
                             <div className="relative w-10 h-10 overflow-hidden rounded-xl shadow-lg shadow-emerald-100 transition-transform group-hover:scale-105 bg-white p-0.5 border border-emerald-50">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src="/images/01-Logo-Horizontal.png" alt="AgroDAFF Logo" className="object-contain w-full h-full" />
+                                <img src="/images/03-Isotipo.png" alt="AgroDAFF Logo" className="object-contain w-full h-full" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-lg font-bold text-slate-800 leading-tight tracking-tight group-hover:text-emerald-700 transition-colors">AgroDAFF</span>

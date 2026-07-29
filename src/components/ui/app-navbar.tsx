@@ -58,7 +58,7 @@ export async function AppNavbar() {
                         <div className="w-8 h-8 flex items-center justify-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
-                                src={userData?.empresa?.logo_url || "/images/01-Logo-Horizontal.png"} 
+                                src={userData?.empresa?.logo_url || "/images/03-Isotipo.png"} 
                                 alt={`${userData?.empresa?.nombre || 'AgroDAFF'} Logo`} 
                                 className="object-contain w-full h-full mix-blend-multiply" 
                             />
@@ -77,7 +77,7 @@ export async function AppNavbar() {
                         <div className="w-10 h-10 flex items-center justify-center">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
-                                src={userData?.empresa?.logo_url || "/images/01-Logo-Horizontal.png"} 
+                                src={userData?.empresa?.logo_url || "/images/03-Isotipo.png"} 
                                 alt={`${userData?.empresa?.nombre || 'AgroDAFF'} Logo`} 
                                 className="object-contain w-full h-full mix-blend-multiply" 
                             />
