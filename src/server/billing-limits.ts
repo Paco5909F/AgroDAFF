@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 
-const PLAN_LIMITS = {
+export const PLAN_LIMITS = {
     FREE: {
         maxUsers: 2,
         maxLotes: 5,

@@ -8,6 +8,9 @@ import { getUserContext } from '@/server/context'
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 import { prisma } from '@/lib/prisma'
 
+import { PLAN_LIMITS } from '@/server/billing-limits'
+import { PlanLimitIndicator } from '@/components/billing/plan-limit-indicator'
+
 export const dynamic = 'force-dynamic'
 
 export default async function LotesPage({
@@ -29,8 +32,28 @@ export default async function LotesPage({
         orderBy: { nombre: 'asc' }
     })
 
+    // Fetch billing status
+    const empresa = await prisma.empresa.findUnique({
+        where: { id: context.empresaId },
+        select: { 
+            plan_status: true, 
+            is_lifetime: true,
+            _count: { select: { lotes: { where: { deleted_at: null } } } }
+        }
+    })
+
     return (
         <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+            
+            {empresa && (
+                <PlanLimitIndicator 
+                    plan_status={empresa.plan_status} 
+                    is_lifetime={empresa.is_lifetime} 
+                    lotesCount={empresa._count.lotes} 
+                    maxLotes={PLAN_LIMITS.FREE.maxLotes} 
+                />
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
                     <h1 className="text-3xl font-light text-slate-800 tracking-tight flex items-center gap-3">

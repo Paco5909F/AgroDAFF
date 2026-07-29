@@ -16,6 +16,8 @@ import { getUserContext } from "@/server/context"
 import { hasPermission, PERMISSIONS } from "@/lib/permissions"
 import { prisma } from "@/lib/prisma"
 import { PdfBranding } from "@/lib/pdf-generator"
+import { PLAN_LIMITS } from '@/server/billing-limits'
+import { PlanLimitIndicator } from '@/components/billing/plan-limit-indicator'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,7 +58,7 @@ export default async function OrdenesPage({
     const clientes = await getClientes()
     const { rol, empresaId } = await getUserContext()
 
-    // Fetch Branding Data
+    // Fetch Branding Data & Limits
     const empresa = await prisma.empresa.findUnique({
         where: { id: empresaId },
         select: {
@@ -65,7 +67,10 @@ export default async function OrdenesPage({
             direccion: true,
             logo_url: true,
             email: true,
-            telefono: true
+            telefono: true,
+            plan_status: true,
+            is_lifetime: true,
+            _count: { select: { ordenes: true } }
         }
     })
 
@@ -98,10 +103,20 @@ export default async function OrdenesPage({
     }
 
     return (
-        <div className="flex flex-col md:flex-row gap-8 space-y-0 animate-in fade-in duration-700">
-            {/* LEFT: FORMULARIO */}
-            {canCreate && (
-                <div className="w-full md:w-1/3">
+        <div className="flex flex-col gap-6 animate-in fade-in duration-700">
+            {empresa && (
+                <PlanLimitIndicator 
+                    plan_status={empresa.plan_status} 
+                    is_lifetime={empresa.is_lifetime} 
+                    lotesCount={empresa._count.ordenes} 
+                    maxLotes={PLAN_LIMITS.FREE.maxOrdenes} 
+                />
+            )}
+            
+            <div className="flex flex-col md:flex-row gap-8 space-y-0">
+                {/* LEFT: FORMULARIO */}
+                {canCreate && (
+                    <div className="w-full md:w-1/3">
                     <div className="sticky top-24">
                         <div className="mb-6">
                             <h1 className="text-3xl font-light text-slate-800 tracking-tight flex items-center gap-3">
@@ -162,5 +177,6 @@ export default async function OrdenesPage({
 
             </div >
         </div >
+        </div>
     )
 }
