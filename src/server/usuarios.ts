@@ -36,7 +36,7 @@ export async function getUserProfile() {
             if (activeMembership) {
                 effectiveRole = activeMembership.rol
                 if (activeMembership.empresa?.is_lifetime) {
-                    planStatus = 'LIFETIME'
+                    planStatus = 'PRO (Lifetime)'
                 } else if (activeMembership.empresa?.plan_status) {
                     planStatus = activeMembership.empresa.plan_status
                 }
