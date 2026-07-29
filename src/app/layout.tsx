@@ -8,7 +8,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "AgroDAFF",
   description: "Sistema de Gestión Agropecuaria SaaS",
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/images/favicon.ico" },
+      { url: "/images/06-Favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/images/07-Favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/images/08-Apple-Touch-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  }
 };
 
 export const viewport = {
