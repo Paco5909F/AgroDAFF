@@ -5,6 +5,8 @@ import { LoteFormValues } from '@/lib/validations/lote'
 import { getUserContext } from './context'
 import { ProduccionService } from './services/produccion.service'
 
+import { checkPlanLimits } from '@/server/billing-limits'
+
 export async function getLotes(query?: string) {
     const context = await getUserContext()
     return ProduccionService.getLotes(context.empresaId, query)
@@ -13,6 +15,12 @@ export async function getLotes(query?: string) {
 export async function createLote(data: LoteFormValues) {
     try {
         const context = await getUserContext()
+
+        const limitCheck = await checkPlanLimits(context.empresaId, 'LOTE')
+        if (!limitCheck.allowed) {
+            return { success: false, error: limitCheck.message }
+        }
+
         const lote = await ProduccionService.createLote(context.empresaId, data)
 
         revalidatePath('/lotes')

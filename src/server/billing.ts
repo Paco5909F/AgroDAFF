@@ -52,3 +52,34 @@ export async function createSubscription() {
         return { success: false, error: "Error creating subscription" }
     }
 }
+
+// ==========================================
+// Admin / Internal Tools para Amigos y Familia
+// ==========================================
+
+export async function grantLifetimeAccess(targetEmpresaId: string) {
+    try {
+        // Here we could add a check if the caller is a SuperAdmin. 
+        // For now, it's just a server action that can be hooked to a hidden button or internal dashboard.
+        await prisma.empresa.update({
+            where: { id: targetEmpresaId },
+            data: { is_lifetime: true, plan_status: 'PRO' }
+        })
+        return { success: true }
+    } catch (error) {
+        console.error("Error granting lifetime:", error)
+        return { success: false, error: "No se pudo otorgar acceso de por vida." }
+    }
+}
+
+export async function grantProStatusManually(targetEmpresaId: string, durationMonths: number = 1) {
+    try {
+        await prisma.empresa.update({
+            where: { id: targetEmpresaId },
+            data: { plan_status: 'PRO' } // Could also set an expiration date in the future if added to schema
+        })
+        return { success: true }
+    } catch (error) {
+        return { success: false, error: "Error otorgando PRO manual" }
+    }
+}
