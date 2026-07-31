@@ -417,7 +417,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(getColors(branding).textLight[0]);
-        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
+        doc.text("Documento electrónico generado por AgroDAFF.", margin, footerY);
         doc.text("Este documento no es válido como factura. Los precios pueden variar sin previo aviso.", margin, footerY + 3);
 
         doc.save(`Presupuesto_${presupuesto.id.slice(0, 6)}.pdf`);
@@ -617,7 +617,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(getColors(branding).textLight[0]);
-        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
+        doc.text("Documento electrónico generado por AgroDAFF.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Orden_${orden.id ? orden.id.slice(0, 6) : "Borrador"}.pdf`);
@@ -791,7 +791,7 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(getColors(branding).textLight[0]);
-        doc.text("Documento de liquidación proforma. Valores sujetos a revisión final.", margin, footerY);
+        doc.text("Documento de liquidación generado por AgroDAFF. Valores sujetos a revisión final.", margin, footerY);
         
         doc.save(`Liquidacion_${orden.id ? orden.id.slice(0, 6) : "Orden"}.pdf`);
     });
@@ -952,7 +952,7 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         const footerY = pageHeight - 15;
         doc.setFontSize(6);
         doc.setTextColor(100);
-        doc.text("Documento electrónico generado por el sistema de gestión certificado.", margin, footerY);
+        doc.text("Documento electrónico generado por AgroDAFF.", margin, footerY);
         doc.text("Este documento no reemplaza a la Carta de Porte Oficial emitida por AFIP si el CTG no es válido.", margin, footerY + 3);
 
         doc.save(`CP_${carta.ctg || 'Borrador'}.pdf`);
@@ -1044,7 +1044,7 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
 
         doc.setFontSize(7);
         doc.setTextColor(getColors(branding).textLight[0]);
-        doc.text("Reporte generado automáticamente por sistema de gestión.", margin, footerY);
+        doc.text("Reporte generado por AgroDAFF.", margin, footerY);
         doc.text(`Generado el ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageWidth - margin, footerY, { align: 'right' });
 
         doc.save(`Reporte_Gestion_${format(new Date(), 'yyyyMMdd')}.pdf`);

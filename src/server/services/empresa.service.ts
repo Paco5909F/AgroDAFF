@@ -55,6 +55,13 @@ export class EmpresaService {
         })
     }
 
+    static async updateEmpresaLogo(empresaId: string, logo_url: string) {
+        return prisma.empresa.update({
+            where: { id: empresaId },
+            data: { logo_url }
+        })
+    }
+
     // --- USUARIOS ---
     static async getUserProfileData(userId: string) {
         return prisma.usuario.findUnique({
@@ -63,7 +70,7 @@ export class EmpresaService {
                 miembros: {
                     include: {
                         empresa: {
-                            select: { plan_status: true, nombre: true, id: true, is_lifetime: true }
+                            select: { plan_status: true, nombre: true, id: true, is_lifetime: true, logo_url: true }
                         }
                     }
                 }

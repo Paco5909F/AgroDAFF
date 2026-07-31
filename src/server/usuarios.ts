@@ -27,6 +27,7 @@ export async function getUserProfile() {
         let planStatus = 'FREE' 
         let organizacionNombre = "Sin Organización"
         let organizacionId = null
+        let logoUrl = null
 
         if (isSuperAdmin) {
             effectiveRole = 'ADMIN'
@@ -43,6 +44,7 @@ export async function getUserProfile() {
                 if (activeMembership.empresa?.nombre) {
                     organizacionNombre = activeMembership.empresa.nombre
                     organizacionId = activeMembership.empresa.id
+                    logoUrl = activeMembership.empresa.logo_url || null
                 }
             }
         }
@@ -56,7 +58,8 @@ export async function getUserProfile() {
                 rol: effectiveRole,
                 plan: planStatus,
                 organizacionNombre,
-                organizacionId
+                organizacionId,
+                logoUrl
             }
         }
     } catch (error) {
@@ -129,7 +132,29 @@ export async function updateOrganizacionName(empresaId_param: string, nombre: st
 
         return { success: true }
     } catch (error) {
-        console.error("Error updating organizacion:", error)
+        console.error("Error updating org name:", error)
         return { success: false, error: "Error al actualizar organización" }
+    }
+}
+
+export async function updateOrganizacionLogo(empresaId_param: string, logo_url: string) {
+    try {
+        const { empresaId, rol } = await getUserContext()
+
+        if (rol !== 'ADMIN') {
+            return { success: false, error: "Permisos insuficientes" }
+        }
+
+        // Use context's verified empresaId to prevent IDOR
+        await EmpresaService.updateEmpresaLogo(empresaId, logo_url)
+
+        revalidatePath('/profile')
+        revalidatePath('/dashboard')
+        revalidatePath('/')
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating org logo:", error)
+        return { success: false, error: "Error al actualizar logo de la organización" }
     }
 }

@@ -1,42 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
+import { getUserContext } from '@/server/context'
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
     try {
-        const formData = await request.formData()
-        const file = formData.get('file') as File
-        const fileName = formData.get('fileName') as string
+        const { empresaId, rol } = await getUserContext()
 
-        if (!file || !fileName) {
-            return NextResponse.json({ error: 'File and fileName are required' }, { status: 400 })
+        if (rol !== 'ADMIN') {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
         }
 
-        // Convert File to ArrayBuffer for upload
-        const arrayBuffer = await file.arrayBuffer()
-        const buffer = new Uint8Array(arrayBuffer)
+        const formData = await req.formData()
+        const file = formData.get('file') as File
 
-        // Upload using Admin Client (Bypasses RLS)
-        const { data, error } = await supabaseAdmin.storage
+        if (!file) {
+            return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+        }
+
+        const supabase = await createClient()
+
+        // Ensure bucket exists (ignoring error if it already exists)
+        await supabase.storage.createBucket('logos', { public: true })
+
+        // Generate unique filename
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${empresaId}-${Date.now()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { data, error } = await supabase.storage
             .from('logos')
-            .upload(fileName, buffer, {
-                contentType: file.type,
+            .upload(filePath, file, {
+                cacheControl: '3600',
                 upsert: true
             })
 
         if (error) {
-            console.error("Supabase Admin Upload Error:", error)
-            return NextResponse.json({ error: error.message }, { status: 500 })
+            console.error('Storage upload error:', error)
+            return NextResponse.json({ error: 'Failed to upload to storage' }, { status: 500 })
         }
 
-        // Get Public URL
-        const { data: { publicUrl } } = supabaseAdmin.storage
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
             .from('logos')
-            .getPublicUrl(fileName)
+            .getPublicUrl(filePath)
 
-        return NextResponse.json({ publicUrl })
-
-    } catch (error: any) {
-        console.error("Server Upload Error:", error)
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return NextResponse.json({ url: publicUrl })
+    } catch (error) {
+        console.error('API /upload-logo Error:', error)
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }
