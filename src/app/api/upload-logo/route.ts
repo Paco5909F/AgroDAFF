@@ -44,7 +44,10 @@ export async function POST(req: NextRequest) {
             .from('logos')
             .getPublicUrl(filePath)
 
-        return NextResponse.json({ url: publicUrl })
+        return NextResponse.json({ 
+            url: publicUrl,
+            publicUrl: publicUrl 
+        })
     } catch (error) {
         console.error('API /upload-logo Error:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

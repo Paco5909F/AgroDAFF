@@ -199,7 +199,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         <div className="pt-4 border-t">
                             <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase tracking-wider flex items-center gap-2">
                                 <ImageIcon className="h-3 w-3" />
-                                Branding de Empresa (White-Label)
+                                Branding de Empresa
                             </h3>
                             <LogoUploader 
                                 empresaId={user.organizacionId} 
