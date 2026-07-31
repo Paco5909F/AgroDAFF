@@ -9,12 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard, Building, Image as ImageIcon } from 'lucide-react'
+import { LogOut, Save, User, Mail, Shield, Lock, Check, CreditCard, Building } from 'lucide-react'
 import { updateUserProfile, updateUserPassword, updateOrganizacionName } from '@/server/usuarios'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
-import { LogoUploader } from '@/components/ui/logo-uploader'
 
 interface ProfileFormProps {
     user: {
@@ -194,19 +193,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             />
                         </div>
                     </div>
-
-                    {user.organizacionId && (user.plan === 'PRO' || user.plan === 'PRO (Lifetime)' || user.plan === 'ENTERPRISE') && (
-                        <div className="pt-4 border-t">
-                            <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase tracking-wider flex items-center gap-2">
-                                <ImageIcon className="h-3 w-3" />
-                                Branding de Empresa
-                            </h3>
-                            <LogoUploader 
-                                empresaId={user.organizacionId} 
-                                currentLogoUrl={user.logoUrl} 
-                            />
-                        </div>
-                    )}
 
                     <div className="border-t pt-4">
                         <h3 className="text-sm font-medium text-slate-500 mb-3 uppercase tracking-wider flex items-center gap-2">
