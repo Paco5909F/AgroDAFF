@@ -354,7 +354,7 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
                 lineColor: [203, 213, 225],
             },
             columnStyles: {
-                0: { cellWidth: 'auto', halign: 'left' },
+                0: { halign: 'left' },
                 1: { cellWidth: 25, halign: 'center' },
                 2: { cellWidth: 25, halign: 'center' },
                 3: { cellWidth: 35, halign: 'right' },
@@ -552,7 +552,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
                 lineColor: [203, 213, 225],
             },
             columnStyles: {
-                0: { cellWidth: 'auto', halign: 'left' },
+                0: { halign: 'left' },
                 1: { cellWidth: 25, halign: 'center' },
                 2: { cellWidth: 25, halign: 'center' },
                 3: { cellWidth: 35, halign: 'right' },
@@ -750,7 +750,7 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
                 lineColor: [203, 213, 225],
             },
             columnStyles: {
-                0: { cellWidth: 'auto', halign: 'left' },
+                0: { halign: 'left' },
                 1: { cellWidth: 25, halign: 'center' },
                 2: { cellWidth: 20, halign: 'center' },
                 3: { cellWidth: 35, halign: 'right' },
@@ -1016,7 +1016,7 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
             },
             columnStyles: {
                 0: { cellWidth: 20 },
-                1: { cellWidth: 'auto' },
+                1: { halign: 'left' },
                 2: { cellWidth: 50 }, // Increased width since we added km info
                 3: { halign: 'center', cellWidth: 25 },
                 4: { halign: 'right', cellWidth: 25 },
@@ -1168,7 +1168,7 @@ export const generateDashboardPdf = async (data: DashboardPdfData, branding: Pdf
             headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
             alternateRowStyles: { fillColor: 255 },
             margin: { left: margin, right: margin },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', cellWidth: 40 } }
+            columnStyles: { 0: { halign: 'left' }, 1: { halign: 'right', cellWidth: 40 } }
         });
 
         // @ts-ignore
@@ -1187,7 +1187,7 @@ export const generateDashboardPdf = async (data: DashboardPdfData, branding: Pdf
             headStyles: { fillColor: 0, textColor: 255, fontStyle: 'bold', halign: 'left' },
             alternateRowStyles: { fillColor: 255 },
             margin: { left: margin, right: margin },
-            columnStyles: { 0: { cellWidth: 'auto' }, 1: { halign: 'right', cellWidth: 40 } }
+            columnStyles: { 0: { halign: 'left' }, 1: { halign: 'right', cellWidth: 40 } }
         });
 
         // @ts-ignore
