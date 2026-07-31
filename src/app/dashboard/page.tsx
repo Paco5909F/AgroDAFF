@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { getDashboardStats } from '@/server/dashboard'
+import { PdfBranding } from "@/lib/pdf-generator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Tractor, DollarSign, Activity, TrendingUp, Calendar, Sprout, LayoutDashboard, Brain, AlertTriangle, CheckCircle2, Building2, Map, Package } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
@@ -30,13 +31,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     // Fetch User Profile for Greeting
     let userName = user?.email?.split('@')[0] || "Usuario"
     let empresaName = "Tu Organización"
-    let brandingFull = {
+    let brandingFull: PdfBranding = {
         name: "Tu Organización",
         address: "Dirección no registrada",
         phone: "",
         email: "",
         cuit: "",
-        logoUrl: undefined as string | undefined
+        logoUrl: undefined,
+        isPremium: false
     }
     if (user) {
         const { getUserContextSafe } = await import('@/server/context');
@@ -51,7 +53,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         if (context?.empresaId) {
             const empresa = await prisma.empresa.findUnique({
                 where: { id: context.empresaId },
-                select: { nombre: true, cuit: true, direccion: true, logo_url: true, email: true, telefono: true }
+                select: { nombre: true, cuit: true, direccion: true, logo_url: true, email: true, telefono: true, plan_status: true, is_lifetime: true }
             })
             if (empresa?.nombre) {
                 empresaName = empresa.nombre
@@ -61,7 +63,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                     phone: empresa.telefono || "",
                     email: empresa.email || "",
                     cuit: empresa.cuit || "",
-                    logoUrl: empresa.logo_url || undefined
+                    logoUrl: empresa.logo_url || undefined,
+                    isPremium: empresa.plan_status === 'PRO' || empresa.plan_status === 'ENTERPRISE' || empresa.is_lifetime || false
                 }
             }
         }

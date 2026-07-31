@@ -40,7 +40,9 @@ export default async function CartasPortePage({
             direccion: true,
             logo_url: true,
             email: true,
-            telefono: true
+            telefono: true,
+            plan_status: true,
+            is_lifetime: true
         }
     })
 
@@ -50,7 +52,8 @@ export default async function CartasPortePage({
         cuit: empresa?.cuit || "",
         logoUrl: empresa?.logo_url || undefined,
         email: empresa?.email || "",
-        phone: empresa?.telefono || ""
+        phone: empresa?.telefono || "",
+        isPremium: empresa?.plan_status === 'PRO' || empresa?.plan_status === 'ENTERPRISE' || empresa?.is_lifetime || false
     }
     const canCreate = hasPermission(rol, PERMISSIONS.CARTAS_PORTE, 'create')
 

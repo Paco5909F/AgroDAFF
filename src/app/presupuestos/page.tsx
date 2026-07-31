@@ -55,17 +55,20 @@ export default async function PresupuestosPage({
             direccion: true,
             logo_url: true,
             email: true,
-            telefono: true
+            telefono: true,
+            plan_status: true,
+            is_lifetime: true
         }
     })
 
     const branding = {
-        name: empresa?.nombre || "Sistema AgroDAFF",
+        name: empresa?.nombre || "Empresa",
         address: empresa?.direccion || "",
         cuit: empresa?.cuit || "",
         logoUrl: empresa?.logo_url || undefined,
         email: empresa?.email || "",
-        phone: empresa?.telefono || ""
+        phone: empresa?.telefono || "",
+        isPremium: empresa?.plan_status === 'PRO' || empresa?.plan_status === 'ENTERPRISE' || empresa?.is_lifetime || false
     }
 
     return (

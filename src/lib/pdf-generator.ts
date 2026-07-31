@@ -19,6 +19,7 @@ export interface PdfBranding {
     email: string;
     cuit: string;
     logoUrl?: string;
+    isPremium?: boolean;
     ciudad?: string;
     provincia?: string;
     pdf_footer?: string;
@@ -36,7 +37,7 @@ const DEFAULT_BRANDING: PdfBranding = {
     logoUrl: undefined
 };
 
-const LOGO_URL = '/images/logo.png';
+const LOGO_URL = '/images/03-Isotipo.png';
 
 // --- HELPER FUNCTION: Hex to RGB ---
 function hexToRgb(hex: string): [number, number, number] {
@@ -216,7 +217,8 @@ const drawField = (doc: jsPDF, label: string, value: string, x: number, y: numbe
 // --- PRESUPUESTO PDF (AFIP/Official Style Implementation) ---
 // --- PRESUPUESTO PDF (AFIP/Official Style Implementation) ---
 export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
 
         const margin = 15;
@@ -427,7 +429,8 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 // --- ORDEN DE TRABAJO PDF ---
 // --- ORDEN DE TRABAJO PDF (AFIP/Standardized Style) ---
 export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
         const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
@@ -626,7 +629,8 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 
 // --- LIQUIDACION PDF ---
 export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
         const margin = 15;
         const pageWidth = doc.internal.pageSize.width;
@@ -800,7 +804,8 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
 // --- CARTA DE PORTE PDF (AFIP/Official Style Implementation) ---
 // --- CARTA DE PORTE PDF (AFIP/Official Style Implementation) ---
 export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
 
         // Settings
@@ -962,7 +967,8 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
 // --- REPORTE DE GESTIÓN PDF ---
 // --- REPORTE DE GESTIÓN PDF ---
 export const generateReportPDF = (orders: any[], filters: any, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.width;
         const pageHeight = doc.internal.pageSize.height;
@@ -1071,7 +1077,8 @@ export interface DashboardPdfData {
 }
 
 export const generateDashboardPdf = async (data: DashboardPdfData, branding: PdfBranding = DEFAULT_BRANDING) => {
-    loadLogoAndRun(branding.logoUrl || LOGO_URL, (img) => {
+    const finalLogoUrl = (branding.isPremium && branding.logoUrl) ? branding.logoUrl : LOGO_URL;
+    loadLogoAndRun(finalLogoUrl, (img) => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
