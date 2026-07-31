@@ -274,18 +274,18 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
 
         // Left Column
         let innerY = cursorY + 6;
-        drawField(doc, "RAZÓN SOCIAL / NOMBRE", presupuesto.cliente.razon_social, margin + 5, innerY);
+        drawField(doc, "RAZÓN SOCIAL / NOMBRE", presupuesto.cliente?.razon_social || "Sin Cliente", margin + 5, innerY);
         innerY += 8;
-        drawField(doc, "CUIT", presupuesto.cliente.cuit || "-", margin + 5, innerY);
+        drawField(doc, "CUIT", presupuesto.cliente?.cuit || "-", margin + 5, innerY);
         innerY += 8;
         drawField(doc, "LOTE", presupuesto.lote?.nombre || "No especificado", margin + 5, innerY);
 
         // Right Column
         innerY = cursorY + 6;
         const col2X = margin + (width / 2) + 20;
-        drawField(doc, "EMAIL", presupuesto.cliente.email || "-", col2X, innerY);
+        drawField(doc, "EMAIL", presupuesto.cliente?.email || "-", col2X, innerY);
         innerY += 8;
-        drawField(doc, "CONDICIÓN IVA", presupuesto.cliente.condicion_iva || "Consumidor Final", col2X, innerY);
+        drawField(doc, "CONDICIÓN IVA", presupuesto.cliente?.condicion_iva || "Consumidor Final", col2X, innerY);
         innerY += 8;
         drawField(doc, "HECTÁREAS", `${presupuesto.hectareas || 1} ha`, col2X, innerY);
 
@@ -398,13 +398,19 @@ export const generatePresupuestoPDF = (presupuesto: any, branding: PdfBranding =
         // --- 5. OBSERVACIONES ---
         drawSectionHeader(doc, "OBSERVACIONES", cursorY, margin, pageWidth, margin);
         cursorY += 6;
-        drawBox(doc, margin, cursorY, width, 18); // Fixed height box for observations
 
         if (presupuesto.observaciones) {
             doc.setFontSize(9);
             doc.setFont(FONTS.body, 'normal');
             doc.setTextColor(0);
-            doc.text(presupuesto.observaciones, margin + 5, cursorY + 6, { maxWidth: width - 10 });
+            
+            const splitObs = doc.splitTextToSize(presupuesto.observaciones, width - 10);
+            const boxHeight = Math.max(18, splitObs.length * 4.5 + 6);
+            
+            drawBox(doc, margin, cursorY, width, boxHeight);
+            doc.text(splitObs, margin + 5, cursorY + 6);
+        } else {
+            drawBox(doc, margin, cursorY, width, 18);
         }
 
         // Footer
@@ -466,7 +472,7 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         doc.text(`N° ${orden.id ? orden.id.slice(0, 8).toUpperCase() : "-"}`, boxX + (boxW / 2), cursorY + 11, { align: 'center' });
 
         doc.setFontSize(8);
-        doc.text(`FECHA: ${format(new Date(orden.fecha), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 20);
+        doc.text(`FECHA: ${orden.fecha ? format(new Date(orden.fecha), 'dd/MM/yyyy') : "-"}`, boxX + 5, cursorY + 20);
         doc.text(`ESTADO: ${orden.estado ? orden.estado.toUpperCase() : "-"}`, boxX + 5, cursorY + 24);
 
         cursorY += 35; // Move down below header row
@@ -478,11 +484,11 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
 
         // Left Column
         let innerY = cursorY + 6;
-        drawField(doc, "RAZÓN SOCIAL", orden.cliente.razon_social, margin + 5, innerY);
+        drawField(doc, "RAZÓN SOCIAL", orden.cliente?.razon_social || "Sin Cliente", margin + 5, innerY);
 
         // Right Column
         const col2X = margin + (width / 2) + 20;
-        drawField(doc, "CUIT", orden.cliente.cuit || "-", col2X, innerY);
+        drawField(doc, "CUIT", orden.cliente?.cuit || "-", col2X, innerY);
         // Note: Orden only generally has Client Name/Link, but if we have CUIT in the client object included in Orden, we show it.
 
         cursorY += 25;
@@ -579,13 +585,19 @@ export const generateOrdenPDF = (orden: any, branding: PdfBranding = DEFAULT_BRA
         // --- 5. OBSERVACIONES ---
         drawSectionHeader(doc, "OBSERVACIONES", cursorY, margin, pageWidth, margin);
         cursorY += 6;
-        drawBox(doc, margin, cursorY, width, 18);
 
         if (orden.observaciones) {
             doc.setFontSize(9);
             doc.setFont(FONTS.body, 'normal');
             doc.setTextColor(0);
-            doc.text(orden.observaciones, margin + 5, cursorY + 6, { maxWidth: width - 10 });
+            
+            const splitObs = doc.splitTextToSize(orden.observaciones, width - 10);
+            const boxHeight = Math.max(18, splitObs.length * 4.5 + 6);
+            
+            drawBox(doc, margin, cursorY, width, boxHeight);
+            doc.text(splitObs, margin + 5, cursorY + 6);
+        } else {
+            drawBox(doc, margin, cursorY, width, 18);
         }
 
         // --- SIGNATURE AREA ---
@@ -670,9 +682,9 @@ export const generateLiquidacionPDF = (orden: any, branding: PdfBranding = DEFAU
         drawBox(doc, margin, cursorY, width, 18);
 
         let innerY = cursorY + 6;
-        drawField(doc, "RAZÓN SOCIAL", orden.cliente.razon_social, margin + 5, innerY);
+        drawField(doc, "RAZÓN SOCIAL", orden.cliente?.razon_social || "Sin Cliente", margin + 5, innerY);
         const col2X = margin + (width / 2) + 20;
-        drawField(doc, "CUIT", orden.cliente.cuit || "-", col2X, innerY);
+        drawField(doc, "CUIT", orden.cliente?.cuit || "-", col2X, innerY);
 
         cursorY += 25;
 
@@ -845,7 +857,7 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
 
         doc.setFontSize(8);
         doc.text(`CTG: ${carta.ctg || "PENDIENTE"}`, boxX + 5, cursorY + 20);
-        doc.text(`FECHA: ${format(new Date(carta.fecha_carga), 'dd/MM/yyyy')}`, boxX + 5, cursorY + 24);
+        doc.text(`FECHA: ${carta.fecha_carga ? format(new Date(carta.fecha_carga), 'dd/MM/yyyy') : "-"}`, boxX + 5, cursorY + 24);
 
         cursorY += 35; // Move down below header row
 
@@ -858,9 +870,9 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
 
         // Left Column inside box
         let innerY = cursorY + 6;
-        drawField(doc, "TITULAR CARTA DE PORTE", carta.cliente.razon_social, margin + 5, innerY);
+        drawField(doc, "TITULAR CARTA DE PORTE", carta.cliente?.razon_social || "Sin Cliente", margin + 5, innerY);
         innerY += 10;
-        drawField(doc, "CUIT", carta.cliente.cuit || "-", margin + 5, innerY);
+        drawField(doc, "CUIT", carta.cliente?.cuit || "-", margin + 5, innerY);
 
         // Right Column inside box
         innerY = cursorY + 6;
@@ -918,14 +930,19 @@ export const generateCartaPortePDF = (carta: any, branding: PdfBranding = DEFAUL
         // --- 6. OBSERVACIONES ---
         drawSectionHeader(doc, "OBSERVACIONES", cursorY, margin, pageWidth, margin);
         cursorY += 6;
-        drawBox(doc, margin, cursorY, width, 20);
 
         innerY = cursorY + 6;
         if (carta.observaciones) {
             doc.setFontSize(9);
             doc.setFont(FONTS.body, 'normal');
-            doc.text(carta.observaciones, margin + 5, innerY);
+            
+            const splitObs = doc.splitTextToSize(carta.observaciones, width - 10);
+            const boxHeight = Math.max(20, splitObs.length * 4.5 + 6);
+            
+            drawBox(doc, margin, cursorY, width, boxHeight);
+            doc.text(splitObs, margin + 5, innerY);
         } else {
+            drawBox(doc, margin, cursorY, width, 20);
             drawField(doc, "", "-", margin + 5, innerY);
         }
 
@@ -963,16 +980,16 @@ export const generateReportPDF = (orders: any[], filters: any, branding: PdfBran
         // Table
         const tableBody = orders.flatMap((order) =>
             (order.items || []).map((item: any) => {
-                let serviceName = item.servicio.nombre.substring(0, 50);
+                let serviceName = (item.servicio?.nombre || "Servicio").substring(0, 50);
                 if (Number(item.kilometros) > 0) {
                     serviceName += ` (${Number(item.kilometros).toLocaleString('es-AR')} km)`;
                 }
 
                 return [
                     format(new Date(order.fecha), 'dd/MM/yy'),
-                    order.cliente.razon_social.substring(0, 30),
+                    (order.cliente?.razon_social || "Sin Cliente").substring(0, 30),
                     serviceName,
-                    `${Number(item.cantidad).toLocaleString('es-AR')} ${item.servicio.unidad_medida}`,
+                    `${Number(item.cantidad).toLocaleString('es-AR')} ${item.servicio?.unidad_medida || "u"}`,
                     `$ ${Number(item.precio_unit).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
                     { content: `$ ${Number(item.total).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, styles: { halign: 'right', fontStyle: 'bold' } }
                 ];
