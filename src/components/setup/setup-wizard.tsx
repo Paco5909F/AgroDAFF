@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Building2, Palette, Receipt, FileText, CheckCircle2, ChevronRight, ChevronLeft, Loader2 } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Building2, Palette, Receipt, FileText, CheckCircle2, ChevronRight, ChevronLeft, Loader2, Upload, Check } from "lucide-react"
+import { LogoUploader } from "@/components/ui/logo-uploader"
 
 const STEPS = [
     { id: 'empresa', title: 'Datos de la Empresa', icon: Building2 },
@@ -146,9 +148,14 @@ export function SetupWizard({ initialData }: { initialData: any }) {
                     {currentStep === 1 && (
                         <div className="space-y-6">
                             <div className="space-y-2">
-                                <Label>URL del Logo (Opcional por ahora)</Label>
-                                <Input placeholder="https://..." value={formData.logo_url} onChange={e => handleChange('logo_url', e.target.value)} />
-                                <p className="text-xs text-slate-400">Pega aquí la URL de tu logo. Pronto añadiremos subida de archivos directa.</p>
+                                <Label>Logo de Empresa</Label>
+                                <div className="mt-2">
+                                    <LogoUploader 
+                                        empresaId={initialData.id} 
+                                        currentLogoUrl={formData.logo_url} 
+                                        onUploadSuccess={(url) => handleChange('logo_url', url)}
+                                    />
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Color Primario (Acento para PDFs)</Label>
