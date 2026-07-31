@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner'
 import { updateEmpresaProfile } from '@/server/empresa'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, X, Loader2, Save, Building2 } from 'lucide-react'
+import { Upload, X, Loader2, Save, Building2, Lock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 const formSchema = z.object({
     nombre: z.string().min(1, "El nombre es requerido"),
@@ -32,6 +33,7 @@ export function EmpresaForm({ initialData }: Props) {
     const [isPending, startTransition] = useTransition()
     const [isUploading, setIsUploading] = useState(false)
     const supabase = createClient()
+    const isPremium = initialData.plan_status === 'PRO' || initialData.plan_status === 'ENTERPRISE' || initialData.is_lifetime === true
 
     const form = useForm<FormData>({
         resolver: zodResolver(formSchema),
@@ -97,17 +99,33 @@ export function EmpresaForm({ initialData }: Props) {
                             )}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="logo">Logo de la Empresa</Label>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="logo">Logo de la Empresa</Label>
+                                {!isPremium && (
+                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 flex items-center gap-1">
+                                        <Lock className="w-3 h-3" />
+                                        Requiere PRO
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-3 relative">
+                                {!isPremium && (
+                                    <div className="absolute inset-0 z-10 bg-white/60 backdrop-blur-[1px] rounded-xl flex flex-col items-center justify-center border border-slate-100">
+                                        <p className="text-sm font-medium text-slate-600 text-center px-4">
+                                            Mejora tu plan para personalizar el logo en los documentos.
+                                        </p>
+                                    </div>
+                                )}
                                 <div className="flex flex-col gap-4">
                                     {/* Enhanced Upload Area */}
                                     <div className="group relative">
                                         <div
-                                            onClick={() => document.getElementById('logo-upload-trigger')?.click()}
+                                            onClick={() => { if (isPremium) document.getElementById('logo-upload-trigger')?.click() }}
                                             className={`
                                             relative flex flex-col items-center justify-center w-full h-40 
                                             border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200
                                             ${form.watch('logo_url') ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-emerald-400'}
+                                            ${!isPremium ? 'opacity-50 cursor-not-allowed' : ''}
                                         `}
                                         >
                                             {/* Hidden Input */}
@@ -226,8 +244,9 @@ export function EmpresaForm({ initialData }: Props) {
                                         </div>
                                         <Input
                                             {...form.register('logo_url')}
+                                            disabled={!isPremium}
                                             placeholder="https://ejemplo.com/logo.png"
-                                            className="mt-2 h-8 text-xs text-center border-dashed focus:border-solid bg-slate-50 focus:bg-white transition-all"
+                                            className="mt-2 h-8 text-xs text-center border-dashed focus:border-solid bg-slate-50 focus:bg-white transition-all disabled:opacity-50"
                                         />
                                     </div>
                                 </div>
