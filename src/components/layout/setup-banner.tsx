@@ -3,11 +3,12 @@ import { getProfileCompletion } from "@/server/onboarding"
 import { AlertCircle, ChevronRight, CheckCircle2, Sparkles } from "lucide-react"
 
 export async function SetupBanner() {
-    const { percentage, missing, isCompleted } = await getProfileCompletion()
+    try {
+        const { percentage, missing, isCompleted } = await getProfileCompletion()
 
-    if (isCompleted) return null;
+        if (isCompleted) return null;
 
-    return (
+        return (
         <div className="relative overflow-hidden bg-slate-900 text-white px-4 py-3 shadow-lg border-b border-slate-800">
             {/* Animated background gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-blue-500/20 to-purple-600/20 animate-gradient-x opacity-50"></div>
@@ -54,4 +55,7 @@ export async function SetupBanner() {
             </div>
         </div>
     )
+    } catch {
+        return null
+    }
 }
