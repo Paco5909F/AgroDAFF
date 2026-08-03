@@ -58,19 +58,21 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // Rutas protegidas
-    // Rutas protegidas
-    // Rutas protegidas
-    if (
-        !user &&
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/auth') &&
-        !request.nextUrl.pathname.startsWith('/setup') &&
-        !request.nextUrl.pathname.startsWith('/servicios') &&
-        !request.nextUrl.pathname.startsWith('/contacto') &&
-        request.nextUrl.pathname !== '/' // ALLOW ROOT (Landing Page)
-    ) {
-        // Si no está logueado y no va a login, redirigir
+    // Rutas públicas que no requieren autenticación previa
+    const isPublicRoute = 
+        request.nextUrl.pathname === '/' ||
+        request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/auth') ||
+        request.nextUrl.pathname.startsWith('/setup') ||
+        request.nextUrl.pathname.startsWith('/servicios') ||
+        request.nextUrl.pathname.startsWith('/contacto') ||
+        request.nextUrl.pathname.startsWith('/pricing') ||
+        request.nextUrl.pathname.startsWith('/invite') ||
+        request.nextUrl.pathname.startsWith('/api/webhooks') ||
+        request.nextUrl.pathname.startsWith('/api/proxy-image')
+
+    if (!user && !isPublicRoute) {
+        // Si no está logueado y va a una ruta protegida, redirigir a login
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         return NextResponse.redirect(url)

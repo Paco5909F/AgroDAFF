@@ -169,16 +169,18 @@ export class OrdenesService {
                 }
             })
 
-            for (const item of orden.items) {
-                await tx.ordenItem.update({
-                    where: { id: item.id },
-                    data: {
-                        subtotal_real: item.total,
-                        cantidad_real: item.cantidad,
-                        precio_congelado: item.precio_unit
-                    }
-                })
-            }
+            await Promise.all(
+                orden.items.map(item =>
+                    tx.ordenItem.update({
+                        where: { id: item.id },
+                        data: {
+                            subtotal_real: item.total,
+                            cantidad_real: item.cantidad,
+                            precio_congelado: item.precio_unit
+                        }
+                    })
+                )
+            )
             return orden
         })
     }

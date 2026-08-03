@@ -53,14 +53,24 @@ export async function createSubscription() {
     }
 }
 
-// ==========================================
-// Admin / Internal Tools para Amigos y Familia
-// ==========================================
+const SUPER_ADMIN_EMAILS = ['admin@agrodaff.com']
+
+async function verifySuperAdmin(): Promise<{ authorized: boolean; error?: string }> {
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error || !user || !user.email || !SUPER_ADMIN_EMAILS.includes(user.email)) {
+        return { authorized: false, error: "No autorizado: se requieren permisos de Super Admin." }
+    }
+    return { authorized: true }
+}
 
 export async function grantLifetimeAccess(targetEmpresaId: string) {
     try {
-        // Here we could add a check if the caller is a SuperAdmin. 
-        // For now, it's just a server action that can be hooked to a hidden button or internal dashboard.
+        const authCheck = await verifySuperAdmin()
+        if (!authCheck.authorized) {
+            return { success: false, error: authCheck.error }
+        }
+
         await prisma.empresa.update({
             where: { id: targetEmpresaId },
             data: { is_lifetime: true, plan_status: 'PRO' }
@@ -74,9 +84,14 @@ export async function grantLifetimeAccess(targetEmpresaId: string) {
 
 export async function grantProStatusManually(targetEmpresaId: string, durationMonths: number = 1) {
     try {
+        const authCheck = await verifySuperAdmin()
+        if (!authCheck.authorized) {
+            return { success: false, error: authCheck.error }
+        }
+
         await prisma.empresa.update({
             where: { id: targetEmpresaId },
-            data: { plan_status: 'PRO' } // Could also set an expiration date in the future if added to schema
+            data: { plan_status: 'PRO' }
         })
         return { success: true }
     } catch (error) {
