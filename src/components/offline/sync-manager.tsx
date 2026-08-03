@@ -9,23 +9,24 @@ export function OfflineSyncManager() {
   const isSyncingRef = useRef(false)
   const [isSyncingUI, setIsSyncingUI] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
+  const [mounted, setMounted] = useState(false)
 
   // Polling offline DB and resyncing
   const syncPendingActions = useCallback(async () => {
-    if (typeof window === 'undefined' || !navigator.onLine || isSyncingRef.current) return;
+    if (typeof window === 'undefined' || !navigator?.onLine || isSyncingRef.current) return;
     
-    const db = getOfflineDB();
-    if (!db) return;
-
-    isSyncingRef.current = true;
-    setIsSyncingUI(true);
-    let syncedCount = 0;
-
     try {
+      const db = getOfflineDB();
+      if (!db) return;
+
+      isSyncingRef.current = true;
+      setIsSyncingUI(true);
+      let syncedCount = 0;
+
       // Find all pending
       const pending = await db.pendingActions.where('status').equals('pending').toArray();
       
-      if (pending.length > 0) {
+      if (pending && pending.length > 0) {
         toast.info("⏳ Intentando sincronizar datos creados sin conexión...");
         
         for (const action of pending) {
@@ -74,6 +75,8 @@ export function OfflineSyncManager() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
+
     const handleOnline = () => {
         setIsOnline(true);
         toast.success("🌐 Conexión restaurada, sincronizando en background...");
@@ -88,10 +91,12 @@ export function OfflineSyncManager() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Initial check
-    setIsOnline(navigator.onLine);
-    if (navigator.onLine) {
-        syncPendingActions();
+    // Initial check safely
+    if (typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean') {
+        setIsOnline(navigator.onLine);
+        if (navigator.onLine) {
+            syncPendingActions();
+        }
     }
 
     return () => {
@@ -99,6 +104,8 @@ export function OfflineSyncManager() {
         window.removeEventListener('offline', handleOffline);
     }
   }, [syncPendingActions]);
+
+  if (!mounted) return null;
 
   // Network Status indicator pill
   return (

@@ -40,6 +40,8 @@ import { OfflineSyncManager } from "@/components/offline/sync-manager"
 import { SetupBanner } from "@/components/layout/setup-banner"
 import { Suspense } from "react"
 
+export const dynamic = 'force-dynamic';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,7 +71,11 @@ export default function RootLayout({
               <SetupBanner />
             </Suspense>
             <NavbarWrapper>
-              <AppNavbar />
+              <Suspense fallback={
+                <nav className="bg-background border-b border-border sticky top-0 z-50 h-16 md:h-20 w-full" />
+              }>
+                <AppNavbar />
+              </Suspense>
             </NavbarWrapper>
 
             {/* Main Content & Footer Handled by Wrapper */}

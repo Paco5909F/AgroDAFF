@@ -37,12 +37,17 @@ export class AgroDaffOfflineDB extends Dexie {
   }
 }
 
-let dbInstance: AgroDaffOfflineDB;
+let dbInstance: AgroDaffOfflineDB | null = null;
 
-export function getOfflineDB() {
-  if (typeof window === 'undefined') return null; // Avoid running on Server
+export function getOfflineDB(): AgroDaffOfflineDB | null {
+  if (typeof window === 'undefined' || typeof indexedDB === 'undefined') return null; // Avoid running on Server or if IndexedDB is unavailable
   if (!dbInstance) {
-    dbInstance = new AgroDaffOfflineDB();
+    try {
+      dbInstance = new AgroDaffOfflineDB();
+    } catch (e) {
+      console.warn("IndexedDB not available or blocked in this browser context:", e);
+      return null;
+    }
   }
   return dbInstance;
 }

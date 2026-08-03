@@ -7,8 +7,17 @@ import { cn } from '@/lib/utils'
 import { usePathname } from 'next/navigation'
 
 export function AIAssistantWidget() {
+    const [mounted, setMounted] = useState(false)
     const pathname = usePathname()
-    const isPublicRoute = pathname?.startsWith('/login') || pathname?.startsWith('/auth') || pathname?.startsWith('/onboarding') || pathname === '/'
+    const isPublicRoute = !pathname || 
+        pathname === '/' || 
+        pathname.startsWith('/login') || 
+        pathname.startsWith('/auth') || 
+        pathname.startsWith('/onboarding') || 
+        pathname.startsWith('/contacto') || 
+        pathname.startsWith('/servicios') || 
+        pathname.startsWith('/pricing') ||
+        pathname.startsWith('/invite')
 
     const [isOpen, setIsOpen] = useState(false)
     const [input, setInput] = useState('')
@@ -17,9 +26,11 @@ export function AIAssistantWidget() {
         { role: 'ai', content: '¡Hola! Soy la IA de AgroDAFF. Consultame por tus costos, sugerencias o análisis de campaña actual.' }
     ])
 
-    if (isPublicRoute) return null
-
     const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Auto-scroll to bottom of chat
     useEffect(() => {
@@ -27,6 +38,8 @@ export function AIAssistantWidget() {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
         }
     }, [messages, isOpen])
+
+    if (!mounted || isPublicRoute) return null
 
     const handleSend = async () => {
         if (!input.trim()) return;

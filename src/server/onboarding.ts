@@ -171,7 +171,7 @@ export async function getProfileCompletion(empresaId?: string) {
         let id = empresaId;
         if (!id) {
             const context = await getUserContextSafe();
-            if (!context) return { percentage: 100, missing: [], isCompleted: true }; // Hide banner if not logged in
+            if (!context || !context.empresaId) return { percentage: 100, missing: [], isCompleted: true }; // Hide banner if not logged in
             id = context.empresaId;
         }
 
@@ -179,7 +179,7 @@ export async function getProfileCompletion(empresaId?: string) {
             where: { id }
         });
 
-        if (!empresa) return { percentage: 0, missing: ['Empresa no encontrada'], isCompleted: false };
+        if (!empresa) return { percentage: 100, missing: [], isCompleted: true };
 
         let completedPoints = 0;
         const totalPoints = 5;
@@ -210,7 +210,7 @@ export async function getProfileCompletion(empresaId?: string) {
         return { percentage, missing, isCompleted: percentage === 100 };
     } catch (error) {
         console.error("Error calculating profile completion:", error);
-        return { percentage: 0, missing: ['Error de cálculo'], isCompleted: false };
+        return { percentage: 100, missing: [], isCompleted: true };
     }
 }
 
