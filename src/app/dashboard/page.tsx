@@ -44,11 +44,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         const { getUserContextSafe } = await import('@/server/context');
         const context = await getUserContextSafe();
         
-        const profile = await prisma.usuario.findUnique({
-            where: { id: user.id },
-            select: { nombre: true }
-        })
-        if (profile?.nombre) userName = profile.nombre
+        try {
+            const profile = await prisma.usuario.findUnique({
+                where: { id: user.id },
+                select: { nombre: true }
+            })
+            if (profile?.nombre) userName = profile.nombre
+        } catch (e) {
+            console.warn("Could not fetch user profile:", e)
+        }
         
         if (context?.empresaId) {
             const empresa = await prisma.empresa.findUnique({

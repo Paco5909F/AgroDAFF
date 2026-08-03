@@ -26,18 +26,23 @@ async function resolveUserContext() {
         return { user: null, dbUser: null }
     }
 
-    const dbUser = await prisma.usuario.findUnique({
-        where: { id: user.id },
-        select: {
-            id: true,
-            active_empresa_id: true,
-            rol: true,
-            empresa_id: true,
-            miembros: {
-                include: { empresa: true }
+    let dbUser = null
+    try {
+        dbUser = await prisma.usuario.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                active_empresa_id: true,
+                rol: true,
+                empresa_id: true,
+                miembros: {
+                    include: { empresa: true }
+                }
             }
-        }
-    })
+        })
+    } catch (dbError: any) {
+        logger.error("Error fetching dbUser in resolveUserContext", { metadata: { error: dbError?.message || dbError } })
+    }
 
     return { user, dbUser }
 }

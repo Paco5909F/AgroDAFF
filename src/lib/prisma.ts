@@ -1,16 +1,30 @@
-import { Pool } from 'pg'
+import { Pool, type PoolConfig } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
-// Force reload after schema update
 const connectionString = process.env.DATABASE_URL
 
-const pool = new Pool({ connectionString })
+const poolConfig: PoolConfig = {
+    connectionString,
+    ssl: connectionString && (connectionString.includes('supabase.com') || connectionString.includes('pooler'))
+        ? { rejectUnauthorized: false }
+        : undefined,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+}
+
+// Global caching pattern for serverless environments
+const globalForPrisma = globalThis as unknown as {
+    prisma?: PrismaClient
+    pool?: Pool
+}
+
+const pool = globalForPrisma.pool ?? new Pool(poolConfig)
 const adapter = new PrismaPg(pool)
 
-// Prevents multiple instances of Prisma Client in development
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 
-export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter })
+globalForPrisma.pool = pool
+globalForPrisma.prisma = prisma
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
