@@ -153,6 +153,7 @@ export function SetupWizard({ initialData }: { initialData: any }) {
                                     <LogoUploader 
                                         empresaId={initialData.id} 
                                         currentLogoUrl={formData.logo_url} 
+                                        isPremium={Boolean(initialData?.is_lifetime || initialData?.plan_status === 'PRO')}
                                         onUploadSuccess={(url) => handleChange('logo_url', url)}
                                     />
                                 </div>
