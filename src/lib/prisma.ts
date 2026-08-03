@@ -2,11 +2,13 @@ import { Pool, type PoolConfig } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL || ''
+// Strip sslmode parameter so pg honors rejectUnauthorized: false
+const cleanUrl = connectionString.replace(/[?&]sslmode=[^&]+/g, '')
 
 const poolConfig: PoolConfig = {
-    connectionString,
-    ssl: connectionString && (connectionString.includes('supabase.com') || connectionString.includes('pooler'))
+    connectionString: cleanUrl,
+    ssl: cleanUrl && (cleanUrl.includes('supabase.com') || cleanUrl.includes('pooler'))
         ? { rejectUnauthorized: false }
         : undefined,
     max: 10,
