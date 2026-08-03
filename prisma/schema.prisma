@@ -173,6 +173,8 @@ model Invitation {
   expires_at DateTime
   created_at DateTime @default(now()) @db.Timestamptz
 
+  @@index([empresa_id])
+  @@index([email])
   @@map("invitations")
 }
 
@@ -299,6 +301,9 @@ model MovimientoTesoreria {
   created_by String?  @db.Uuid
 
   @@index([cuenta_bancaria_id])
+  @@index([proveedor_id])
+  @@index([lote_id])
+  @@index([campana_id])
   @@map("movimientos_tesoreria")
 }
 
@@ -485,6 +490,7 @@ model Servicio {
 
   ordenItems OrdenItem[]
 
+  @@index([empresa_id])
   @@map("servicios")
 }
 
@@ -517,6 +523,8 @@ model OrdenTrabajo {
   @@index([cliente_id])
   @@index([fecha])
   @@index([estado])
+  @@index([empresa_id, estado])
+  @@index([empresa_id, fecha])
   @@map("ordenes_trabajo")
 }
 
@@ -565,6 +573,11 @@ model OrdenItem {
   observaciones String?
   insumos       OrdenItemInsumo[]
 
+  @@index([orden_id])
+  @@index([servicio_id])
+  @@index([lote_id])
+  @@index([campana_id])
+  @@index([maquinaria_id])
   @@map("orden_items")
 }
 
@@ -594,6 +607,7 @@ model Factura {
 
   orden OrdenTrabajo @relation(fields: [orden_trabajo_id], references: [id], onDelete: Restrict)
 
+  @@index([empresa_id])
   @@map("facturas")
 }
 
@@ -615,6 +629,7 @@ model Campana {
   movimientos_tesoreria MovimientoTesoreria[]
   compras_insumo        CompraInsumo[]
 
+  @@index([empresa_id])
   @@map("campanas")
 }
 
@@ -686,6 +701,7 @@ model PresupuestoItem {
 
   presupuesto Presupuesto @relation(fields: [presupuesto_id], references: [id], onDelete: Cascade)
 
+  @@index([presupuesto_id])
   @@map("presupuesto_items")
 }
 
